@@ -1,3 +1,9 @@
-import func from '../service/service';
+import UserService from '../service/user-service';
 
-func();
+const UserController = {
+  async base() {
+    await UserService.baseFunc();
+  }
+};
+
+export default UserController;
