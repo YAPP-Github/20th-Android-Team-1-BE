@@ -11,11 +11,10 @@ app.listen(async () => {
         .then(() => {
             console.log("DB connection success")
         })
-        console.log(`server is running on ${process.env.ORIGIN}:${process.env.PORT}`)
+        console.log(`server is running`)
     }
     catch (err) {
         console.error(err);
         console.log("Server running failed")
     }
 });
-console.log('서버가 실행 중입니다...');
