@@ -1,5 +1,5 @@
 import express from 'express';
-import userRouter from './route/user-router';
+import userRouter from './routes/user-router';
 import db from './models';
 const app = express();
 
