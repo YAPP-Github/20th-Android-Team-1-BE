@@ -2,7 +2,7 @@
   "arrowParens": "always",
   "bracketSpacing": true,
   "insertPragma": false,
-  "printWidth": 80,
+  "printWidth": 100,
   "endOfLine": "lf",
   "proseWrap": "preserve",
   "quoteProps": "as-needed",
