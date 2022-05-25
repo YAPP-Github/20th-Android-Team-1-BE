@@ -15,15 +15,25 @@ interface PromiseUserModel
   id: CreationOptional<number>;
 }
 
-const PromiseUserModel = db.sequelize.define<PromiseUserModel>('Promise_User', {
-  id: {
-    field: 'id',
-    primaryKey: true,
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    allowNull: false
-  }
-});
+const PromiseUserModel = db.sequelize.define<PromiseUserModel>(
+  'Promise_User',
+  {
+    id: {
+      field: 'id',
+      primaryKey: true,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      allowNull: false
+    }
+  },
+  { tableName: 'Promise_User' }
+);
 
-UserModel.belongsToMany(PromiseModel, { through: PromiseUserModel, as: '' });
-PromiseModel.belongsToMany(UserModel, { through: PromiseUserModel });
+const associate = () => {
+  UserModel.belongsToMany(PromiseModel, { through: PromiseUserModel });
+  PromiseModel.belongsToMany(UserModel, { through: PromiseUserModel });
+};
+
+associate();
+
+export default PromiseUserModel;

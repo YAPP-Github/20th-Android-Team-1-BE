@@ -1,6 +1,7 @@
 import express from 'express';
 import userRouter from './routes/user-router';
 import db from './models';
+
 const app = express();
 
 app.use('api/', userRouter);
