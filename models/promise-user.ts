@@ -1,39 +1,16 @@
-import {
-  DataTypes,
-  CreationOptional,
-  InferAttributes,
-  InferCreationAttributes,
-  Model
-} from 'sequelize';
-
-import db from '.';
+import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import PromiseModel from './Promise';
-import UserModel from './user';
+import User from './user';
 
-interface PromiseUserModel
-  extends Model<InferAttributes<PromiseUserModel>, InferCreationAttributes<PromiseUserModel>> {
-  id: CreationOptional<number>;
+@Table({ tableName: 'Promise_User', modelName: 'PromiseUser' })
+class PromiseUser extends Model {
+  @ForeignKey(() => User)
+  @Column({ type: DataType.INTEGER })
+  userId: number;
+
+  @ForeignKey(() => PromiseModel)
+  @Column({ type: DataType.INTEGER })
+  promiseId: number;
 }
 
-const PromiseUserModel = db.sequelize.define<PromiseUserModel>(
-  'Promise_User',
-  {
-    id: {
-      field: 'id',
-      primaryKey: true,
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      allowNull: false
-    }
-  },
-  { tableName: 'Promise_User' }
-);
-
-const associate = () => {
-  UserModel.belongsToMany(PromiseModel, { through: PromiseUserModel });
-  PromiseModel.belongsToMany(UserModel, { through: PromiseUserModel });
-};
-
-associate();
-
-export default PromiseUserModel;
+export default PromiseUser;

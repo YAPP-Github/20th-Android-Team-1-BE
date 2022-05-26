@@ -1,5 +1,8 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import config from '../config/db-config.json';
+import PromiseModel from './Promise';
+import PromiseUser from './promise-user';
+import User from './user';
 
 const sequelize = new Sequelize(
   config.development.database,
@@ -20,6 +23,7 @@ const sequelize = new Sequelize(
   }
 );
 
+sequelize.addModels([User, PromiseModel, PromiseUser]);
 const db = { sequelize: sequelize, Sequelize };
 sequelize.sync();
 

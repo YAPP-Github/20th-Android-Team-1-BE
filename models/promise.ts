@@ -1,50 +1,50 @@
 import {
-  DataTypes,
-  CreationOptional,
-  InferAttributes,
-  InferCreationAttributes,
-  Model
-} from 'sequelize';
+  Table,
+  Column,
+  Model,
+  PrimaryKey,
+  AllowNull,
+  BelongsTo,
+  ForeignKey,
+  BelongsToMany,
+  DataType,
+  AutoIncrement
+} from 'sequelize-typescript';
+import PromiseUser from './promise-user';
 
-import db from '.';
+import User from './user';
 
-interface PromiseModel
-  extends Model<InferAttributes<PromiseModel>, InferCreationAttributes<PromiseModel>> {
-  id: CreationOptional<number>;
+@Table({ tableName: 'Promise', modelName: 'Promise' })
+class PromiseModel extends Model {
+  @PrimaryKey
+  @AutoIncrement
+  @Column({ type: DataType.INTEGER, field: 'promiseId' })
+  id: number;
+
+  @AllowNull(false)
+  @Column({ type: DataType.STRING })
   promiseName: string;
-  startDate: Date;
-  endDate: Date;
-  placeName?: string;
-}
 
-const PromiseModel = db.sequelize.define<PromiseModel>(
-  'Promise',
-  {
-    id: {
-      field: 'promiseId',
-      primaryKey: true,
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      allowNull: false
-    },
-    promiseName: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    endDate: {
-      type: DataTypes.DATE,
-      allowNull: false
-    },
-    placeName: {
-      type: DataTypes.STRING
-    }
-  },
-  { tableName: 'Promise' }
-);
-//category 연관 처리 필요
+  @AllowNull(false)
+  @Column({ type: DataType.DATE })
+  startDate: Date;
+
+  @AllowNull(false)
+  @Column({ type: DataType.DATE })
+  endDate: Date;
+
+  @Column({ type: DataType.STRING })
+  placeName: string;
+
+  @ForeignKey(() => User)
+  @Column({ type: DataType.INTEGER })
+  ownerId: number;
+
+  @BelongsTo(() => User, 'ownerId')
+  owner: User;
+
+  @BelongsToMany(() => User, () => PromiseUser)
+  members: User[];
+}
 
 export default PromiseModel;
