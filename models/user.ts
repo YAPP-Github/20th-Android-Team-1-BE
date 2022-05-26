@@ -9,6 +9,7 @@ import {
   PrimaryKey,
   Table
 } from 'sequelize-typescript';
+import Alarm from './alarm';
 import PromiseModel from './Promise';
 import PromiseUser from './promise-user';
 
@@ -23,11 +24,14 @@ class User extends Model {
   @Column({ type: DataType.STRING })
   userName: string;
 
+  @BelongsToMany(() => PromiseModel, () => PromiseUser)
+  promises: PromiseModel[];
+
   @HasMany(() => PromiseModel)
   ownPromises: PromiseModel[];
 
-  @BelongsToMany(() => PromiseModel, () => PromiseUser)
-  promises: PromiseModel[];
+  @HasMany(() => Alarm)
+  alarms: Alarm[];
 }
 
 export default User;
