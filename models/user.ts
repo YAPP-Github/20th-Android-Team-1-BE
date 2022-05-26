@@ -10,7 +10,9 @@ import {
   Table
 } from 'sequelize-typescript';
 import PromiseModel from './Promise';
+import PromisingModel from './Promising';
 import PromiseUser from './promise-user';
+import EventModel from './Event';
 
 @Table({ tableName: 'User', modelName: 'User' })
 class User extends Model {
@@ -25,6 +27,12 @@ class User extends Model {
 
   @HasMany(() => PromiseModel)
   ownPromises: PromiseModel[];
+
+  @HasMany(() => PromisingModel)
+  ownPromisings: PromisingModel[];
+
+  @HasMany(() => EventModel)
+  ownEvents: EventModel[];
 
   @BelongsToMany(() => PromiseModel, () => PromiseUser)
   promises: PromiseModel[];

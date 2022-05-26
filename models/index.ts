@@ -3,6 +3,9 @@ import config from '../config/db-config.json';
 import PromiseModel from './Promise';
 import PromiseUser from './promise-user';
 import User from './user';
+import TimeModel from './Time';
+import EventModel from './Event';
+import PromisingModel from './Promising';
 
 const sequelize = new Sequelize(
   config.development.database,
@@ -23,7 +26,7 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize.addModels([User, PromiseModel, PromiseUser]);
+sequelize.addModels([User, PromiseModel, PromiseUser, TimeModel, PromisingModel, EventModel]);
 const db = { sequelize: sequelize, Sequelize };
 sequelize.sync();
 
