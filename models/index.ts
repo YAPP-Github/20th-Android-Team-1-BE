@@ -1,6 +1,9 @@
 import { Sequelize } from 'sequelize-typescript';
 import config from '../config/db-config.json';
-import PromiseModel from './Promise';
+import Alarm from './alarm';
+import AlarmFormat from './alarm-format';
+import CategoryKeyword from './category-keyword';
+import PromiseModel from './promise';
 import PromiseUser from './promise-user';
 import User from './user';
 
@@ -23,7 +26,7 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize.addModels([User, PromiseModel, PromiseUser]);
+sequelize.addModels([User, PromiseModel, PromiseUser, Alarm, AlarmFormat, CategoryKeyword]);
 const db = { sequelize: sequelize, Sequelize };
 sequelize.sync();
 

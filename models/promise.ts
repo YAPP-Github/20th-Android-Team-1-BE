@@ -10,6 +10,7 @@ import {
   DataType,
   AutoIncrement
 } from 'sequelize-typescript';
+import CategoryKeyword from './category-keyword';
 import PromiseUser from './promise-user';
 
 import User from './user';
@@ -36,14 +37,16 @@ class PromiseModel extends Model {
   @Column({ type: DataType.STRING })
   placeName: string;
 
+  @BelongsTo(() => CategoryKeyword, 'categoryId')
+  category: CategoryKeyword;
+
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER })
   ownerId: number;
-
   @BelongsTo(() => User, 'ownerId')
   owner: User;
 
-  @BelongsToMany(() => User, () => PromiseUser)
+  @BelongsToMany(() => User, () => PromiseUser, 'promiseId')
   members: User[];
 }
 
