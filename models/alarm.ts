@@ -1,4 +1,5 @@
 import {
+  AllowNull,
   AutoIncrement,
   BelongsTo,
   Column,
@@ -20,6 +21,7 @@ class Alarm extends Model {
   id: number;
 
   @Default(false)
+  @AllowNull(false)
   @Column({ type: DataType.BOOLEAN })
   checked: boolean;
 
