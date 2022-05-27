@@ -46,7 +46,7 @@ class PromiseModel extends Model {
   @BelongsTo(() => User, 'ownerId')
   owner: User;
 
-  @BelongsToMany(() => User, () => PromiseUser)
+  @BelongsToMany(() => User, () => PromiseUser, 'promiseId')
   members: User[];
 }
 

@@ -3,7 +3,7 @@ import config from '../config/db-config.json';
 import Alarm from './alarm';
 import AlarmFormat from './alarm-format';
 import CategoryKeyword from './category-keyword';
-import PromiseModel from './Promise';
+import PromiseModel from './promise';
 import PromiseUser from './promise-user';
 import User from './user';
 

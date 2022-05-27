@@ -24,7 +24,7 @@ class User extends Model {
   @Column({ type: DataType.STRING })
   userName: string;
 
-  @BelongsToMany(() => PromiseModel, () => PromiseUser)
+  @BelongsToMany(() => PromiseModel, () => PromiseUser, 'userId')
   promises: PromiseModel[];
 
   @HasMany(() => PromiseModel)
