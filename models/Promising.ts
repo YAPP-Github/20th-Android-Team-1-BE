@@ -12,6 +12,7 @@ import {
 } from 'sequelize-typescript';
 import User from './user';
 import EventModel from './Event'
+import CategoryKeyword from './category-keyword'
 
 @Table({ tableName: 'Promising', modelName: 'Promising' })
 class PromisingModel extends Model {
@@ -22,25 +23,24 @@ class PromisingModel extends Model {
 
     @AllowNull(false)
     @Column({ type: DataType.STRING })
-    promiseName: string;
+    promisingName: string;
 
     @ForeignKey(() => User)
     @Column({ type: DataType.INTEGER })
     ownerId: number;
 
-    // @ForeignKey(() => Group)
-    // @Column({ type: DataType.INTEGER })
-    // groupId: number;
-
-    // @ForeignKey(() => CategoryKeyword)
-    // @Column({ type: DataType.INTEGER })
-    // categoryId: number;
+    @ForeignKey(() => CategoryKeyword)
+    @Column({ type: DataType.INTEGER })
+    categoryId: number;
 
     @HasMany(() => EventModel)
     ownEvents: EventModel[];
 
     @BelongsTo(() => User, 'ownerId')
     owner: User;
+
+    @BelongsTo(() => CategoryKeyword, 'categoryId')
+    ownCategory: CategoryKeyword;
 }
 
 export default PromisingModel;

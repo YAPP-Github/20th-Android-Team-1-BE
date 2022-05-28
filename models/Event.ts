@@ -38,7 +38,7 @@ class EventModel extends Model {
     user: User
 
     @HasMany(() => TimeModel)
-    eventTime: TimeModel[];
+    eventTimes: TimeModel[];
 }
 
 export default EventModel;
