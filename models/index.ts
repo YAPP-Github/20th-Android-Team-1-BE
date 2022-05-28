@@ -6,6 +6,9 @@ import CategoryKeyword from './category-keyword';
 import PromiseModel from './promise';
 import PromiseUser from './promise-user';
 import User from './user';
+import TimeModel from './Time';
+import EventModel from './Event';
+import PromisingModel from './Promising';
 
 const sequelize = new Sequelize(
   config.development.database,
@@ -26,7 +29,7 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize.addModels([User, PromiseModel, PromiseUser, Alarm, AlarmFormat, CategoryKeyword]);
+sequelize.addModels([User, PromiseModel, PromiseUser, Alarm, AlarmFormat, CategoryKeyword, TimeModel, PromisingModel, EventModel]);
 const db = { sequelize: sequelize, Sequelize };
 sequelize.sync();
 
