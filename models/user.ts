@@ -11,7 +11,9 @@ import {
 } from 'sequelize-typescript';
 import Alarm from './alarm';
 import PromiseModel from './Promise';
+import PromisingModel from './Promising';
 import PromiseUser from './promise-user';
+import EventModel from './Event';
 
 @Table({ tableName: 'User', modelName: 'User' })
 class User extends Model {
@@ -32,6 +34,13 @@ class User extends Model {
 
   @HasMany(() => Alarm)
   alarms: Alarm[];
+
+  @HasMany(() => PromisingModel)
+  ownPromisings: PromisingModel[];
+
+  @HasMany(() => EventModel)
+  ownEvents: EventModel[];
+
 }
 
 export default User;
