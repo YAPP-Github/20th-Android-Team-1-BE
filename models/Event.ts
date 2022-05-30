@@ -23,13 +23,13 @@ class EventModel extends Model {
 
     @ForeignKey(() => PromisingModel)
     @Column({ type: DataType.INTEGER })
-    promiseId: number;
+    promisingId: number;
 
     @ForeignKey(() => User)
     @Column({ type: DataType.INTEGER })
     userId: number;
 
-    @BelongsTo(() => PromisingModel, 'promiseId')
+    @BelongsTo(() => PromisingModel, 'promisingId')
     promising: PromisingModel
 
     @BelongsTo(() => User, 'userId')
