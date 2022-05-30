@@ -22,12 +22,10 @@ class EventModel extends Model {
     id: number;
 
     @ForeignKey(() => PromisingModel)
-    @AllowNull(false)
     @Column({ type: DataType.INTEGER })
     promiseId: number;
 
     @ForeignKey(() => User)
-    @AllowNull(false)
     @Column({ type: DataType.INTEGER })
     userId: number;
 
