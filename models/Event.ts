@@ -22,16 +22,14 @@ class EventModel extends Model {
     id: number;
 
     @ForeignKey(() => PromisingModel)
-    @AllowNull(false)
     @Column({ type: DataType.INTEGER })
-    promiseId: number;
+    promisingId: number;
 
     @ForeignKey(() => User)
-    @AllowNull(false)
     @Column({ type: DataType.INTEGER })
     userId: number;
 
-    @BelongsTo(() => PromisingModel, 'promiseId')
+    @BelongsTo(() => PromisingModel, 'promisingId')
     promising: PromisingModel
 
     @BelongsTo(() => User, 'userId')

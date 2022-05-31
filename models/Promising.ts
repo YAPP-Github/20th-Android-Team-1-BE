@@ -33,6 +33,14 @@ class PromisingModel extends Model {
     @Column({ type: DataType.INTEGER })
     categoryId: number;
 
+    @AllowNull(false)
+    @Column({ type: DataType.DATE })
+    minTime: Date;
+
+    @AllowNull(false)
+    @Column({ type: DataType.DATE })
+    maxTime: Date;
+
     @HasMany(() => EventModel)
     ownEvents: EventModel[];
 
