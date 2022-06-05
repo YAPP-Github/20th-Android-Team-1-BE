@@ -28,11 +28,7 @@ class PromiseModel extends Model {
 
   @AllowNull(false)
   @Column({ type: DataType.DATE })
-  startDate: Date;
-
-  @AllowNull(false)
-  @Column({ type: DataType.DATE })
-  endDate: Date;
+  promiseDate: Date;
 
   @Column({ type: DataType.STRING })
   placeName: string;
