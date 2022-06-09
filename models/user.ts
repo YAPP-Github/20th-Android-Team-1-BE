@@ -40,7 +40,6 @@ class User extends Model {
 
   @HasMany(() => EventModel)
   ownEvents: EventModel[];
-
 }
 
 export default User;

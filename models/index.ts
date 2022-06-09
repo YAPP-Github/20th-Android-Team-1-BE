@@ -29,7 +29,17 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize.addModels([User, PromiseModel, PromiseUser, Alarm, AlarmFormat, CategoryKeyword, TimeModel, PromisingModel, EventModel]);
+sequelize.addModels([
+  User,
+  PromiseModel,
+  PromiseUser,
+  Alarm,
+  AlarmFormat,
+  CategoryKeyword,
+  TimeModel,
+  PromisingModel,
+  EventModel
+]);
 const db = { sequelize: sequelize, Sequelize };
 sequelize.sync();
 

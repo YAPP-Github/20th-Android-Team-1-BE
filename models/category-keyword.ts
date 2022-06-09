@@ -22,7 +22,7 @@ class CategoryKeyword extends Model {
   keyword: string;
 
   @HasMany(() => PromisingModel)
-  promisings: PromisingModel[]
+  promisings: PromisingModel[];
 }
 
 export default CategoryKeyword;
