@@ -20,13 +20,13 @@ jobs:
         DATABASE: ${{ secrets.DB_DATABASE}}
       run: |
         mkdir config
-        echo   "{  
-          "development": {
-            "username": "$USERNAME",
-            "password": "$PASSWORD",
-            "database": "$DATABASE",
-            "host": "localhost",
-            "dialect": "mysql"
+        echo   "{
+         \"development\": {
+            \"username\": \"$USERNAME\",
+            \"password\": \"$PASSWORD\",
+            \"database\": \"$DATABASE\",
+            \"host\": \"localhost\",
+            \"dialect\": \"mysql\"
           }
         }" > config/db-config.json
         
