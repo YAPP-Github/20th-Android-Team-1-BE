@@ -1,0 +1,63 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  build:
+    name: Setting
+    runs-on: unbuntu-latest
+    steps:
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v2
+
+      - name: Make secrets
+        env: 
+          USERNAME: ${{ secrets.DB_USERNAME}}
+          PASSWORD: ${{ secrets.DB_PASSWORD}}
+          DATABASE: ${{ secrets.DB_DATABASE}}
+        run : |
+        mkdir config
+        echo   "{  
+          "development": {
+            "username": "$USERNAME",
+            "password": "$PASSWORD",
+            "database": "$DATABASE",
+            "host": "localhost",
+            "dialect": "mysql"
+          }
+        }" > config/db-config.json
+
+  deploy:
+    name: Deploy Docker container
+    needs: build
+    steps:
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Build image
+        run: |
+        docker build dockerfile . -t ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+
+      - name : Docker login
+        run: | 
+        echo ${{ secrets.DOCKERHUB_PASSWORD }} 
+        docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      
+      - name: Push image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+
+      - name: Run container in server
+        uses: appleboy/ssh-action@master
+        with: 
+          host: ${{ secrets.REMOTE_IP }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          key: ${{ secrets.REMOTE_PASSWORD }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+            docker rmi $(docker images -f "dangling=true" -q)
+            docker stop growth-be
+            docker rm growth-be
+            docker run --restart=unless-stopped -d -p 8080:8080 --name growth-be ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
