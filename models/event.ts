@@ -10,8 +10,8 @@ import {
   BelongsTo
 } from 'sequelize-typescript';
 import User from './user';
-import PromisingModel from './Promising';
-import TimeModel from './Time';
+import PromisingModel from './promising';
+import TimeModel from './time';
 
 @Table({ tableName: 'Event', modelName: 'Event' })
 class EventModel extends Model {

@@ -9,7 +9,7 @@ import {
   AutoIncrement,
   BelongsTo
 } from 'sequelize-typescript';
-import EventModel from './Event';
+import EventModel from './event';
 
 @Table({ tableName: 'Time', modelName: 'Time' })
 class TimeModel extends Model {

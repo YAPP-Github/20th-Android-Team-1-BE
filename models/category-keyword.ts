@@ -8,7 +8,7 @@ import {
   HasMany,
   Table
 } from 'sequelize-typescript';
-import PromisingModel from './Promising';
+import PromisingModel from './promising';
 
 @Table({ tableName: 'CategoryKeyword', modelName: 'CategoryKeyword' })
 class CategoryKeyword extends Model {

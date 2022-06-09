@@ -6,9 +6,9 @@ import CategoryKeyword from './category-keyword';
 import PromiseModel from './promise';
 import PromiseUser from './promise-user';
 import User from './user';
-import TimeModel from './Time';
-import EventModel from './Event';
-import PromisingModel from './Promising';
+import TimeModel from './time';
+import EventModel from './event';
+import PromisingModel from './promising';
 
 const sequelize = new Sequelize(
   config.development.database,
