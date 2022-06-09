@@ -1,10 +1,13 @@
 import express from 'express';
+import bodyParser from 'body-parser';
 import userRouter from './routes/user-router';
+import promisingRouter from './routes/promising-router';
 import db from './models';
 
 const app = express();
-
+app.use(bodyParser.json())
 app.use('/api', userRouter);
+app.use('/promisings', promisingRouter);
 
 const PORT = process.env.PORT || 8080;
 
