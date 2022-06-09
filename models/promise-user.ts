@@ -1,5 +1,5 @@
 import { Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
-import PromiseModel from './Promise';
+import PromiseModel from './promise';
 import User from './user';
 
 @Table({ tableName: 'Promise_User', modelName: 'PromiseUser' })

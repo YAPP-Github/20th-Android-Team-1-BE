@@ -4,16 +4,18 @@ import db from './models';
 
 const app = express();
 
-app.use('api/', userRouter);
+app.use('/api', userRouter);
 
-app.listen(async () => {
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, async () => {
   try {
     await db.sequelize.authenticate().then(() => {
-      console.log('DB connection success');
+      console.log('✅ MySQL Database connection is successful');
     });
-    console.log('Server is running');
+    console.log(`✅ Express Server Listening on : http://localhost:${PORT}`);
   } catch (err) {
     console.error(err);
-    console.log('Server running failed');
+    console.log('❎ Express Server Running failed');
   }
 });

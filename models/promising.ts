@@ -11,7 +11,7 @@ import {
   AutoIncrement
 } from 'sequelize-typescript';
 import User from './user';
-import EventModel from './Event';
+import EventModel from './event';
 import CategoryKeyword from './category-keyword';
 
 @Table({ tableName: 'Promising', modelName: 'Promising' })

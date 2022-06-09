@@ -10,10 +10,10 @@ import {
   Table
 } from 'sequelize-typescript';
 import Alarm from './alarm';
-import PromiseModel from './Promise';
-import PromisingModel from './Promising';
+import PromiseModel from './promise';
+import PromisingModel from './promising';
 import PromiseUser from './promise-user';
-import EventModel from './Event';
+import EventModel from './event';
 
 @Table({ tableName: 'User', modelName: 'User' })
 class User extends Model {
