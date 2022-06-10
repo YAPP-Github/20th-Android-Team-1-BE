@@ -51,7 +51,7 @@ jobs:
           port: ${{ secrets.REMOTE_PORT }}
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
-            docker rmi $(docker images -f "dangling=true" -q)
             docker stop growth-be
             docker rm growth-be
-            docker run --restart=unless-stopped -d -p 8080:8080 --name growth-be ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+            docker run --restart=unless-stopped --add-host=host.docker.internal:host-gateway -d -p 8080:8080 --name growth-be ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+            docker rmi $(docker images -f "dangling=true" -q)
