@@ -2,57 +2,56 @@ name: Deploy
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: ['dev']
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout GitHub
-      uses: actions/checkout@v2
-    
-    - name: Make secrets
-      env:
-        USERNAME: ${{ secrets.DB_USERNAME}}
-        PASSWORD: ${{ secrets.DB_PASSWORD}}
-        DATABASE: ${{ secrets.DB_DATABASE}}
-      run: |
-        mkdir config
-        echo   "{
-         \"development\": {
-            \"username\": \"$USERNAME\",
-            \"password\": \"$PASSWORD\",
-            \"database\": \"$DATABASE\",
-            \"host\": \"localhost\",
-            \"dialect\": \"mysql\"
-          }
-        }" > config/db-config.json
-        
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
-      
-    - name: Build image
-      run: docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
-      
-    - name: Docker login
-      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - name: Checkout GitHub
+        uses: actions/checkout@v2
 
-    - name: Push image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
-      
-    - name: SSH remote and Run Docker container
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.REMOTE_IP }}
-        username: ${{ secrets.REMOTE_USERNAME }}
-        key: ${{ secrets.REMOTE_PASSWORD }}
-        port: ${{ secrets.REMOTE_PORT }}
-        script: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
-          docker rmi $(docker images -f "dangling=true" -q)
-          docker stop growth-be
-          docker rm growth-be
-          docker run --restart=unless-stopped -d -p 8080:8080 --name growth-be ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+      - name: Make secrets
+        env:
+          USERNAME: ${{ secrets.DB_USERNAME}}
+          PASSWORD: ${{ secrets.DB_PASSWORD}}
+          DATABASE: ${{ secrets.DB_DATABASE}}
+        run: |
+          mkdir config
+          echo   "{
+           \"development\": {
+              \"username\": \"$USERNAME\",
+              \"password\": \"$PASSWORD\",
+              \"database\": \"$DATABASE\",
+              \"host\": \"host.docker.internal\",
+              \"dialect\": \"mysql\"
+            }
+          }" > config/db-config.json
 
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build image
+        run: docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+
+      - name: Docker login
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+      - name: Push image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+
+      - name: SSH remote and Run Docker container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_IP }}
+          username: ${{ secrets.REMOTE_USERNAME }}
+          password: ${{ secrets.REMOTE_PASSWORD }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+            docker stop growth-be
+            docker rm growth-be
+            docker run --restart=unless-stopped --add-host=host.docker.internal:host-gateway -d -p 8080:8080 --name growth-be ${{ secrets.DOCKERHUB_USERNAME }}/growth-be:latest
+            docker rmi $(docker images -f "dangling=true" -q)
