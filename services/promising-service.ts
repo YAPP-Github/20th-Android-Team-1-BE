@@ -3,12 +3,8 @@ import CategoryKeyword from "../models/category-keyword";
 import UtilService from "./util-service";
 
 const PromisingService = {
-    baseFunc() {
-        console.log('Promising');
-    },
-    async create(req: any, res: any) {
+    async create(promisingInfo: any) {
         try {
-            let promisingInfo = req.body;
             const promising = new PromisingModel(promisingInfo);
             await promising.save()
 
@@ -19,7 +15,7 @@ const PromisingService = {
             return promisingInfo;
         } catch (err: any) {
             console.log(err)
-            throw Error(err)
+            return err
         }
     },
 };

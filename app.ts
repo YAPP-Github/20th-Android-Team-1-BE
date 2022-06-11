@@ -1,13 +1,12 @@
-import express from 'express';
 import bodyParser from 'body-parser';
-import userRouter from './routes/user-router';
-import promisingRouter from './routes/promising-router';
 import db from './models';
+import { createExpressServer } from 'routing-controllers';
+import { PromisingController } from './controllers/promising-controller';
 
-const app = express();
+const app = createExpressServer({
+  controllers: [PromisingController],
+})
 app.use(bodyParser.json())
-app.use('/api', userRouter);
-app.use('/promisings', promisingRouter);
 
 const PORT = process.env.PORT || 8080;
 

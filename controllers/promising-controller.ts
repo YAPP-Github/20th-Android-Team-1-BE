@@ -1,18 +1,20 @@
 import PromisingService from '../services/promising-service';
+import { Controller, Param, Body, Get, Post, Put, Delete, Res, Req, UseBefore } from 'routing-controllers';
+import bodyParser from 'body-parser';
 
-const PromisingController = {
-    async base() {
-        await PromisingService.baseFunc();
-    },
-    async create(req: any, res: any) {
+
+@Controller()
+@UseBefore(bodyParser())
+export class PromisingController {
+    @Post('/promisings')
+    async create(@Body() body: any) {
+        let resJson = {}
         try {
-            const resJson = await PromisingService.create(req, res)
-            return res.status(200).json(resJson)
-        } catch (err) {
-            return res.status(500).json(err)
+            resJson = await PromisingService.create(body)
+            return resJson
+        } catch (err: any) {
+            return err
         }
     }
-};
-
-export default PromisingController;
+}
 

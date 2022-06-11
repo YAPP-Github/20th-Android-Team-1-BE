@@ -9,6 +9,8 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "noImplicitAny": true,
     "resolveJsonModule": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true  
   }
 }
