@@ -1,14 +1,24 @@
 import express from 'express';
-import userRouter from './routes/user-router';
+import { useExpressServer } from 'routing-controllers';
+import UserController from './controllers/user-controller';
 import db from './models';
+import bodyParser from 'body-parser';
 
 const app = express();
 
-app.use('/api', userRouter);
+app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
+
+useExpressServer(app, {
+  routePrefix: '/api',
+  controllers: [UserController]
+});
 
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, async () => {
+  await db.sequelize.sync();
+
   try {
     await db.sequelize.authenticate().then(() => {
       console.log('✅ MySQL Database connection is successful');
