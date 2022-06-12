@@ -6,8 +6,6 @@ import { PromisingController } from './controllers/promising-controller';
 const app = createExpressServer({
   controllers: [PromisingController],
 })
-app.use(bodyParser.json())
-
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, async () => {
