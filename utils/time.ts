@@ -1,4 +1,5 @@
-const UtilService = {
+
+const timeUtil = {
     convertTime(dateTime: Date) {
         const d = [
             dateTime.getFullYear().toString(),
@@ -19,20 +20,7 @@ const UtilService = {
         const dateString = d.join('-'), timeString = t.join(':')
         const resString = dateString + ' ' + timeString
         return resString
-    },
-    async deleteJsonKey(jsonArray: any, target: string) {
-        jsonArray[target] = undefined;
-        return jsonArray;
-    },
-    paramValidation(paramList: any, requireList: any) {
-        for (const requirement of requireList) {
-            if (requirement in paramList == false) {
-                return false;
-            }
-        }
-        return true;
     }
-
 };
 
-export default UtilService;
+export default timeUtil;
