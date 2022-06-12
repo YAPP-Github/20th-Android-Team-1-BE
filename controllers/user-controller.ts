@@ -1,17 +1,15 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import {
   Post,
   JsonController,
   Res,
   Body,
   UseBefore,
-  InternalServerError,
-  Get,
-  Req
+  InternalServerError
 } from 'routing-controllers';
 import { SignUpRequest } from '../dtos/user/request';
 import { UserReponse } from '../dtos/user/response';
-import { AuthMiddlware, SignUpMiddleware } from '../middlewares/auth';
+import { SignUpMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
 
