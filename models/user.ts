@@ -26,6 +26,14 @@ class User extends Model {
   @Column({ type: DataType.STRING })
   userName: string;
 
+  @AllowNull(false)
+  @Column({ type: DataType.STRING })
+  accessToken: string;
+
+  @AllowNull(false)
+  @Column({ type: DataType.STRING })
+  refreshToken: string;
+
   @BelongsToMany(() => PromiseModel, () => PromiseUser, 'userId')
   promises: PromiseModel[];
 

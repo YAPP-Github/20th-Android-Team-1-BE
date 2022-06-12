@@ -41,6 +41,5 @@ sequelize.addModels([
   EventModel
 ]);
 const db = { sequelize: sequelize, Sequelize };
-sequelize.sync();
 
 export default db;
