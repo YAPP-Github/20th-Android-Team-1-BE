@@ -1,6 +1,7 @@
 import express from 'express';
 import { useExpressServer } from 'routing-controllers';
 import UserController from './controllers/user-controller';
+import { PromisingController } from './controllers/promising-controller';
 import db from './models';
 import bodyParser from 'body-parser';
 
@@ -11,9 +12,8 @@ app.use(bodyParser.json());
 
 useExpressServer(app, {
   routePrefix: '/api',
-  controllers: [UserController]
+  controllers: [UserController,PromisingController]
 });
-
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, async () => {
