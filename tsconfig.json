@@ -12,5 +12,6 @@
     "strictPropertyInitialization": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true  
+    "outDir": "build"
   }
 }
