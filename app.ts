@@ -1,11 +1,11 @@
-import express from 'express';
-import userRouter from './routes/user-router';
+import bodyParser from 'body-parser';
 import db from './models';
+import { createExpressServer } from 'routing-controllers';
+import { PromisingController } from './controllers/promising-controller';
 
-const app = express();
-
-app.use('/api', userRouter);
-
+const app = createExpressServer({
+  controllers: [PromisingController],
+})
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, async () => {
