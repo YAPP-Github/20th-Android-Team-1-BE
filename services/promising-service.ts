@@ -1,29 +1,25 @@
 import PromisingModel from "../models/promising";
 import CategoryKeyword from "../models/category-keyword";
-import arrayUtil from "../utils/array";
 import { NotFoundError, InternalServerError } from "routing-controllers";
 import User from "../models/user";
+import { PromisingRequest } from "../dtos/promising/request";
+import { PromisingResponse } from "../dtos/promising/response"
 
 class PromisingService {
-    async create(promisingInfo: any) {
-        try {
-            const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } })
-            const user = await User.findOne({ where: { id: promisingInfo.ownerId } })
-            if (!user) return new NotFoundError('User Not Found')
-            if (!category) return new NotFoundError('CategoryKeyword Not Found')
-            promisingInfo.category = category;
-            promisingInfo = await arrayUtil.deleteJsonKey(promisingInfo, 'categoryId')
+    async create(promisingInfo: PromisingRequest) {
+        const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } })
+        const user = await User.findOne({ where: { id: promisingInfo.ownerId } })
 
-            const promising = new PromisingModel(promisingInfo);
-            await promising.save()
+        if (!user) return new NotFoundError('User Not Found')
+        if (!category) return new NotFoundError('CategoryKeyword Not Found')
 
-            return promisingInfo;
-        } catch (err: any) {
-            console.log(err)
-            return new InternalServerError('Internal Server Error')
-        }
-    },
-};
+        const promising = new PromisingModel(promisingInfo);
+        const savedPromising = await promising.save();
+        const promisingResponse = new PromisingResponse(savedPromising, category)
+
+        return promisingResponse;
+    }
+}
 
 export default new PromisingService();
 
