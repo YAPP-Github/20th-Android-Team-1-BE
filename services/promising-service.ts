@@ -1,24 +1,25 @@
 import PromisingModel from "../models/promising";
 import CategoryKeyword from "../models/category-keyword";
-import { NotFoundError, InternalServerError } from "routing-controllers";
-import User from "../models/user";
 import { PromisingRequest } from "../dtos/promising/request";
+import { httpException, notFoundException } from "../utils/error";
+import User from "../models/user";
 
 class PromisingService {
     async create(promisingInfo: PromisingRequest) {
         try {
-            const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } })
-            const user = await User.findOne({ where: { id: promisingInfo.ownerId } })
+            const categoryId = promisingInfo.categoryId, ownerId = promisingInfo.ownerId;
+            const category = await CategoryKeyword.findOne({ where: { id: categoryId } })
+            const user = await User.findOne({ where: { id: ownerId } })
 
-            if (!user) return new NotFoundError('User Not Found')
-            if (!category) return new NotFoundError('CategoryKeyword Not Found')
+            if (!user) throw new notFoundException('User', ownerId)
+            if (!category) throw new notFoundException('CategoryKeyword', categoryId)
 
             const promising = new PromisingModel(promisingInfo);
 
             return await promising.save();
         } catch (err: any) {
-            console.log(err)
-            return new InternalServerError('Internal Server Error')
+            if (!err.status || err.status != 500)
+                throw new httpException('internal Server error', 500)
         }
     }
 }

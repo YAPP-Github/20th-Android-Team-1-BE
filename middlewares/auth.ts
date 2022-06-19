@@ -1,16 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
-import { ExpressMiddlewareInterface, UnauthorizedError } from 'routing-controllers';
+import { ExpressMiddlewareInterface } from 'routing-controllers';
 import { AuthRequest } from '../dtos/auth/request';
 import userService from '../services/user-service';
+import { validationException } from '../utils/error';
 
 export class SignUpMiddleware implements ExpressMiddlewareInterface {
   use(request: Request, response: Response, next: NextFunction) {
     const tokens = new AuthRequest(request);
     if (!tokens.accessToken) {
-      throw new UnauthorizedError('accessToken required. please check headers');
+      throw new validationException('accessToken');
     }
     if (!tokens.refreshToken) {
-      throw new UnauthorizedError('refreshToken required. please check headers');
+      throw new validationException('refreshToken');
     }
 
     response.locals.auth = tokens;
@@ -22,7 +23,7 @@ export class AuthMiddlware implements ExpressMiddlewareInterface {
   async use(request: Request, response: Response, next: NextFunction) {
     const tokens = new AuthRequest(request);
     if (!tokens.accessToken) {
-      throw new UnauthorizedError('accessToken required. please check headers');
+      throw new validationException('accessToken');
     }
 
     const user = await userService.findOneByAccessToken(tokens.accessToken);
