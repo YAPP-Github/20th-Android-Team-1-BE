@@ -1,4 +1,4 @@
-export class httpException extends Error {
+export class ApplicationError extends Error {
     timestamp: Date;
     status: number;
     error: string;
@@ -15,14 +15,20 @@ export class httpException extends Error {
     }
 }
 
-export class notFoundException extends httpException {
+export class NotFoundException extends ApplicationError {
     constructor(model: string, id: number | string) {
         super(`id ${id} not found in ${model}`, 404);
     }
 }
 
-export class validationException extends httpException {
+export class ValidationException extends ApplicationError {
     constructor(param: any) {
-        super(`parameter ${param} required. please check header or body`, 401);
+        super(`parameter ${param} required. please check header or body`, 400);
+    }
+}
+
+export class UnAuthorizedException extends ApplicationError {
+    constructor() {
+        super(`unAuthorized request. please check the token`, 401);
     }
 }

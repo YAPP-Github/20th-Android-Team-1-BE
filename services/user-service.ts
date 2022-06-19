@@ -1,4 +1,4 @@
-import { notFoundException } from '../utils/error';
+import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 
 class UserService {
@@ -9,7 +9,7 @@ class UserService {
 
   async findOneByAccessToken(accessToken: string): Promise<User> {
     const user: User | null = await User.findOne({ where: { accessToken } });
-    if (!user) throw new notFoundException('User', accessToken);
+    if (!user) throw new NotFoundException('User', accessToken);
     return user;
   }
 }

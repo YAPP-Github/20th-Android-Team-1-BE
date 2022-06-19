@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 
 useExpressServer(app, {
   routePrefix: '/api',
-  controllers: [UserController,PromisingController]
+  controllers: [UserController, PromisingController]
 });
 const PORT = process.env.PORT || 8080;
 
