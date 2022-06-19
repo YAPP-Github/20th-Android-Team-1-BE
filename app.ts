@@ -4,6 +4,7 @@ import UserController from './controllers/user-controller';
 import { PromisingController } from './controllers/promising-controller';
 import db from './models';
 import bodyParser from 'body-parser';
+import AuthController from './controllers/auth-controller';
 
 const app = express();
 
@@ -12,7 +13,7 @@ app.use(bodyParser.json());
 
 useExpressServer(app, {
   routePrefix: '/api',
-  controllers: [UserController,PromisingController]
+  controllers: [AuthController, UserController, PromisingController]
 });
 const PORT = process.env.PORT || 8080;
 

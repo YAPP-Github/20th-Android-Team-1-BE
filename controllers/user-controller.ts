@@ -9,14 +9,14 @@ import {
 } from 'routing-controllers';
 import { SignUpRequest } from '../dtos/user/request';
 import { UserReponse } from '../dtos/user/response';
-import { SignUpMiddleware } from '../middlewares/auth';
+import { TokenValidMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
 
 @JsonController('/users')
 class UserController {
   @Post('/sign-up')
-  @UseBefore(SignUpMiddleware)
+  @UseBefore(TokenValidMiddleware)
   async signUp(@Body() req: SignUpRequest, @Res() res: Response) {
     try {
       const user: User = await userService.create(
