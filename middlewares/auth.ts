@@ -14,7 +14,7 @@ export class TokenValidMiddleware implements ExpressMiddlewareInterface {
     if (!token) throw new BadRequestError('Bad Request : AccessToken is required.');
 
     await authService.validateAccessToken(token);
-    response.locals.accessToken = token;
+    response.locals.user = await authService.getInfoByAccessToken(token);
     next();
   }
 }

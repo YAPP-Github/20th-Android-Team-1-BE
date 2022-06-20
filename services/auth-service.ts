@@ -27,7 +27,11 @@ class AuthService {
       const response = await this.client.get('/v2/user/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      return { id: response.data.id, userName: response.data.kakao_account.name };
+      return {
+        id: response.data.id,
+        userName: response.data.kakao_account.name,
+        accessToken: token
+      };
     } catch (err: any) {
       throw new UnauthorizedError(err.response.data.msg);
     }

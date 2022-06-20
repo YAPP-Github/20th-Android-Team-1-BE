@@ -17,12 +17,12 @@ import userService from '../services/user-service';
 class UserController {
   @Post('/sign-up')
   @UseBefore(TokenValidMiddleware)
-  async signUp(@Body() req: SignUpRequest, @Res() res: Response) {
+  async signUp(@Res() res: Response) {
     try {
       const user: User = await userService.create(
-        req.userName,
-        res.locals.auth.accessToken!,
-        res.locals.auth.refreshToken!
+        res.locals.user.id,
+        res.locals.user.userName,
+        res.locals.user.accessToken
       );
 
       return res.status(200).send(new UserReponse(user));

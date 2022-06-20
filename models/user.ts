@@ -18,7 +18,6 @@ import EventModel from './event';
 @Table({ tableName: 'User', modelName: 'User' })
 class User extends Model {
   @PrimaryKey
-  @AutoIncrement
   @Column({ type: DataType.INTEGER, field: 'userId' })
   id: number;
 
@@ -29,10 +28,6 @@ class User extends Model {
   @AllowNull(false)
   @Column({ type: DataType.STRING })
   accessToken: string;
-
-  @AllowNull(false)
-  @Column({ type: DataType.STRING })
-  refreshToken: string;
 
   @BelongsToMany(() => PromiseModel, () => PromiseUser, 'userId')
   promises: PromiseModel[];
