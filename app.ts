@@ -4,9 +4,13 @@ import UserController from './controllers/user-controller';
 import { PromisingController } from './controllers/promising-controller';
 import db from './models';
 import bodyParser from 'body-parser';
+import morgan from 'morgan';
 
 const app = express();
 
+const LOGGER = process.env.LOGGER || 'dev';
+
+app.use(morgan(LOGGER));
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 
