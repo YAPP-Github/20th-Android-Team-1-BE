@@ -1,6 +1,5 @@
 import {
   AllowNull,
-  AutoIncrement,
   BelongsToMany,
   Column,
   DataType,

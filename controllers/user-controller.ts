@@ -1,13 +1,5 @@
 import { Response } from 'express';
-import {
-  Post,
-  JsonController,
-  Res,
-  Body,
-  UseBefore,
-  InternalServerError
-} from 'routing-controllers';
-import { SignUpRequest } from '../dtos/user/request';
+import { Post, JsonController, Res, UseBefore, InternalServerError } from 'routing-controllers';
 import { UserReponse } from '../dtos/user/response';
 import { TokenValidMiddleware } from '../middlewares/auth';
 import User from '../models/user';
