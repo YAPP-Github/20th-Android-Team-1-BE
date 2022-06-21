@@ -13,11 +13,7 @@ export class PromisingController {
     @UseBefore(SignUpMiddleware)
     async create(@Body() req: PromisingRequest, @Res() res: Response) {
         try {
-            const promising: PromisingModel | any = await PromisingService.create(req)
-
-            const promisingObj = new PromisingResponse(promising)
-            const promisingResponse = await PromisingResponse.categoryId2obj(promisingObj)
-
+            const promisingResponse: PromisingModel | any = await PromisingService.create(req)
             return res.status(200).send(promisingResponse)
         } catch (err: any) {
             return err

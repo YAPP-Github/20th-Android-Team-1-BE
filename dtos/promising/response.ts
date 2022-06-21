@@ -9,14 +9,13 @@ export class PromisingResponse {
     maxTime: Date;
     category: CategoryKeyword | any;
 
-    constructor(promising: PromisingModel) {
+    constructor(promising: PromisingModel, category: CategoryKeyword | null) {
         this.id = promising.id;
         this.promisingName = promising.promisingName;
         this.ownerId = promising.ownerId;
         this.minTime = promising.minTime;
         this.maxTime = promising.maxTime;
-        this.category = promising.categoryId;
+        this.category = category;
     }
-
 
 }
