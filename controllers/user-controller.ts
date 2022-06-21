@@ -1,33 +1,25 @@
-import { Response } from 'express';
-import {
-  Post,
-  JsonController,
-  Res,
-  Body,
-  UseBefore,
-} from 'routing-controllers';
-import { SignUpRequest } from '../dtos/user/request';
+import { NextFunction, Response } from 'express';
+import { Post, JsonController, Res, UseBefore } from 'routing-controllers';
 import { UserReponse } from '../dtos/user/response';
-import { SignUpMiddleware } from '../middlewares/auth';
+import { TokenValidMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
-import { InternalServerException } from '../utils/error';
 
 @JsonController('/users')
 class UserController {
   @Post('/sign-up')
-  @UseBefore(SignUpMiddleware)
-  async signUp(@Body() req: SignUpRequest, @Res() res: Response) {
+  @UseBefore(TokenValidMiddleware)
+  async signUp(@Res() res: Response, next: NextFunction) {
     try {
       const user: User = await userService.create(
-        req.userName,
-        res.locals.auth.accessToken!,
-        res.locals.auth.refreshToken!
+        res.locals.user.id,
+        res.locals.user.userName,
+        res.locals.user.accessToken
       );
 
       return res.status(200).send(new UserReponse(user));
     } catch (err: any) {
-      throw new InternalServerException();
+      next(err);
     }
   }
 }
