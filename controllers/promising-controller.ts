@@ -1,28 +1,23 @@
 import PromisingService from '../services/promising-service';
-import { Controller, Param, Body, Get, Post, Put, Delete, Res, Req, UseBefore } from 'routing-controllers';
-import { Request, Response } from 'express';
-import { BadRequestError } from 'routing-controllers';
-import arrayUtil from '../utils/array';
-import bodyParser from 'body-parser';
+import { JsonController, Param, Body, Get, Post, Put, Delete, Res, Req, UseBefore } from 'routing-controllers';
+import { SignUpMiddleware } from '../middlewares/auth';
+import { PromisingResponse } from '../dtos/promising/response';
+import { PromisingRequest } from '../dtos/promising/request';
+import { Response } from 'express';
+import PromisingModel from '../models/promising';
+import CategoryKeyword from '../models/category-keyword';
 
-
-@Controller()
-@UseBefore(bodyParser())
+@JsonController()
 export class PromisingController {
     @Post('/promisings')
-    async create(@Req() req: Request, @Res() res: Response) {
+    @UseBefore(SignUpMiddleware)
+    async create(@Body() req: PromisingRequest, @Res() res: Response) {
         try {
-            const requireList = ['promisingName', 'ownerId', 'categoryId', 'minTime', 'maxTime'];
-            const promisingInfo = req.body;
+            const promisingResponse: PromisingModel | any = await PromisingService.create(req)
 
-            const isValid = await arrayUtil.paramValidation(promisingInfo, requireList)
-            if (!isValid) return new BadRequestError('invalid param')
-
-            const promising = await PromisingService.create(promisingInfo)
-            return res.status(200).send(promising)
+            return res.status(200).send(promisingResponse)
         } catch (err: any) {
             return err
         }
     }
 }
-
