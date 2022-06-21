@@ -1,4 +1,4 @@
-import { NotFoundError } from 'routing-controllers';
+import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 
 class UserService {
@@ -9,7 +9,7 @@ class UserService {
 
   async findOneByAccessToken(accessToken: string): Promise<User> {
     const user: User | null = await User.findOne({ where: { accessToken } });
-    if (!user) throw new NotFoundError('Requested User Not Found.');
+    if (!user) throw new NotFoundException('User', accessToken);
     return user;
   }
 }

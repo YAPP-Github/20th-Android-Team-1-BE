@@ -5,7 +5,7 @@ import { PromisingResponse } from '../dtos/promising/response';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import PromisingModel from '../models/promising';
-import CategoryKeyword from '../models/category-keyword';
+
 
 @JsonController()
 export class PromisingController {
@@ -14,7 +14,6 @@ export class PromisingController {
     async create(@Body() req: PromisingRequest, @Res() res: Response) {
         try {
             const promisingResponse: PromisingModel | any = await PromisingService.create(req)
-
             return res.status(200).send(promisingResponse)
         } catch (err: any) {
             return err

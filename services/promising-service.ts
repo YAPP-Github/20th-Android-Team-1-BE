@@ -1,6 +1,7 @@
 import PromisingModel from "../models/promising";
 import CategoryKeyword from "../models/category-keyword";
-import { NotFoundError, InternalServerError } from "routing-controllers";
+import { PromisingRequest } from "../dtos/promising/request";
+import { InternalServerException, NotFoundException } from "../utils/error";
 import User from "../models/user";
 import { PromisingRequest } from "../dtos/promising/request";
 import { PromisingResponse } from "../dtos/promising/response"
