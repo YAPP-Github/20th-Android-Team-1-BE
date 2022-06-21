@@ -18,10 +18,5 @@ export class PromisingResponse {
         this.category = promising.categoryId;
     }
 
-    static async categoryId2obj(promising: PromisingResponse) {
-        const category = await CategoryKeyword.findOne({ where: { id: promising.category } });
-        promising.category = category
-        return promising
-    }
 
 }
