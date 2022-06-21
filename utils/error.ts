@@ -5,10 +5,10 @@ export class ApplicationError extends Error {
     exception: string;
     message: string;
 
-    constructor(error: string, status: number) {
+    constructor(error: string, status: number | null) {
         super(error);
         this.timestamp = new Date();
-        this.status = status;
+        this.status = (status != null) ? status : 500;
         this.error = error;
         this.exception = '';
         this.message = '';
@@ -30,5 +30,11 @@ export class ValidationException extends ApplicationError {
 export class UnAuthorizedException extends ApplicationError {
     constructor() {
         super(`unAuthorized request. please check the token`, 401);
+    }
+}
+
+export class InternalServerException extends ApplicationError {
+    constructor() {
+        super(`internal Server error`, 500);
     }
 }

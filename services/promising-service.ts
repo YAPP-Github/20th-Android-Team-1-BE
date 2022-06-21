@@ -1,7 +1,7 @@
 import PromisingModel from "../models/promising";
 import CategoryKeyword from "../models/category-keyword";
 import { PromisingRequest } from "../dtos/promising/request";
-import { ApplicationError, NotFoundException } from "../utils/error";
+import { InternalServerException, NotFoundException } from "../utils/error";
 import User from "../models/user";
 
 class PromisingService {
@@ -18,7 +18,7 @@ class PromisingService {
 
             return await promising.save();
         } catch (err: any) {
-            if (!err.status) throw new ApplicationError('internal Server error', 500);
+            if (!err.status) throw new InternalServerException();
             else throw err;
         }
     }

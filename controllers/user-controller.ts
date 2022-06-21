@@ -11,7 +11,7 @@ import { UserReponse } from '../dtos/user/response';
 import { SignUpMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
-import { ApplicationError } from '../utils/error';
+import { InternalServerException } from '../utils/error';
 
 @JsonController('/users')
 class UserController {
@@ -27,7 +27,7 @@ class UserController {
 
       return res.status(200).send(new UserReponse(user));
     } catch (err: any) {
-      throw new ApplicationError('internal Server error', 500)
+      throw new InternalServerException();
     }
   }
 }
