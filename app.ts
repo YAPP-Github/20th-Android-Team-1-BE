@@ -1,10 +1,11 @@
 import express from 'express';
 import { useExpressServer } from 'routing-controllers';
 import UserController from './controllers/user-controller';
-import { PromisingController } from './controllers/promising-controller';
+import PromisingController from './controllers/promising-controller';
 import db from './models';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
+import { ErrorHandler } from './middlewares/error';
 
 const app = express();
 
@@ -16,7 +17,9 @@ app.use(bodyParser.json());
 
 useExpressServer(app, {
   routePrefix: '/api',
-  controllers: [UserController, PromisingController]
+  controllers: [UserController, PromisingController],
+  defaultErrorHandler: false,
+  middlewares: [ErrorHandler]
 });
 const PORT = process.env.PORT || 8080;
 

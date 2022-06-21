@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
-import { UnauthorizedError } from 'routing-controllers';
 import { KAKAOInfoResponse } from '../dtos/auth/response';
+import { UnAuthorizedException } from '../utils/error';
 
 class AuthService {
   client: AxiosInstance;
@@ -18,7 +18,7 @@ class AuthService {
       });
       return response.data.id;
     } catch (err: any) {
-      throw new UnauthorizedError(err.response.data.msg);
+      throw new UnAuthorizedException(err.response.data.msg);
     }
   }
 
@@ -33,7 +33,7 @@ class AuthService {
         accessToken: token
       };
     } catch (err: any) {
-      throw new UnauthorizedError(err.response.data.msg);
+      throw new UnAuthorizedException(err.response.data.msg);
     }
   }
 }

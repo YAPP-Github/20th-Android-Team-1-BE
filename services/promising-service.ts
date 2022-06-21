@@ -1,23 +1,23 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
-import arrayUtil from '../utils/array';
-import { NotFoundError } from 'routing-controllers';
+import { PromisingRequest } from '../dtos/promising/request';
+import { NotFoundException } from '../utils/error';
 import User from '../models/user';
+import { PromisingResponse } from '../dtos/promising/response';
 
 class PromisingService {
-  async create(promisingInfo: any) {
+  async create(promisingInfo: PromisingRequest) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
     const user = await User.findOne({ where: { id: promisingInfo.ownerId } });
 
-    if (!user) throw new NotFoundError('User Not Found');
-    if (!category) throw new NotFoundError('CategoryKeyword Not Found');
+    if (!user) return new NotFoundException('User', promisingInfo.ownerId);
+    if (!category) return new NotFoundException('CategoryKeyword', promisingInfo.categoryId);
 
-    promisingInfo.category = category;
-    promisingInfo = await arrayUtil.deleteJsonKey(promisingInfo, 'categoryId');
     const promising = new PromisingModel(promisingInfo);
-    await promising.save();
+    const savedPromising = await promising.save();
+    const promisingResponse = new PromisingResponse(savedPromising, category);
 
-    return promisingInfo;
+    return promisingResponse;
   }
 }
 

@@ -1,28 +1,22 @@
 import PromisingService from '../services/promising-service';
-import { Controller, Post, Res, Req, UseBefore } from 'routing-controllers';
-import { Request, Response } from 'express';
-import { BadRequestError } from 'routing-controllers';
-import arrayUtil from '../utils/array';
-import bodyParser from 'body-parser';
+import { JsonController, Body, Post, Res, UseBefore } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
+import { PromisingRequest } from '../dtos/promising/request';
+import { NextFunction, Response } from 'express';
+import PromisingModel from '../models/promising';
 
-@Controller()
-@UseBefore(bodyParser())
-@UseBefore(UserAuthMiddleware)
-export class PromisingController {
+@JsonController()
+class PromisingController {
   @Post('/promisings')
-  async create(@Req() req: Request, @Res() res: Response) {
+  @UseBefore(UserAuthMiddleware)
+  async create(@Body() req: PromisingRequest, @Res() res: Response, next: NextFunction) {
     try {
-      const requireList = ['promisingName', 'ownerId', 'categoryId', 'minTime', 'maxTime'];
-      const promisingInfo = req.body;
-
-      const isValid = await arrayUtil.paramValidation(promisingInfo, requireList);
-      if (!isValid) return new BadRequestError('invalid param');
-
-      const promising = await PromisingService.create(promisingInfo);
-      return res.status(200).send(promising);
+      const promisingResponse: PromisingModel | any = await PromisingService.create(req);
+      return res.status(200).send(promisingResponse);
     } catch (err: any) {
-      return err;
+      next(err);
     }
   }
 }
+
+export default PromisingController;
