@@ -1,7 +1,7 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
 import { PromisingRequest } from '../dtos/promising/request';
-import { NotFoundException } from '../utils/error';
+import { NotFoundException, ValidationException } from '../utils/error';
 import User from '../models/user';
 import { PromisingResponse } from '../dtos/promising/response';
 
@@ -18,6 +18,14 @@ class PromisingService {
     const promisingResponse = new PromisingResponse(savedPromising, category);
 
     return promisingResponse;
+  }
+
+  async getPromisingInfo(promisingId: number) {
+    if (!promisingId) return new ValidationException('promisingId');
+    const promising = await PromisingModel.findOne({ where: { id: promisingId } });
+    if (!promising) return new NotFoundException('Promising', promisingId);
+
+    return promising;
   }
 }
 
