@@ -17,24 +17,24 @@ export class ApplicationError extends Error {
 
 export class NotFoundException extends ApplicationError {
   constructor(model: string, id: number | string) {
-    super(`id ${id} not found in ${model}`, 404);
+    super(`[NotFoundError] id ${id} not found in ${model}`, 404);
   }
 }
 
 export class ValidationException extends ApplicationError {
   constructor(param: any) {
-    super(`parameter ${param} required. please check header or body`, 400);
+    super(`[ValidationError] parameter ${param} required. please check header or body`, 400);
   }
 }
 
 export class UnAuthorizedException extends ApplicationError {
-  constructor(message = 'Unauthorized request. please check the token') {
+  constructor(message = '[UnAuthorizedError] Unauthorized request. please check the token') {
     super(message, 401);
   }
 }
 
 export class InternalServerException extends ApplicationError {
   constructor() {
-    super(`internal Server error`, 500);
+    super(`[InternalServerError] internal Server error`, 500);
   }
 }
