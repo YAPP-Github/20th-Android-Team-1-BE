@@ -1,9 +1,13 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
-import { PromisingRequest } from '../dtos/promising/request';
+import PromisingRequest from '../dtos/promising/request';
 import { NotFoundException, ValidationException } from '../utils/error';
 import User from '../models/user';
-import { PromisingResponse } from '../dtos/promising/response';
+import PromisingResponse from '../dtos/promising/response';
+import TimeRequest from '../dtos/time/request';
+import timeService from './time-service';
+import eventService from './event-service';
+import EventModel from '../models/event';
 
 class PromisingService {
   async create(promisingInfo: PromisingRequest) {
@@ -27,6 +31,20 @@ class PromisingService {
 
     return promising;
   }
+
+  async responseTime(promisingId: number, userId: number, timeInfo: TimeRequest) {
+    const promising = await PromisingModel.findOne({ where: { promisingId: promisingId } });
+    const user = await User.findOne({ where: { id: userId } });
+
+    if (!user) return new NotFoundException('User', userId);
+    if (!promising) return new NotFoundException('Promising', promisingId);
+
+    const savedEvent: EventModel = await eventService.create(promising, user)
+    const savedTime = await timeService.create(savedEvent, timeInfo)
+
+    return { savedEvent, savedTime }
+  }
+
 }
 
 export default new PromisingService();
