@@ -27,9 +27,8 @@ export class UserAuthMiddleware implements ExpressMiddlewareInterface {
     const token = request.headers['authorization']?.split(' ')?.[1];
     if (bearer != 'Bearer' || !token) return next(new UnAuthorizedException());
 
-    const userId: number = await authService.validateAccessToken(token);
-
     try {
+      const userId: number = await authService.validateAccessToken(token);
       const user = await userService.updateTokenIfDiff(userId, token);
 
       response.locals.user = user;
