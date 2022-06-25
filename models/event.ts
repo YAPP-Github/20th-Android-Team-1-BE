@@ -25,7 +25,7 @@ class EventModel extends Model {
   promisingId: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   userId: number;
 
   @BelongsTo(() => PromisingModel, 'promisingId')

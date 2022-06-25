@@ -37,7 +37,7 @@ class PromiseModel extends Model {
   category: CategoryKeyword;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   ownerId: number;
   @BelongsTo(() => User, 'ownerId')
   owner: User;

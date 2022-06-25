@@ -26,7 +26,7 @@ class PromisingModel extends Model {
   promisingName: string;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   ownerId: number;
 
   @ForeignKey(() => CategoryKeyword)
