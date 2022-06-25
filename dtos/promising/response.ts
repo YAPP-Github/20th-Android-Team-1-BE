@@ -1,7 +1,7 @@
 import PromisingModel from '../../models/promising';
 import CategoryKeyword from '../../models/category-keyword';
 
-export class PromisingResponse {
+export default class PromisingResponse {
     id: number;
     promisingName: string;
     ownerId: number;
