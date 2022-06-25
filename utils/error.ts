@@ -27,6 +27,12 @@ export class ValidationException extends ApplicationError {
   }
 }
 
+export class BadRequestException extends ApplicationError {
+  constructor(param: any, message = 'not appropriate') {
+    super(`parameter ${param} ${message}.`, 400);
+  }
+}
+
 export class UnAuthorizedException extends ApplicationError {
   constructor(message = 'Unauthorized request. please check the token') {
     super(message, 401);
