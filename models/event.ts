@@ -28,7 +28,7 @@ class EventModel extends Model {
   @Column({ type: DataType.BIGINT })
   userId: number;
 
-  @BelongsTo(() => PromisingModel, 'promisingId')
+  @BelongsTo(() => PromisingModel, { foreignKey: 'promisingId', onDelete: 'cascade' })
   promising: PromisingModel;
 
   @BelongsTo(() => User, 'userId')

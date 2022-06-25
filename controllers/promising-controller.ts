@@ -5,7 +5,6 @@ import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import PromisingModel from '../models/promising';
 import promisingService from '../services/promising-service';
-import { PromiseReponse } from '../dtos/promise/response';
 
 @JsonController('/promisings')
 class PromisingController {
@@ -23,8 +22,8 @@ class PromisingController {
     @BodyParam('promiseDate') date: Date,
     @Res() res: Response
   ) {
-    const promise = await promisingService.confirm(promisingId, date, res.locals.user);
-    return new PromiseReponse(promise);
+    const response = await promisingService.confirm(promisingId, date, res.locals.user);
+    return res.status(200).send(response);
   }
 }
 

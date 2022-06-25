@@ -33,6 +33,9 @@ class PromiseModel extends Model {
   @Column({ type: DataType.STRING })
   placeName: string;
 
+  @ForeignKey(() => CategoryKeyword)
+  @Column({ type: DataType.INTEGER })
+  categoryId: number;
   @BelongsTo(() => CategoryKeyword, 'categoryId')
   category: CategoryKeyword;
 

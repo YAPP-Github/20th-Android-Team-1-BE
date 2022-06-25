@@ -5,14 +5,12 @@ import authService from '../services/auth-service';
 import { UnAuthorizedException } from '../utils/error';
 
 export class TokenValidMiddleware implements ExpressMiddlewareInterface {
-  async use(request: any, response: any, next: (err?: any) => any) {
+  async use(request: Request, response: Response, next: NextFunction) {
     const bearer = request.headers['authorization']?.split(' ')?.[0];
     const token = request.headers['authorization']?.split(' ')?.[1];
     if (bearer != 'Bearer' || !token) return next(new UnAuthorizedException());
 
     try {
-      console.log(request.headers['authorization']);
-      console.log(token);
       const userId = await authService.validateAccessToken(token);
       response.locals.user = await authService.getInfoByAccessToken(token, userId);
       next();
@@ -23,7 +21,7 @@ export class TokenValidMiddleware implements ExpressMiddlewareInterface {
 }
 
 export class UserAuthMiddleware implements ExpressMiddlewareInterface {
-  async use(request: any, response: any, next: (err?: any) => any) {
+  async use(request: Request, response: Response, next: NextFunction) {
     const bearer = request.headers['authorization']?.split(' ')?.[0];
     const token = request.headers['authorization']?.split(' ')?.[1];
     if (bearer != 'Bearer' || !token) return next(new UnAuthorizedException());

@@ -1,5 +1,5 @@
-import { NextFunction, Response } from 'express';
-import { Post, JsonController, Res, UseBefore, Get, QueryParam } from 'routing-controllers';
+import { Response } from 'express';
+import { Post, JsonController, Res, UseBefore } from 'routing-controllers';
 import { UserReponse } from '../dtos/user/response';
 import { TokenValidMiddleware } from '../middlewares/auth';
 import User from '../models/user';
@@ -21,12 +21,6 @@ class UserController {
     );
 
     return res.status(200).send(new UserReponse(user));
-  }
-
-  @Get('/test')
-  test(@QueryParam('code') code: string, @Res() res: Response) {
-    console.log(code);
-    res.send('ok');
   }
 }
 
