@@ -41,6 +41,9 @@ class PromisingModel extends Model {
   @Column({ type: DataType.DATE })
   maxTime: Date;
 
+  @Column({ type: DataType.STRING })
+  placeName: string;
+
   @HasMany(() => EventModel)
   ownEvents: EventModel[];
 
