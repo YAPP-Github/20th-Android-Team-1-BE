@@ -4,9 +4,9 @@ import { PromisingRequest } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import User from '../models/user';
 import { PromisingResponse } from '../dtos/promising/response';
-import promiseService from './promise-service';
 import PromiseModel from '../models/promise';
 import eventService from './event-service';
+import promiseService from './promise-service';
 
 class PromisingService {
   async create(promisingInfo: PromisingRequest) {
