@@ -6,24 +6,18 @@ import db from './models';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import { ErrorHandler } from './middlewares/error';
-import { getMetadataArgsStorage } from 'routing-controllers'
-import { routingControllersToSpec } from 'routing-controllers-openapi'
-import { validationMetadatasToSchemas } from 'class-validator-jsonschema'
 import * as swaggerUi from "swagger-ui-express";
+import YAML from 'yamljs'
+import path from 'path';
 
 
 const app = express();
 
 const LOGGER = process.env.LOGGER || 'dev';
-const schemas = validationMetadatasToSchemas({
-  refPointerPrefix: '/components/schemas/',
-})
-const storage = getMetadataArgsStorage()
-const spec = routingControllersToSpec(storage, {}, {
-  components: { schemas },
-  info: { title: 'growthAPI', version: '1.0.0' },
-})
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(spec));
+
+const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'))
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(morgan(LOGGER));
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
