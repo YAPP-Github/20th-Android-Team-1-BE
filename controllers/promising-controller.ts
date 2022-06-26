@@ -30,6 +30,17 @@ class PromisingController {
     }
   }
 
+  @Get('/promisings/user/:userId')
+  @UseBefore(UserAuthMiddleware)
+  async getPromisingByUser(@Param('userId') userId: number, @Res() res: Response, next: NextFunction) {
+    try {
+      const promisingList = await PromisingService.getPromisingByUser(userId);
+      return res.status(200).send(promisingList);
+    } catch (err: any) {
+      next(err);
+    }
+  }
+
   @Post('/promisings/:promisingId/time-response')
   @UseBefore(UserAuthMiddleware)
   async responseTime(@Param('promisingId') promisingId: number, @Body() timeInfo: TimeRequest, @Res() res: Response, next: NextFunction) {

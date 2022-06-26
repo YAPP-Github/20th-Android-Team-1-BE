@@ -32,6 +32,36 @@ class PromisingService {
     return promising;
   }
 
+  async getPromisingByUser(userId: number) {
+    if (!userId) return new ValidationException('userId');
+
+    const promisingList: Array<object> | any = await PromisingModel.findAll({
+      include: {
+        model: EventModel,
+        required: true,
+        where: { userId: userId },
+      },
+      raw: true,
+    })
+
+    const ownPromisingList: Array<number> | any = await PromisingModel.findAll({
+      attributes: ['promisingId'],
+      where: { ownerId: userId },
+      raw: true
+    })
+    let ownPromisingIdList = ownPromisingList.map((x: any) => { return x.promisingId })
+    ownPromisingIdList = Object.values(ownPromisingIdList)
+
+    for (let i = 0; i < promisingList.length; i++) {
+      const promisingInfo = promisingList[i]
+      if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
+        promisingInfo.isOwn = true;
+      else
+        promisingInfo.isOwn = false;
+    }
+    return promisingList;
+  }
+
   async responseTime(promisingId: number, userId: number, timeInfo: TimeRequest) {
     const promising = await PromisingModel.findOne({ where: { promisingId: promisingId } });
     const user = await User.findOne({ where: { id: userId } });
