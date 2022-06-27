@@ -28,6 +28,9 @@ class EventModel extends Model {
   @Column({ type: DataType.INTEGER })
   userId: number;
 
+  @Column({ type: DataType.BOOLEAN, field: 'isAbsent' })
+  isAbsent: boolean;
+
   @BelongsTo(() => PromisingModel, 'promisingId')
   promising: PromisingModel;
 
