@@ -8,9 +8,9 @@ export class ErrorHandler implements ExpressErrorMiddlewareInterface {
   error(error: any, request: Request, response: Response) {
     let res: ApplicationError;
     if (!(error instanceof ApplicationError)) {
-      res = new ApplicationError(error.message, error.status);
+      res = new ApplicationError(error.message, error.httpCode || error.status);
     } else res = error;
-
+    console.log(error);
     response.status(res.status).json(res);
   }
 }

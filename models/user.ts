@@ -17,7 +17,7 @@ import EventModel from './event';
 @Table({ tableName: 'User', modelName: 'User' })
 class User extends Model {
   @PrimaryKey
-  @Column({ type: DataType.INTEGER, field: 'userId' })
+  @Column({ type: DataType.BIGINT, field: 'userId' })
   id: number;
 
   @AllowNull(false)
