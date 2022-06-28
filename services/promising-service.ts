@@ -1,7 +1,7 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
 import PromisingRequest from '../dtos/promising/request';
-import { NotFoundException, ValidationException } from '../utils/error';
+import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 import PromisingResponse from '../dtos/promising/response';
 import TimeRequest from '../dtos/time/request';
@@ -25,7 +25,6 @@ class PromisingService {
   }
 
   async getPromisingInfo(promisingId: number) {
-    if (!promisingId) return new ValidationException('promisingId');
     const promising = await PromisingModel.findOne({ where: { id: promisingId } });
     if (!promising) return new NotFoundException('Promising', promisingId);
 
@@ -33,8 +32,6 @@ class PromisingService {
   }
 
   async getPromisingByUser(userId: number) {
-    if (!userId) return new ValidationException('userId');
-
     const promisingList: Array<object> | any = await PromisingModel.findAll({
       include: {
         model: EventModel,

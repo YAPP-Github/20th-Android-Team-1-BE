@@ -5,6 +5,7 @@ import PromisingRequest from '../dtos/promising/request';
 import { NextFunction, Response } from 'express';
 import PromisingModel from '../models/promising';
 import TimeRequest from '../dtos/time/request';
+import { ValidationException } from '../utils/error';
 
 @JsonController()
 class PromisingController {
@@ -19,10 +20,11 @@ class PromisingController {
     }
   }
 
-  @Get('/promisings/:promisingId')
+  @Get('/promisings/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingInfo(@Param('promisingId') promisingId: number, @Res() res: Response, next: NextFunction) {
     try {
+      if (!promisingId) throw new ValidationException('promisingId');
       const promisingResponse: PromisingModel | any = await PromisingService.getPromisingInfo(promisingId);
       return res.status(200).send(promisingResponse);
     } catch (err: any) {
@@ -30,10 +32,11 @@ class PromisingController {
     }
   }
 
-  @Get('/promisings/user/:userId')
+  @Get('/promisings/user')
   @UseBefore(UserAuthMiddleware)
-  async getPromisingByUser(@Param('userId') userId: number, @Res() res: Response, next: NextFunction) {
+  async getPromisingByUser(@Res() res: Response, next: NextFunction) {
     try {
+      const userId = res.locals.user.id;
       const promisingList = await PromisingService.getPromisingByUser(userId);
       return res.status(200).send(promisingList);
     } catch (err: any) {
