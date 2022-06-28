@@ -7,6 +7,8 @@ import PromisingModel from '../models/promising';
 import { TimeRequest } from '../dtos/time/request';
 import { PromisingResponse } from '../dtos/promising/response';
 import { EventTimeResponse } from '../dtos/event/response';
+import { ValidationException } from '../utils/error';
+
 @JsonController()
 class PromisingController {
   @Post('/promisings')
@@ -22,9 +24,10 @@ class PromisingController {
 
   @Get('/promisings/:promisingId')
   @UseBefore(UserAuthMiddleware)
-  async getPromisingInfo(@Param('promisingId') promisingId: number, @Res() res: Response, next: NextFunction) {
+  async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response, next: NextFunction) {
     try {
-      const promisingResponse: PromisingModel | any = await PromisingService.getPromisingInfo(promisingId);
+      if (!promisingId) throw new ValidationException('promisingId');
+      const promisingResponse: PromisingModel = await PromisingService.getPromisingById(promisingId);
       return res.status(200).send(promisingResponse);
     } catch (err: any) {
       next(err);

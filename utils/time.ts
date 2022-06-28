@@ -27,7 +27,7 @@ const timeUtil = {
         const { unit, timeTable } = timeInfo
         let resultList: Array<TimeResponse> = []
 
-        if (timeTable.length == 0) return new ValidationException('timeTable')
+        if (timeTable.length == 0) return resultList;
         for (let k = 0; k < timeTable.length; k++) {
             const timeOfDay = timeTable[k]
             const day = timeOfDay.date, times: Array<boolean> = timeOfDay.times;

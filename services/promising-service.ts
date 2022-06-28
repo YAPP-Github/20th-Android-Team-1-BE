@@ -1,13 +1,14 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
 import { PromisingRequest } from '../dtos/promising/request';
-import { NotFoundException, ValidationException } from '../utils/error';
+import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 import { PromisingResponse } from '../dtos/promising/response';
 import { TimeRequest } from '../dtos/time/request';
 import timeService from './time-service';
 import eventService from './event-service';
 import EventModel from '../models/event';
+import userService from './user-service';
 
 class PromisingService {
   async create(promisingInfo: PromisingRequest) {
@@ -24,20 +25,16 @@ class PromisingService {
     return promisingResponse;
   }
 
-  async getPromisingInfo(promisingId: number) {
-    if (!promisingId) return new ValidationException('promisingId');
+  async getPromisingById(promisingId: number) {
     const promising = await PromisingModel.findOne({ where: { id: promisingId } });
-    if (!promising) return new NotFoundException('Promising', promisingId);
+    if (!promising) throw new NotFoundException('Promising', promisingId);
 
     return promising;
   }
 
   async responseTime(promisingId: number, userId: number, timeInfo: TimeRequest) {
-    const promising = await PromisingModel.findOne({ where: { promisingId: promisingId } });
-    const user = await User.findOne({ where: { id: userId } });
-
-    if (!user) throw new NotFoundException('User', userId);
-    if (!promising) throw new NotFoundException('Promising', promisingId);
+    const promising = await this.getPromisingById(promisingId);
+    const user = await userService.findOneById(userId);
 
     const savedEvent: EventModel = await eventService.create(promising, user)
     const savedTime = await timeService.create(savedEvent, timeInfo)
