@@ -22,12 +22,23 @@ export class PromisingResponse {
 }
 
 export class TimeTableResponse {
+  users: UserResponse[];
+  colors: string[];
   minTime: string;
   maxTime: string;
   unit: number;
   timeTable: TimeTableUnit[];
 
-  constructor(minTime: Date, maxTime: Date, unit: number, timeTable: TimeTableUnit[]) {
+  constructor(
+    users: UserResponse[],
+    colors: string[],
+    minTime: Date,
+    maxTime: Date,
+    unit: number,
+    timeTable: TimeTableUnit[]
+  ) {
+    this.users = users;
+    this.colors = colors;
     this.minTime = timeUtil.formatDate2String(minTime);
     this.maxTime = timeUtil.formatDate2String(maxTime);
     this.unit = unit;

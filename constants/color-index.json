@@ -1,5 +1,4 @@
 [
-  ["FIRST"],
   ["FIRST", "SECOND"],
   ["FIRST", "SECOND", "THIRD"],
   ["FIRST", "SECOND", "THIRD", "FOURTH"],

@@ -59,7 +59,7 @@ class PromisingService {
     return new PromiseReponse(promise, owner, category!);
   }
 
-  async getTimeTable(id: number) {
+  async getTimeTable(id: number, unit = 0.5) {
     const promising = await PromisingModel.findOne({
       include: [
         {
@@ -76,31 +76,37 @@ class PromisingService {
     if (!promising) throw new NotFoundException('Promising', id);
 
     const events = promising.ownEvents;
-    const UNIT = 0.5;
     const timeMap: Map<string, UserResponse[]> = new Map();
-    events.map((event) => {
-      event.eventTimes.forEach((timeBlock) => {
-        const timeUnits = timeUtil.sliceTimeBlockByUnit(
-          new Date(timeBlock.startTime),
-          new Date(timeBlock.endTime),
-          UNIT
-        );
-        timeUnits.forEach((timeUnit) => {
-          if (!timeMap.has(timeUnit)) {
-            timeMap.set(timeUnit, [new UserResponse(event.user)]);
-          } else {
-            timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, new UserResponse(event.user)]);
-          }
-        });
+    const allUsers: UserResponse[] = [];
+    events.forEach(({ user, eventTimes }) => {
+      allUsers.push(new UserResponse(user));
+      eventTimes.forEach((timeBlock) => {
+        timeUtil
+          .sliceTimeBlockByUnit(new Date(timeBlock.startTime), new Date(timeBlock.endTime), unit)
+          .forEach((timeUnit) => {
+            if (!timeMap.has(timeUnit)) {
+              timeMap.set(timeUnit, [new UserResponse(user)]);
+            } else {
+              timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, new UserResponse(user)]);
+            }
+          });
       });
     });
 
-    const timeTable = Array.from(timeMap, ([key, value]) => {
-      const colorIdx: keyof ColorType = index[events.length][value.length] as keyof ColorType;
-      return new TimeTableUnit(key, value.length, value, color[colorIdx]);
+    const timeTable = Array.from(timeMap, ([date, users]) => {
+      const colorStr: keyof ColorType = index[events.length - 1][users.length] as keyof ColorType;
+      return new TimeTableUnit(date, users.length, users, color[colorStr]);
     });
+    const colors = index[events.length - 1].map((colorStr) => color[colorStr as keyof ColorType]);
 
-    return new TimeTableResponse(promising.minTime, promising.maxTime, UNIT, timeTable);
+    return new TimeTableResponse(
+      allUsers,
+      colors,
+      promising.minTime,
+      promising.maxTime,
+      unit,
+      timeTable
+    );
   }
 
   async findOneById(id: number) {
