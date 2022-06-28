@@ -1,6 +1,5 @@
-import TimeRequest from "../dtos/time/request";
-import TimeUnit from "../dtos/time/time-unit";
-import { ValidationException } from "./error";
+import { TimeRequest } from "../dtos/time/request";
+import TimeResponse from "../dtos/time/response";
 
 const timeUtil = {
     convertTime(dateTime: Date) {
@@ -25,14 +24,14 @@ const timeUtil = {
     },
     boolean2Time(timeInfo: TimeRequest) {
         const { unit, timeTable } = timeInfo
-        let resultList: Array<TimeUnit> = []
+        let resultList: Array<TimeResponse> = []
 
-        if (timeTable.length == 0) return new ValidationException('timeTable')
+        if (timeTable.length == 0) return resultList;
         for (let k = 0; k < timeTable.length; k++) {
             const timeOfDay = timeTable[k]
             const day = timeOfDay.date, times: Array<boolean> = timeOfDay.times;
             const availList = []
-            let dateList: Array<TimeUnit> | any = []
+            let dateList: Array<TimeResponse> = []
 
             for (let i = 0; i < times.length; i++) {
                 if (times[i] == true) {
@@ -57,7 +56,7 @@ const timeUtil = {
         return resultList;
     },
     getDateList(unit: number, day: Date, indexList: Array<any>) {
-        const resultList: Array<TimeUnit> = []
+        const resultList: Array<TimeResponse> = []
         const dayTime = new Date(day)
 
         const time = unit * 60

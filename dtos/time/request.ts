@@ -1,9 +1,17 @@
 import { IsNotEmpty } from 'class-validator';
-import Time from './front-time';
 
-export default class TimeRequest {
+class TimeRequest {
     @IsNotEmpty()
     unit: number;
     @IsNotEmpty()
-    timeTable: Array<Time>;
+    timeTable: Array<TimeOfDay>;
 }
+
+class TimeOfDay {
+    @IsNotEmpty()
+    date: Date;
+    @IsNotEmpty()
+    times: Array<boolean>;
+}
+
+export { TimeRequest, TimeOfDay }

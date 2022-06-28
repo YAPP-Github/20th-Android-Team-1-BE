@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export default class TimeUnit {
+export default class TimeResponse {
     @IsNotEmpty()
     startTime: Date;
     @IsNotEmpty()

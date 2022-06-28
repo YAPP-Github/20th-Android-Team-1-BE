@@ -28,14 +28,14 @@ class Alarm extends Model {
   @Column({ type: DataType.INTEGER })
   promiseId: number;
 
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   userId: number;
 
   @BelongsTo(() => AlarmFormat, 'formatId')
   format: AlarmFormat;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   receiverId: number;
   @BelongsTo(() => User, 'receiverId')
   receiver: User;

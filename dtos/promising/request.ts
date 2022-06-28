@@ -1,4 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
+import { TimeOfDay } from '../time/request';
 
 class PromisingRequest {
     @IsNotEmpty()
@@ -11,6 +12,23 @@ class PromisingRequest {
     maxTime: Date;
     @IsNotEmpty()
     categoryId: number;
+    @IsNotEmpty()
+    unit: number;
+    @IsNotEmpty()
+    timeTable: Array<TimeOfDay>;
 }
 
-export { PromisingRequest }
+class PromisingInfo {
+    @IsNotEmpty()
+    promisingName: string;
+    @IsNotEmpty()
+    ownerId: number;
+    @IsNotEmpty()
+    minTime: Date;
+    @IsNotEmpty()
+    maxTime: Date;
+    @IsNotEmpty()
+    categoryId: number;
+}
+
+export { PromisingInfo, PromisingRequest }

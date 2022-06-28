@@ -30,7 +30,7 @@ class TimeModel extends Model {
   @Column({ type: DataType.INTEGER })
   eventId: number;
 
-  @BelongsTo(() => EventModel, 'eventId')
+  @BelongsTo(() => EventModel, { foreignKey: 'eventId', onDelete: 'cascade' })
   ownEvent: EventModel;
 }
 

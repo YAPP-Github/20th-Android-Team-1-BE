@@ -4,32 +4,35 @@ import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { NextFunction, Response } from 'express';
 import PromisingModel from '../models/promising';
-import TimeRequest from '../dtos/time/request';
+import { TimeRequest } from '../dtos/time/request';
+import { PromisingResponse } from '../dtos/promising/response';
+import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
 
-@JsonController()
+@JsonController('/promisings')
 class PromisingController {
-  @Post('/promisings')
+  @Post('')
   @UseBefore(UserAuthMiddleware)
-  async create(@Body() req: PromisingRequest, @Res() res: Response, next: NextFunction) {
-    try {
-      const promisingResponse: PromisingModel | any = await PromisingService.create(req);
-      return res.status(200).send(promisingResponse);
-    } catch (err: any) {
-      next(err);
-    }
+  async create(@Body() req: PromisingRequest, @Res() res: Response) {
+    const { unit, timeTable, ...promisingInfo } = req;
+    const userId = res.locals.user.id;
+
+    const promisingResponse: PromisingResponse = await PromisingService.create(promisingInfo);
+    const promisingId = promisingResponse.id;
+
+    const timeInfo: TimeRequest = { unit, timeTable }
+    const eventTimeResponse: EventTimeResponse = await PromisingService.responseTime(promisingId, userId, timeInfo);
+
+    return res.status(200).send({ promisingResponse, eventTimeResponse });
   }
 
   @Get('/promisings/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
-  async getPromisingInfo(@Param('promisingId') promisingId: number, @Res() res: Response, next: NextFunction) {
-    try {
-      if (!promisingId) throw new ValidationException('promisingId');
-      const promisingResponse: PromisingModel | any = await PromisingService.getPromisingInfo(promisingId);
-      return res.status(200).send(promisingResponse);
-    } catch (err: any) {
-      next(err);
-    }
+  async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    if (!promisingId) throw new ValidationException('promisingId');
+    const promisingResponse: PromisingModel = await PromisingService.getPromisingInfo(promisingId);
+    return res.status(200).send(promisingResponse);
+
   }
 
   @Get('/promisings/user')
@@ -46,14 +49,10 @@ class PromisingController {
 
   @Post('/promisings/:promisingId/time-response')
   @UseBefore(UserAuthMiddleware)
-  async responseTime(@Param('promisingId') promisingId: number, @Body() timeInfo: TimeRequest, @Res() res: Response, next: NextFunction) {
-    try {
-      const userId = res.locals.user.id;
-      const eventTimeResponse: PromisingModel | any = await PromisingService.responseTime(promisingId, userId, timeInfo);
-      return res.status(200).send(eventTimeResponse);
-    } catch (err: any) {
-      next(err);
-    }
+  async responseTime(@Param('promisingId') promisingId: number, @Body() timeInfo: TimeRequest, @Res() res: Response) {
+    const userId = res.locals.user.id;
+    const eventTimeResponse: EventTimeResponse = await PromisingService.responseTime(promisingId, userId, timeInfo);
+    return res.status(200).send(eventTimeResponse);
   }
 
 }
