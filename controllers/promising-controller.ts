@@ -1,5 +1,14 @@
 import PromisingService from '../services/promising-service';
-import { JsonController, Body, Post, Res, UseBefore, Param, BodyParam } from 'routing-controllers';
+import {
+  JsonController,
+  Body,
+  Post,
+  Res,
+  UseBefore,
+  Param,
+  BodyParam,
+  Get
+} from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
@@ -24,6 +33,13 @@ class PromisingController {
   ) {
     const response = await promisingService.confirm(promisingId, date, res.locals.user);
     return res.status(200).send(response);
+  }
+
+  @Get('/:promisingId/time-table')
+  @UseBefore(UserAuthMiddleware)
+  async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    const timeTable = await promisingService.getTimeTable(promisingId);
+    return res.status(200).send(timeTable);
   }
 }
 
