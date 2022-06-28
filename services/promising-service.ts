@@ -1,6 +1,6 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
-import { PromisingRequest } from '../dtos/promising/request';
+import { PromisingInfo } from '../dtos/promising/request';
 import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 import { PromisingResponse } from '../dtos/promising/response';
@@ -11,7 +11,7 @@ import EventModel from '../models/event';
 import userService from './user-service';
 
 class PromisingService {
-  async create(promisingInfo: PromisingRequest) {
+  async create(promisingInfo: PromisingInfo) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
     const user = await User.findOne({ where: { id: promisingInfo.ownerId } });
 
