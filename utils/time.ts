@@ -1,4 +1,6 @@
 const timeUtil = {
+  HOUR: 60,
+
   convertTime(dateTime: Date) {
     const d = [
       dateTime.getFullYear().toString(),
@@ -19,6 +21,28 @@ const timeUtil = {
       timeString = t.join(':');
     const resString = dateString + ' ' + timeString;
     return resString;
+  },
+
+  formatDate2String(date: Date) {
+    const year = date.getFullYear();
+    const mon = date.getMonth() + 1;
+    const day = date.getDate();
+    const hour = date.getHours();
+    const min = date.getMinutes();
+    const sec = date.getSeconds();
+
+    return `${year}-${mon.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hour
+      .toString()
+      .padStart(2, '0')}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+  },
+
+  sliceTimeBlockByUnit(startTime: Date, endTime: Date, unit: number) {
+    const MINUTE = this.HOUR * unit;
+    const timeUnits = [];
+    for (let cur = startTime; cur < endTime; cur.setMinutes(cur.getMinutes() + MINUTE)) {
+      timeUnits.push(this.formatDate2String(new Date(cur)));
+    }
+    return timeUnits;
   }
 };
 
