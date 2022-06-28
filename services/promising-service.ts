@@ -3,7 +3,7 @@ import CategoryKeyword from '../models/category-keyword';
 import { PromisingRequest } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import User from '../models/user';
-import { PromisingResponse, TimeTableUnit } from '../dtos/promising/response';
+import { PromisingResponse, TimeTableResponse, TimeTableUnit } from '../dtos/promising/response';
 import eventService from './event-service';
 import promiseService from './promise-service';
 import { PromiseReponse } from '../dtos/promise/response';
@@ -12,6 +12,7 @@ import TimeModel from '../models/time';
 import timeUtil from '../utils/time';
 import color from '../constants/color.json';
 import index from '../constants/color-index.json';
+import { UserResponse } from '../dtos/user/response';
 
 interface ColorType {
   FIRST: string;
@@ -76,7 +77,7 @@ class PromisingService {
 
     const events = promising.ownEvents;
     const UNIT = 0.5;
-    const timeMap: Map<string, User[]> = new Map();
+    const timeMap: Map<string, UserResponse[]> = new Map();
     events.map((event) => {
       event.eventTimes.forEach((timeBlock) => {
         const timeUnits = timeUtil.sliceTimeBlockByUnit(
@@ -86,17 +87,20 @@ class PromisingService {
         );
         timeUnits.forEach((timeUnit) => {
           if (!timeMap.has(timeUnit)) {
-            timeMap.set(timeUnit, [event.user]);
+            timeMap.set(timeUnit, [new UserResponse(event.user)]);
           } else {
-            timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, event.user]);
+            timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, new UserResponse(event.user)]);
           }
         });
       });
     });
-    return Array.from(timeMap, ([key, value]) => {
+
+    const timeTable = Array.from(timeMap, ([key, value]) => {
       const colorIdx: keyof ColorType = index[events.length][value.length] as keyof ColorType;
       return new TimeTableUnit(key, value.length, value, color[colorIdx]);
     });
+
+    return new TimeTableResponse(promising.minTime, promising.maxTime, UNIT, timeTable);
   }
 
   async findOneById(id: number) {

@@ -1,6 +1,6 @@
 import User from '../../models/user';
 
-export class UserReponse {
+export class UserResponse {
   id: number;
   userName: string;
 

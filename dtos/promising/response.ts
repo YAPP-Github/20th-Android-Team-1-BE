@@ -1,6 +1,7 @@
 import PromisingModel from '../../models/promising';
 import CategoryKeyword from '../../models/category-keyword';
-import User from '../../models/user';
+import { UserResponse } from '../user/response';
+import timeUtil from '../../utils/time';
 
 export class PromisingResponse {
   id: number;
@@ -20,13 +21,27 @@ export class PromisingResponse {
   }
 }
 
+export class TimeTableResponse {
+  minTime: string;
+  maxTime: string;
+  unit: number;
+  timeTable: TimeTableUnit[];
+
+  constructor(minTime: Date, maxTime: Date, unit: number, timeTable: TimeTableUnit[]) {
+    this.minTime = timeUtil.formatDate2String(minTime);
+    this.maxTime = timeUtil.formatDate2String(maxTime);
+    this.unit = unit;
+    this.timeTable = timeTable;
+  }
+}
+
 export class TimeTableUnit {
   date: string;
   count: number;
-  users: User[];
+  users: UserResponse[];
   color: string;
 
-  constructor(date: string, count: number, users: User[], color: string) {
+  constructor(date: string, count: number, users: UserResponse[], color: string) {
     this.date = date;
     this.count = count;
     this.users = users;

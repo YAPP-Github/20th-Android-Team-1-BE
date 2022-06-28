@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { Post, JsonController, Res, UseBefore } from 'routing-controllers';
-import { UserReponse } from '../dtos/user/response';
+import { UserResponse } from '../dtos/user/response';
 import { TokenValidMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
@@ -20,7 +20,7 @@ class UserController {
       res.locals.user.accessToken
     );
 
-    return res.status(200).send(new UserReponse(user));
+    return res.status(200).send(new UserResponse(user));
   }
 }
 
