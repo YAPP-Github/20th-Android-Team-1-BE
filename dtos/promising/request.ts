@@ -1,6 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 
-export default class PromisingRequest {
+export class PromisingRequest {
     @IsNotEmpty()
     promisingName: string;
     @IsNotEmpty()
