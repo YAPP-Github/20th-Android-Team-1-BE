@@ -1,6 +1,6 @@
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
-import PromisingRequest from '../dtos/promising/request';
+import { PromisingRequest } from '../dtos/promising/request';
 import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 import PromisingResponse from '../dtos/promising/response';
@@ -8,6 +8,7 @@ import TimeRequest from '../dtos/time/request';
 import timeService from './time-service';
 import eventService from './event-service';
 import EventModel from '../models/event';
+import deleteJsonKey from '../utils/array'
 
 class PromisingService {
   async create(promisingInfo: PromisingRequest) {
@@ -37,20 +38,21 @@ class PromisingService {
         model: EventModel,
         required: true,
         where: { userId: userId },
+        attributes: ['eventId'],
       },
       raw: true,
     })
 
-    const ownPromisingList: Array<number> | any = await PromisingModel.findAll({
+    const ownPromisingList: Array<PromisingModel> = await PromisingModel.findAll({
       attributes: ['promisingId'],
       where: { ownerId: userId },
       raw: true
     })
-    let ownPromisingIdList = ownPromisingList.map((x: any) => { return x.promisingId })
-    ownPromisingIdList = Object.values(ownPromisingIdList)
+    const ownPromisingIdList = Object.values(ownPromisingList.map((x: any) => x.promisingId));
 
     for (let i = 0; i < promisingList.length; i++) {
       const promisingInfo = promisingList[i]
+      promisingInfo['ownEvents.eventId'] = undefined;
       if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
         promisingInfo.isOwn = true;
       else
