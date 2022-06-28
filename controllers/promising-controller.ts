@@ -2,7 +2,7 @@ import PromisingService from '../services/promising-service';
 import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import PromisingModel from '../models/promising';
 import { TimeRequest } from '../dtos/time/request';
 import { PromisingResponse } from '../dtos/promising/response';
@@ -26,13 +26,25 @@ class PromisingController {
     return res.status(200).send({ promisingResponse, eventTimeResponse });
   }
 
-  @Get('/promisings/:promisingId')
+  @Get('/promisings/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('promisingId');
-    const promisingResponse: PromisingModel = await PromisingService.getPromisingById(promisingId);
+    const promisingResponse: PromisingModel = await PromisingService.getPromisingInfo(promisingId);
     return res.status(200).send(promisingResponse);
 
+  }
+
+  @Get('/promisings/user')
+  @UseBefore(UserAuthMiddleware)
+  async getPromisingByUser(@Res() res: Response, next: NextFunction) {
+    try {
+      const userId = res.locals.user.id;
+      const promisingList = await PromisingService.getPromisingByUser(userId);
+      return res.status(200).send(promisingList);
+    } catch (err: any) {
+      next(err);
+    }
   }
 
   @Post('/promisings/:promisingId/time-response')
