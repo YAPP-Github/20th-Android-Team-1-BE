@@ -5,7 +5,7 @@ import User from './user';
 @Table({ tableName: 'Promise_User', modelName: 'PromiseUser' })
 class PromiseUser extends Model {
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   userId: number;
 
   @ForeignKey(() => PromiseModel)

@@ -25,13 +25,13 @@ class EventModel extends Model {
   promisingId: number;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   userId: number;
 
   @Column({ type: DataType.BOOLEAN, field: 'isAbsent' })
   isAbsent: boolean;
 
-  @BelongsTo(() => PromisingModel, 'promisingId')
+  @BelongsTo(() => PromisingModel, { foreignKey: 'promisingId', onDelete: 'cascade' })
   promising: PromisingModel;
 
   @BelongsTo(() => User, 'userId')

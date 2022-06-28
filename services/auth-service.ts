@@ -22,14 +22,19 @@ class AuthService {
     }
   }
 
-  async getInfoByAccessToken(token: string): Promise<KAKAOInfoResponse> {
+  async getInfoByAccessToken(token: string, userId: number): Promise<KAKAOInfoResponse> {
     try {
-      const response = await this.client.get('/v2/user/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await this.client.get(
+        `/v2/user/me?target_id_type=user_id&target_id=${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      if (!response.data.kakao_account.name && !response.data.kakao_account.profile.nickname)
+        throw new UnAuthorizedException('Kakao account name or profile nickname is required.');
       return {
         id: response.data.id,
-        userName: response.data.kakao_account.name,
+        userName: response.data.kakao_account.name || response.data.kakao_account.profile.nickname,
         accessToken: token
       };
     } catch (err: any) {

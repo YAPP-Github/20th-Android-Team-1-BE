@@ -2,12 +2,12 @@ import { NotFoundException } from '../utils/error';
 import User from '../models/user';
 
 class UserService {
-  async create(id: number, userName: string, accessToken: string): Promise<User> {
+  async create(id: number, userName: string, accessToken: string) {
     const user: User = new User({ id, userName, accessToken });
     return await user.save();
   }
 
-  async updateTokenIfDiff(id: number, tokenToUpdate: string): Promise<User> {
+  async updateTokenIfDiff(id: number, tokenToUpdate: string) {
     const user = await this.findOneById(id);
 
     if (user.accessToken != tokenToUpdate) {
@@ -17,8 +17,13 @@ class UserService {
     }
   }
 
-  async findOneById(id: number): Promise<User> {
-    const user: User | null = await User.findOne({ where: { id } });
+  async exist(id: number) {
+    const exist = await User.findByPk(id);
+    return exist ? true : false;
+  }
+
+  async findOneById(id: number) {
+    const user: User | null = await User.findByPk(id);
     if (!user) throw new NotFoundException('User', id);
     return user;
   }

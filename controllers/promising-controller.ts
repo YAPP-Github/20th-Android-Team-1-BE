@@ -9,9 +9,9 @@ import { PromisingResponse } from '../dtos/promising/response';
 import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
 
-@JsonController()
+@JsonController('/promisings')
 class PromisingController {
-  @Post('/promisings')
+  @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, ...promisingInfo } = req;
@@ -32,6 +32,7 @@ class PromisingController {
     if (!promisingId) throw new ValidationException('promisingId');
     const promisingResponse: PromisingModel = await PromisingService.getPromisingById(promisingId);
     return res.status(200).send(promisingResponse);
+
   }
 
   @Post('/promisings/:promisingId/time-response')

@@ -1,6 +1,5 @@
 import { TimeRequest } from "../dtos/time/request";
 import TimeResponse from "../dtos/time/response";
-import { ValidationException } from "./error";
 
 const timeUtil = {
     convertTime(dateTime: Date) {

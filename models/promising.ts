@@ -26,7 +26,7 @@ class PromisingModel extends Model {
   promisingName: string;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({ type: DataType.BIGINT })
   ownerId: number;
 
   @ForeignKey(() => CategoryKeyword)
@@ -40,6 +40,9 @@ class PromisingModel extends Model {
   @AllowNull(false)
   @Column({ type: DataType.DATE })
   maxTime: Date;
+
+  @Column({ type: DataType.STRING })
+  placeName: string;
 
   @HasMany(() => EventModel)
   ownEvents: EventModel[];
