@@ -28,6 +28,9 @@ class EventModel extends Model {
   @Column({ type: DataType.BIGINT })
   userId: number;
 
+  @Column({ type: DataType.BOOLEAN, field: 'isAbsent' })
+  isAbsent: boolean;
+
   @BelongsTo(() => PromisingModel, { foreignKey: 'promisingId', onDelete: 'cascade' })
   promising: PromisingModel;
 

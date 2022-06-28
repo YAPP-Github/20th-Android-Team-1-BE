@@ -1,30 +1,48 @@
 import PromisingService from '../services/promising-service';
-import { JsonController, Body, Post, Res, UseBefore, Param, BodyParam } from 'routing-controllers';
+import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import PromisingModel from '../models/promising';
-import promisingService from '../services/promising-service';
+import { TimeRequest } from '../dtos/time/request';
+import { PromisingResponse } from '../dtos/promising/response';
+import { EventTimeResponse } from '../dtos/event/response';
+import { ValidationException } from '../utils/error';
 
 @JsonController('/promisings')
 class PromisingController {
   @Post('')
   @UseBefore(UserAuthMiddleware)
-  async createPromising(@Body() req: PromisingRequest, @Res() res: Response) {
-    const promisingResponse: PromisingModel | any = await PromisingService.create(req);
-    return res.status(200).send(promisingResponse);
+  async create(@Body() req: PromisingRequest, @Res() res: Response) {
+    const { unit, timeTable, ...promisingInfo } = req;
+    const userId = res.locals.user.id;
+
+    const promisingResponse: PromisingResponse = await PromisingService.create(promisingInfo);
+    const promisingId = promisingResponse.id;
+
+    const timeInfo: TimeRequest = { unit, timeTable }
+    const eventTimeResponse: EventTimeResponse = await PromisingService.responseTime(promisingId, userId, timeInfo);
+
+    return res.status(200).send({ promisingResponse, eventTimeResponse });
   }
 
-  @Post('/:promisingId/confirmation')
+  @Get('/promisings/:promisingId')
   @UseBefore(UserAuthMiddleware)
-  async confirmPromising(
-    @Param('promisingId') promisingId: number,
-    @BodyParam('promiseDate') date: Date,
-    @Res() res: Response
-  ) {
-    const response = await promisingService.confirm(promisingId, date, res.locals.user);
-    return res.status(200).send(response);
+  async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    if (!promisingId) throw new ValidationException('promisingId');
+    const promisingResponse: PromisingModel = await PromisingService.getPromisingById(promisingId);
+    return res.status(200).send(promisingResponse);
+
   }
+
+  @Post('/promisings/:promisingId/time-response')
+  @UseBefore(UserAuthMiddleware)
+  async responseTime(@Param('promisingId') promisingId: number, @Body() timeInfo: TimeRequest, @Res() res: Response) {
+    const userId = res.locals.user.id;
+    const eventTimeResponse: EventTimeResponse = await PromisingService.responseTime(promisingId, userId, timeInfo);
+    return res.status(200).send(eventTimeResponse);
+  }
+
 }
 
 export default PromisingController;

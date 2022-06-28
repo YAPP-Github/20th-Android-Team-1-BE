@@ -1,15 +1,19 @@
+import { PromisingInfo,PromisingRequest } from '../dtos/promising/request';
+import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
+import { PromisingResponse } from '../dtos/promising/response';
+import { PromiseReponse } from '../dtos/promise/response';
+import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
-import { PromisingRequest } from '../dtos/promising/request';
-import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import User from '../models/user';
-import { PromisingResponse } from '../dtos/promising/response';
-import eventService from './event-service';
 import promiseService from './promise-service';
-import { PromiseReponse } from '../dtos/promise/response';
+import eventService from './event-service';
+import timeService from './time-service';
+import EventModel from '../models/event';
+import userService from './user-service';
+import User from '../models/user';
 
 class PromisingService {
-  async create(promisingInfo: PromisingRequest) {
+  async create(promisingInfo: PromisingInfo) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
     const user = await User.findOne({ where: { id: promisingInfo.ownerId } });
 
@@ -21,6 +25,16 @@ class PromisingService {
     const promisingResponse = new PromisingResponse(savedPromising, category);
 
     return promisingResponse;
+  }
+
+  async responseTime(promisingId: number, userId: number, timeInfo: TimeRequest) {
+    const promising = await this.getPromisingById(promisingId);
+    const user = await userService.findOneById(userId);
+
+    const savedEvent: EventModel = await eventService.create(promising, user)
+    const savedTime = await timeService.create(savedEvent, timeInfo)
+
+    return { savedEvent, savedTime }
   }
 
   async confirm(id: number, date: Date, owner: User) {
