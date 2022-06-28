@@ -16,8 +16,8 @@ class EventService {
         return savedEvent;
     }
     async updateIsAbsent(eventId: number, isAbsent: boolean) {
-        if (!eventId) return new ValidationException('eventId');
-        if (!isAbsent) return new ValidationException('isAbsent');
+        if (!eventId) throw new ValidationException('eventId');
+        if (!isAbsent) throw new ValidationException('isAbsent');
 
         const updatedEvent = await EventModel.update({ isAbsent: isAbsent }, { where: { eventId: eventId } });
 
