@@ -1,16 +1,29 @@
-import { PromisingInfo, PromisingRequest } from '../dtos/promising/request';
+import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import { PromisingResponse } from '../dtos/promising/response';
+import { PromisingResponse, TimeTableResponse, TimeTableUnit } from '../dtos/promising/response';
 import { PromiseReponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
 import User from '../models/user';
-import promiseService from './promise-service';
 import eventService from './event-service';
-import timeService from './time-service';
+import promiseService from './promise-service';
 import EventModel from '../models/event';
+import TimeModel from '../models/time';
+import timeUtil from '../utils/time';
+import color from '../constants/color.json';
+import index from '../constants/color-index.json';
+import { UserResponse } from '../dtos/user/response';
+import timeService from './time-service';
 import userService from './user-service';
+
+interface ColorType {
+  FIRST: string;
+  SECOND: string;
+  THIRD: string;
+  FOURTH: string;
+  FIFTH: string;
+}
 
 class PromisingService {
   async create(promisingInfo: PromisingInfo) {
@@ -40,25 +53,24 @@ class PromisingService {
         model: EventModel,
         required: true,
         where: { userId: userId },
-        attributes: ['eventId'],
+        attributes: ['eventId']
       },
-      raw: true,
-    })
+      raw: true
+    });
 
     const ownPromisingList: Array<PromisingModel> = await PromisingModel.findAll({
       attributes: ['promisingId'],
       where: { ownerId: userId },
       raw: true
-    })
+    });
     const ownPromisingIdList = Object.values(ownPromisingList.map((x: any) => x.promisingId));
 
     for (let i = 0; i < promisingList.length; i++) {
-      const promisingInfo = promisingList[i]
+      const promisingInfo = promisingList[i];
       promisingInfo['ownEvents.eventId'] = undefined;
       if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
         promisingInfo.isOwn = true;
-      else
-        promisingInfo.isOwn = false;
+      else promisingInfo.isOwn = false;
     }
     return promisingList;
   }
@@ -67,10 +79,10 @@ class PromisingService {
     const promising = await this.getPromisingInfo(promisingId);
     const user = await userService.findOneById(userId);
 
-    const savedEvent: EventModel = await eventService.create(promising, user)
-    const savedTime = await timeService.create(savedEvent, timeInfo)
+    const savedEvent: EventModel = await eventService.create(promising, user);
+    const savedTime = await timeService.create(savedEvent, timeInfo);
 
-    return { savedEvent, savedTime }
+    return { savedEvent, savedTime };
   }
 
   async confirm(id: number, date: Date, owner: User) {
@@ -94,6 +106,56 @@ class PromisingService {
     );
     await this.deleteOneById(id);
     return new PromiseReponse(promise, owner, category!);
+  }
+
+  async getTimeTable(id: number, unit = 0.5) {
+    const promising = await PromisingModel.findOne({
+      include: [
+        {
+          model: EventModel,
+          required: true,
+          include: [
+            { model: TimeModel, required: true },
+            { model: User, required: true }
+          ]
+        }
+      ],
+      where: { id }
+    });
+    if (!promising) throw new NotFoundException('Promising', id);
+
+    const events = promising.ownEvents;
+    const timeMap: Map<string, UserResponse[]> = new Map();
+    const allUsers: UserResponse[] = [];
+    events.forEach(({ user, eventTimes }) => {
+      allUsers.push(new UserResponse(user));
+      eventTimes.forEach((timeBlock) => {
+        timeUtil
+          .sliceTimeBlockByUnit(new Date(timeBlock.startTime), new Date(timeBlock.endTime), unit)
+          .forEach((timeUnit) => {
+            if (!timeMap.has(timeUnit)) {
+              timeMap.set(timeUnit, [new UserResponse(user)]);
+            } else {
+              timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, new UserResponse(user)]);
+            }
+          });
+      });
+    });
+
+    const timeTable = Array.from(timeMap, ([date, users]) => {
+      const colorStr: keyof ColorType = index[events.length - 1][users.length] as keyof ColorType;
+      return new TimeTableUnit(date, users.length, users, color[colorStr]);
+    });
+    const colors = index[events.length - 1].map((colorStr) => color[colorStr as keyof ColorType]);
+
+    return new TimeTableResponse(
+      allUsers,
+      colors,
+      promising.minTime,
+      promising.maxTime,
+      unit,
+      timeTable
+    );
   }
 
   async findOneById(id: number) {

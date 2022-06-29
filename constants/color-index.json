@@ -1,0 +1,24 @@
+[
+  ["FIRST", "SECOND"],
+  ["FIRST", "SECOND", "THIRD"],
+  ["FIRST", "SECOND", "THIRD", "FOURTH"],
+  ["FIRST", "SECOND", "THIRD", "FOURTH", "FIFTH"],
+  ["FIRST", "SECOND", "SECOND", "THIRD", "FOURTH", "FIFTH"],
+  ["FIRST", "SECOND", "SECOND", "THIRD", "THIRD", "FOURTH", "FIFTH"],
+  ["FIRST", "SECOND", "SECOND", "THIRD", "THIRD", "FOURTH", "FOURTH", "FIFTH"],
+  ["FIRST", "SECOND", "SECOND", "SECOND", "THIRD", "THIRD", "FOURTH", "FOURTH", "FIFTH"],
+  ["FIRST", "SECOND", "SECOND", "SECOND", "THIRD", "THIRD", "THIRD", "FOURTH", "FOURTH", "FIFTH"],
+  [
+    "FIRST",
+    "SECOND",
+    "SECOND",
+    "SECOND",
+    "THIRD",
+    "THIRD",
+    "THIRD",
+    "FOURTH",
+    "FOURTH",
+    "FOURTH",
+    "FIFTH"
+  ]
+]
