@@ -2,7 +2,7 @@ import promisingService from '../services/promising-service';
 import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
-import { NextFunction, Response } from 'express';
+import { Response } from 'express';
 import PromisingModel from '../models/promising';
 import { TimeRequest } from '../dtos/time/request';
 import { PromisingResponse } from '../dtos/promising/response';
@@ -47,14 +47,10 @@ class PromisingController {
 
   @Get('/promisings/user')
   @UseBefore(UserAuthMiddleware)
-  async getPromisingsByUser(@Res() res: Response, next: NextFunction) {
-    try {
-      const userId = res.locals.user.id;
-      const promisingList = await promisingService.getPromisingByUser(userId);
-      return res.status(200).send(promisingList);
-    } catch (err: any) {
-      next(err);
-    }
+  async getPromisingsByUser(@Res() res: Response) {
+    const userId = res.locals.user.id;
+    const promisingList = await promisingService.getPromisingByUser(userId);
+    return res.status(200).send(promisingList);
   }
 
   @Post('/promisings/:promisingId/time-response')
