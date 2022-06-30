@@ -1,5 +1,14 @@
 import promisingService from '../services/promising-service';
-import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
+import {
+  JsonController,
+  Body,
+  Post,
+  Res,
+  UseBefore,
+  Get,
+  Param,
+  BodyParam
+} from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
@@ -30,7 +39,7 @@ class PromisingController {
     return res.status(200).send({ promisingResponse, eventTimeResponse });
   }
 
-  @Get('/promisings/id/:promisingsId')
+  @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('promisingId');
@@ -45,7 +54,7 @@ class PromisingController {
     return res.status(200).send(timeTable);
   }
 
-  @Get('/promisings/user')
+  @Get('/user')
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {
     const userId = res.locals.user.id;
@@ -53,7 +62,7 @@ class PromisingController {
     return res.status(200).send(promisingList);
   }
 
-  @Post('/promisings/:promisingId/time-response')
+  @Post('/:promisingId/time-response')
   @UseBefore(UserAuthMiddleware)
   async responseTime(
     @Param('promisingId') promisingId: number,
@@ -67,6 +76,17 @@ class PromisingController {
       timeInfo
     );
     return res.status(200).send(eventTimeResponse);
+  }
+
+  @Post('/:promisingId/confirmation')
+  @UseBefore(UserAuthMiddleware)
+  async confirmPromising(
+    @Param('promisingId') promisingId: number,
+    @BodyParam('promiseDate') date: Date,
+    @Res() res: Response
+  ) {
+    const response = await promisingService.confirm(promisingId, date, res.locals.user);
+    return res.status(200).send(response);
   }
 }
 
