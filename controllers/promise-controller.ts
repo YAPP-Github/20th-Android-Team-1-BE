@@ -3,7 +3,7 @@ import {
     Res,
     Get,
     UseBefore,
-    Param
+    BodyParam
 } from 'routing-controllers';
 import { Response } from 'express';
 import promiseService from '../services/promise-service';
@@ -21,12 +21,21 @@ class PromiseController {
         return res.status(200).send(promisingResponse);
     }
 
-    @Get('/month/:month')
+    @Get('/month')
     @UseBefore(UserAuthMiddleware)
-    async getPromiseByMonth(@Param('month') month: number, @Res() res: Response) {
+    async getPromiseByMonth(@BodyParam('dateTime') dateTime: Date, @Res() res: Response) {
         const userId = res.locals.user.id;
 
-        const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByMonth(userId, month);
+        const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByMonth(userId, dateTime);
+        return res.status(200).send(promiseResponse);
+    }
+
+    @Get('/date')
+    @UseBefore(UserAuthMiddleware)
+    async getPromiseByDate(@BodyParam('dateTime') dateTime: Date, @Res() res: Response) {
+        const userId = res.locals.user.id;
+
+        const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByDate(userId, dateTime);
         return res.status(200).send(promiseResponse);
     }
 }

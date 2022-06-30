@@ -35,7 +35,8 @@ class PromiseService {
     return promises;
   }
 
-  async getPromiseByMonth(userId: number, month: number) {
+  async getPromiseByMonth(userId: number, dateTime: Date) {
+    const year = dateTime.getFullYear(), month = dateTime.getMonth() + 1
     const promises: Array<PromiseModel> = await PromiseModel.findAll({
       include: [
         {
@@ -46,7 +47,31 @@ class PromiseService {
         }
       ],
       raw: true,
-      where: sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month),
+      where: {
+        [sequelize.Op.and]: [
+          sequelize.where(sequelize.fn('YEAR', sequelize.col('promiseDate')), year),
+          sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month)
+        ]
+      },
+    });
+    return promises;
+  }
+
+  async getPromiseByDate(userId: number, dateTime: Date) {
+    const year = dateTime.getFullYear(), month = dateTime.getMonth() + 1, date = dateTime.getDate();
+    const dateString = year + '-' + month + '-' + date;
+
+    const promises: Array<PromiseModel> = await PromiseModel.findAll({
+      include: [
+        {
+          model: User,
+          as: 'members',
+          where: { userId: userId },
+          attributes: []
+        }
+      ],
+      raw: true,
+      where: sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString)
     });
     return promises;
   }
