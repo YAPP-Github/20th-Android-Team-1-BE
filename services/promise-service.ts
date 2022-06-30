@@ -18,6 +18,21 @@ class PromiseService {
     await savedPromise.$set('members', members);
     return savedPromise;
   }
+
+  async getPromiseByUser(userId: number) {
+    const promises: Array<PromiseModel> = await PromiseModel.findAll({
+      include: [
+        {
+          model: User,
+          as: 'members',
+          where: { userId: userId },
+          required: true,
+        }
+      ],
+      raw: true
+    });
+    return promises;
+  }
 }
 
 export default new PromiseService();
