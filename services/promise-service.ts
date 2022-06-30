@@ -1,6 +1,7 @@
 import CategoryKeyword from '../models/category-keyword';
 import PromiseModel from '../models/promise';
 import User from '../models/user';
+import sequelize from 'sequelize';
 
 class PromiseService {
   async create(
@@ -26,10 +27,26 @@ class PromiseService {
           model: User,
           as: 'members',
           where: { userId: userId },
-          required: true,
+          attributes: []
         }
       ],
       raw: true
+    });
+    return promises;
+  }
+
+  async getPromiseByMonth(userId: number, month: number) {
+    const promises: Array<PromiseModel> = await PromiseModel.findAll({
+      include: [
+        {
+          model: User,
+          as: 'members',
+          where: { userId: userId },
+          attributes: []
+        }
+      ],
+      raw: true,
+      where: sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month),
     });
     return promises;
   }
