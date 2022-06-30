@@ -9,6 +9,7 @@ import { Response } from 'express';
 import promiseService from '../services/promise-service';
 import PromiseModel from '../models/promise';
 import { UserAuthMiddleware } from '../middlewares/auth';
+import { ValidationException } from '../utils/error';
 
 @JsonController('/promises')
 class PromiseController {
@@ -24,6 +25,7 @@ class PromiseController {
     @Get('/month')
     @UseBefore(UserAuthMiddleware)
     async getPromiseByMonth(@BodyParam('dateTime') dateTime: Date, @Res() res: Response) {
+        if (!dateTime) throw new ValidationException('dateTime');
         const userId = res.locals.user.id;
 
         const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByMonth(userId, dateTime);
@@ -33,6 +35,7 @@ class PromiseController {
     @Get('/date')
     @UseBefore(UserAuthMiddleware)
     async getPromiseByDate(@BodyParam('dateTime') dateTime: Date, @Res() res: Response) {
+        if (!dateTime) throw new ValidationException('dateTime');
         const userId = res.locals.user.id;
 
         const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByDate(userId, dateTime);
