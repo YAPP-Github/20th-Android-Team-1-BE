@@ -16,6 +16,8 @@ import index from '../constants/color-index.json';
 import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
 import userService from './user-service';
+import promisingDateService from './promising-date-service'
+import PromisingDate from '../models/promising-date'
 
 interface ColorType {
   FIRST: string;
@@ -81,8 +83,9 @@ class PromisingService {
 
     const savedEvent: EventModel = await eventService.create(promising, user);
     const savedTime = await timeService.create(savedEvent, timeInfo, promising);
+    const savedDateTime: Array<PromisingDate> = await promisingDateService.create(promising, savedEvent, timeInfo)
 
-    return { savedEvent, savedTime };
+    return { savedEvent, savedTime, savedDateTime };
   }
 
   async confirm(id: number, date: Date, owner: User) {
