@@ -9,6 +9,7 @@ import User from './user';
 import TimeModel from './time';
 import EventModel from './event';
 import PromisingModel from './promising';
+import PromisingDate from './promising-date'
 
 const sequelize = new Sequelize(
   config.development.database,
@@ -38,6 +39,7 @@ sequelize.addModels([
   CategoryKeyword,
   TimeModel,
   PromisingModel,
+  PromisingDate,
   EventModel
 ]);
 const db = { sequelize: sequelize, Sequelize };
