@@ -80,7 +80,7 @@ class PromisingService {
     const user = await userService.findOneById(userId);
 
     const savedEvent: EventModel = await eventService.create(promising, user);
-    const savedTime = await timeService.create(savedEvent, timeInfo);
+    const savedTime = await timeService.create(savedEvent, timeInfo, promising);
 
     return { savedEvent, savedTime };
   }
