@@ -24,15 +24,17 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, ...promisingInfo } = req;
-    const userId = res.locals.user.id;
 
-    const promisingResponse: PromisingResponse = await promisingService.create(promisingInfo);
+    const promisingResponse: PromisingResponse = await promisingService.create(
+      promisingInfo,
+      res.locals.user
+    );
     const promisingId = promisingResponse.id;
 
     const timeInfo: TimeRequest = { unit, timeTable };
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
       promisingId,
-      userId,
+      res.locals.user,
       timeInfo
     );
 
