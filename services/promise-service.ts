@@ -57,7 +57,7 @@ class PromiseService {
     return promises;
   }
 
-  async getPromiseByDate(userId: number, dateTime: Date) {
+  async getPromisesByDate(userId: number, dateTime: Date) {
     const year = dateTime.getFullYear(), month = dateTime.getMonth() + 1, date = dateTime.getDate();
     const dateString = year + '-' + month + '-' + date;
 

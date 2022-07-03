@@ -34,11 +34,11 @@ class PromiseController {
 
     @Get('/date')
     @UseBefore(UserAuthMiddleware)
-    async getPromiseByDate(@BodyParam('dateTime') dateTime: Date, @Res() res: Response) {
+    async getPromisesByDate(@BodyParam('dateTime') dateTime: Date, @Res() res: Response) {
         if (!dateTime) throw new ValidationException('dateTime');
         const userId = res.locals.user.id;
 
-        const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByDate(userId, dateTime);
+        const promiseResponse: Array<PromiseModel> = await promiseService.getPromisesByDate(userId, dateTime);
         return res.status(200).send(promiseResponse);
     }
 }
