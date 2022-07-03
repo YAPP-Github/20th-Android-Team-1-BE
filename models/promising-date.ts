@@ -11,7 +11,7 @@ import {
 } from 'sequelize-typescript';
 import PromisingModel from './promising';
 
-@Table({ tableName: 'Promising_Date', modelName: 'PromisingDate' })
+@Table({ tableName: 'PromisingDate', modelName: 'PromisingDate' })
 class PromisingDateModel extends Model {
   @PrimaryKey
   @AutoIncrement

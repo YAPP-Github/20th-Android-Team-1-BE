@@ -6,18 +6,18 @@ import db from './models';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 import { ErrorHandler } from './middlewares/error';
-import * as swaggerUi from "swagger-ui-express";
-import YAML from 'yamljs'
+import * as swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
 import path from 'path';
-
+import timeUtil from './utils/time';
 
 const app = express();
 
 const LOGGER = process.env.LOGGER || 'dev';
 
-const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'))
+const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'));
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(morgan(LOGGER));
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
@@ -43,3 +43,5 @@ app.listen(PORT, async () => {
     console.log('❎ Express Server Running failed');
   }
 });
+
+console.log(timeUtil.isPossibleDate(new Date(2019, 1, 11), [new Date(), new Date(2019, 1, 11)]));
