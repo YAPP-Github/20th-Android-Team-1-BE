@@ -9,8 +9,6 @@ import { ErrorHandler } from './middlewares/error';
 import * as swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
 import path from 'path';
-import timeUtil from './utils/time';
-
 const app = express();
 
 const LOGGER = process.env.LOGGER || 'dev';
@@ -43,5 +41,3 @@ app.listen(PORT, async () => {
     console.log('❎ Express Server Running failed');
   }
 });
-
-console.log(timeUtil.isPossibleDate(new Date(2019, 1, 11), [new Date(), new Date(2019, 1, 11)]));
