@@ -61,6 +61,7 @@ const timeUtil = {
     }
     return resultList;
   },
+
   getDateList(unit: number, day: Date, indexList: Array<any>) {
     const resultList: Array<TimeResponse> = [];
     const dayTime = new Date(day);
@@ -114,6 +115,17 @@ const timeUtil = {
       timeUnits.push(this.formatDate2String(new Date(cur)));
     }
     return timeUnits;
+  },
+
+  isPossibleDate(date: Date, candidates: Date[]) {
+    return (
+      candidates.filter(
+        (candidate) =>
+          candidate.getFullYear() == date.getFullYear() &&
+          candidate.getMonth() == date.getMonth() &&
+          candidate.getDate() == date.getDate()
+      ).length != 0
+    );
   }
 };
 
