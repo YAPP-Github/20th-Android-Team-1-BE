@@ -10,15 +10,16 @@ import promiseService from '../services/promise-service';
 import PromiseModel from '../models/promise';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { ValidationException } from '../utils/error';
+import PromiseRequest from '../dtos/promise/request'
 
 @JsonController('/promises')
 class PromiseController {
 
     @Get('/user')
     @UseBefore(UserAuthMiddleware)
-    async getPromisingById(@Res() res: Response) {
+    async getPromisesById(@Res() res: Response) {
         const userId = res.locals.user.id;
-        const promisingResponse: Array<PromiseModel> = await promiseService.getPromiseByUser(userId);
+        const promisingResponse: Array<PromiseRequest> = await promiseService.getPromiseByUser(userId);
         return res.status(200).send(promisingResponse);
     }
 
@@ -28,7 +29,7 @@ class PromiseController {
         if (!dateTime) throw new ValidationException('dateTime');
         const userId = res.locals.user.id;
 
-        const promiseResponse: Array<PromiseModel> = await promiseService.getPromiseByMonth(userId, dateTime);
+        const promiseResponse: Array<PromiseRequest> = await promiseService.getPromiseByMonth(userId, dateTime);
         return res.status(200).send(promiseResponse);
     }
 
@@ -38,7 +39,7 @@ class PromiseController {
         if (!dateTime) throw new ValidationException('dateTime');
         const userId = res.locals.user.id;
 
-        const promiseResponse: Array<PromiseModel> = await promiseService.getPromisesByDate(userId, dateTime);
+        const promiseResponse: Array<PromiseRequest> = await promiseService.getPromisesByDate(userId, dateTime);
         return res.status(200).send(promiseResponse);
     }
 }

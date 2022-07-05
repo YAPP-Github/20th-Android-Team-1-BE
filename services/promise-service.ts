@@ -27,7 +27,8 @@ class PromiseService {
           model: User,
           as: 'members',
           where: { userId: userId },
-          attributes: []
+          attributes: [],
+          through: { attributes: [] }
         }
       ],
       raw: true
@@ -43,7 +44,8 @@ class PromiseService {
           model: User,
           as: 'members',
           where: { userId: userId },
-          attributes: []
+          attributes: [],
+          through: { attributes: [] }
         }
       ],
       raw: true,
@@ -67,7 +69,8 @@ class PromiseService {
           model: User,
           as: 'members',
           where: { userId: userId },
-          attributes: []
+          attributes: [],
+          through: { attributes: [] }
         }
       ],
       raw: true,
