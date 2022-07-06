@@ -2,6 +2,7 @@ import CategoryKeyword from '../models/category-keyword';
 import PromiseModel from '../models/promise';
 import User from '../models/user';
 import sequelize from 'sequelize';
+import promiseUserService from './promise-user-service';
 
 class PromiseService {
   async create(
@@ -32,8 +33,9 @@ class PromiseService {
         }
       ],
       raw: true
-    });
-    return promises;
+    });    
+    const promiseMember:any = await promiseUserService.findPromiseMembers(promises,userId);    
+    return promiseMember;
   }
 
   async getPromiseByMonth(userId: number, dateTime: Date) {
