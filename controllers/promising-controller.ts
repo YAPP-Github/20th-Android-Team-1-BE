@@ -19,29 +19,34 @@ import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse } from '../dtos/category/response';
+import promiseDateService from '../services/promise-date-service';
+import userService from '../services/user-service';
+import { BadRequestException } from '../utils/error';
 
 @JsonController('/promisings')
 class PromisingController {
   @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
-    const { unit, timeTable, ...promisingInfo } = req;
-
+    const { unit, timeTable, availDate,...promisingInfo } = req;
+    if (!(availDate.length>10))
+      throw new BadRequestException('availDate', 'over maximum count');
+    
     const promisingResponse: PromisingResponse = await promisingService.create(
       promisingInfo,
       res.locals.user
     );
     const promisingId = promisingResponse.id;
 
+    const promisingDate = await promiseDateService.create(promisingResponse,availDate)
     const timeInfo: TimeRequest = { unit, timeTable };
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
       promisingId,
       res.locals.user,
       timeInfo
     );
-
-    return res.status(200).send({ promisingResponse, eventTimeResponse });
-  }
+    return res.status(200).send({ promisingResponse, eventTimeResponse, promisingDate });
+  } 
 
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
