@@ -22,6 +22,7 @@ import { CategoryResponse } from '../dtos/category/response';
 import promiseDateService from '../services/promise-date-service';
 import userService from '../services/user-service';
 import { BadRequestException } from '../utils/error';
+import promisingDateService from '../services/promise-date-service'
 
 @JsonController('/promisings')
 class PromisingController {
@@ -50,10 +51,14 @@ class PromisingController {
 
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
-  async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
-    if (!promisingId) throw new ValidationException('promisingId');
-    const promisingResponse: PromisingModel = await promisingService.getPromisingInfo(promisingId);
-    return res.status(200).send(promisingResponse);
+  async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
+    if (!promisingId) throw new ValidationException('');
+    let promisingResponse: any  = await promisingService.getPromisingInfo(promisingId);
+
+    const promisingDateResponse= await promisingDateService.findDatesById(promisingId);    
+    const promisingInfo = {promisingResponse, availDate:promisingDateResponse }
+   
+    return res.status(200).send(promisingInfo);
   }
 
   @Get('/:promisingId/time-table')

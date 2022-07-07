@@ -1,5 +1,6 @@
 import PromisingDate from '../models/promising-date';
 import { PromisingResponse } from '../dtos/promising/response';
+import { NotFoundException } from '../utils/error';
 
 class PromisingDateService {
     async create(promisingInfo: PromisingResponse, availDates: Array<Date>) {
@@ -16,6 +17,14 @@ class PromisingDateService {
             savedPromisingDateList.push(savedPromisingDate)
         }
         return savedPromisingDateList
+    }
+    async findDatesById(promisingId: number){
+        const promisingDateResponse = await PromisingDate.findAll({where :{promisingId: promisingId}});
+        if (!promisingDateResponse) throw new NotFoundException('PromisingDate in', promisingId);
+
+        const promisingDateList = promisingDateResponse.map(promisingDateResponse => promisingDateResponse.date)
+        console.log(promisingDateList)
+        return promisingDateList
     }
 
 }
