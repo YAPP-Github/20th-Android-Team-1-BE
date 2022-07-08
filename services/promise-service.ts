@@ -30,9 +30,10 @@ class PromiseService {
           where: { userId: userId },
           attributes: [],
           through: { attributes: [] }
-        }
-      ],
-      raw: true
+        },
+        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+        { model: CategoryKeyword, as: 'category', required: true }
+      ]
     });
     const promiseMember: any = await promiseUserService.findPromiseMembers(promises, userId);
     return promiseMember;
@@ -49,9 +50,10 @@ class PromiseService {
           where: { userId: userId },
           attributes: [],
           through: { attributes: [] }
-        }
+        },
+        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+        { model: CategoryKeyword, as: 'category', required: true }
       ],
-      raw: true,
       where: {
         [sequelize.Op.and]: [
           sequelize.where(sequelize.fn('YEAR', sequelize.col('promiseDate')), year),
@@ -76,9 +78,10 @@ class PromiseService {
           where: { userId: userId },
           attributes: [],
           through: { attributes: [] }
-        }
+        },
+        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+        { model: CategoryKeyword, as: 'category', required: true }
       ],
-      raw: true,
       where: sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString)
     });
     return promises;
