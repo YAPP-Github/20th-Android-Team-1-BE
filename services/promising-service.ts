@@ -50,8 +50,8 @@ class PromisingService {
         model: EventModel,
         required: true,
         where: { userId: userId },
-        attributes: ['eventId']
-      },
+        attributes: [],
+        },
       raw: true
     });
 
@@ -67,7 +67,6 @@ class PromisingService {
       const userCount = await EventModel.count({where : {promisingId : promisingInfo.id}})
       
       promisingInfo.memberCount = userCount;
-      promisingInfo['ownEvents.eventId'] = undefined;
       
       if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
         promisingInfo.isOwn = true;
