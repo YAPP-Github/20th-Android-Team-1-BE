@@ -3,7 +3,8 @@ import { Response } from 'express';
 import promiseService from '../services/promise-service';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { ValidationException } from '../utils/error';
-import PromiseRequest from '../dtos/promise/request';
+import { PromiseResponse } from '../dtos/promise/response';
+import PromiseModel from '../models/promise';
 
 @JsonController('/promises')
 class PromiseController {
@@ -11,8 +12,13 @@ class PromiseController {
   @UseBefore(UserAuthMiddleware)
   async getPromisesById(@Res() res: Response) {
     const userId = res.locals.user.id;
-    const promisingResponse: Array<PromiseRequest> = await promiseService.getPromisesByUser(userId);
-    return res.status(200).send(promisingResponse);
+
+    const promises = await promiseService.getPromisesByUser(userId);
+    const response = promises.map(
+      (promise: PromiseModel) =>
+        new PromiseResponse(promise, promise.owner, promise.category, promise.members)
+    );
+    return res.status(200).send(response);
   }
 
   @Get('/month')
@@ -21,11 +27,11 @@ class PromiseController {
     if (!dateTime) throw new ValidationException('dateTime');
     const userId = res.locals.user.id;
 
-    const promiseResponse: Array<PromiseRequest> = await promiseService.getPromisesByMonth(
-      userId,
-      dateTime
+    const promises = await promiseService.getPromisesByMonth(userId, dateTime);
+    const response = promises.map(
+      (promise) => new PromiseResponse(promise, promise.owner, promise.category, promise.members)
     );
-    return res.status(200).send(promiseResponse);
+    return res.status(200).send(response);
   }
 
   @Get('/date')
@@ -34,11 +40,11 @@ class PromiseController {
     if (!dateTime) throw new ValidationException('dateTime');
     const userId = res.locals.user.id;
 
-    const promiseResponse: Array<PromiseRequest> = await promiseService.getPromisesByDate(
-      userId,
-      dateTime
+    const promises = await promiseService.getPromisesByDate(userId, dateTime);
+    const response = promises.map(
+      (promise) => new PromiseResponse(promise, promise.owner, promise.category, promise.members)
     );
-    return res.status(200).send(promiseResponse);
+    return res.status(200).send(response);
   }
 }
 
