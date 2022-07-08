@@ -64,7 +64,11 @@ class PromisingService {
 
     for (let i = 0; i < promisingList.length; i++) {
       const promisingInfo = promisingList[i];
+      const userCount = await EventModel.count({where : {promisingId : promisingInfo.id}})
+      
+      promisingInfo.memberCount = userCount;
       promisingInfo['ownEvents.eventId'] = undefined;
+      
       if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
         promisingInfo.isOwn = true;
       else promisingInfo.isOwn = false;
