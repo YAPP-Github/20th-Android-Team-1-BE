@@ -4,12 +4,13 @@ import timeUtil from '../utils/time';
 import TimeResponse from '../dtos/time/response';
 import TimeModel from '../models/time';
 import eventService from './event-service';
+import PromisingModel from '../models/promising';
 
 
 class TimeService {
-    async create(eventInfo: EventModel, timeInfo: TimeRequest) {
+    async create( promising:PromisingModel, eventInfo: EventModel, timeInfo: TimeRequest) {
         const responseList: Array<TimeModel> = []
-        const resultList: Array<TimeResponse> = timeUtil.boolean2Time(timeInfo) as Array<TimeResponse>
+        const resultList: Array<TimeResponse> = timeUtil.boolean2Time(timeInfo,promising) as Array<TimeResponse>
 
         if (resultList.length == 0) {
             eventService.updateIsAbsent(eventInfo.id, true);

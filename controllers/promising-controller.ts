@@ -30,7 +30,7 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, availDate,...promisingInfo } = req;
-    if (!(availDate.length>10))
+    if (availDate.length>10)
       throw new BadRequestException('availDate', 'over maximum count');
     
     const promisingResponse: PromisingResponse = await promisingService.create(
@@ -86,10 +86,11 @@ class PromisingController {
     @Body() timeInfo: TimeRequest,
     @Res() res: Response
   ) {
-    const userId = res.locals.user.id;
+    const user = res.locals.user;
+
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
       promisingId,
-      userId,
+      user,
       timeInfo
     );
     return res.status(200).send(eventTimeResponse);
