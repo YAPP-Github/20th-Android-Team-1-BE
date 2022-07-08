@@ -35,7 +35,7 @@ class PromiseService {
         { model: CategoryKeyword, as: 'category', required: true }
       ]
     });
-    const promiseMember: any = await promiseUserService.findPromiseMembers(promises, userId);
+    const promiseMember: any = await promiseUserService.findPromiseMembers(promises);
     return promiseMember;
   }
 
