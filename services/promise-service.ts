@@ -35,8 +35,7 @@ class PromiseService {
         { model: CategoryKeyword, as: 'category', required: true }
       ]
     });
-    const promiseMember: any = await promiseUserService.findPromiseMembers(promises);
-    return promiseMember;
+    return await promiseUserService.findPromiseMembers(promises);
   }
 
   async getPromisesByMonth(userId: number, dateTime: Date) {
@@ -61,7 +60,7 @@ class PromiseService {
         ]
       }
     });
-    return promises;
+    return await promiseUserService.findPromiseMembers(promises);
   }
 
   async getPromisesByDate(userId: number, dateTime: Date) {
@@ -84,7 +83,7 @@ class PromiseService {
       ],
       where: sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString)
     });
-    return promises;
+    return await promiseUserService.findPromiseMembers(promises);
   }
 }
 
