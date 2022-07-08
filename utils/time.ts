@@ -61,6 +61,7 @@ const timeUtil = {
     }
     return resultList;
   },
+
   getDateList(unit: number, day: Date, indexList: Array<any>) {
     const resultList: Array<TimeResponse> = [];
     const dayTime = new Date(day);
@@ -121,6 +122,17 @@ const timeUtil = {
     const params = str.split('-');
     const res = { year: +params[0], month: +params[1] - 1, day: params[2] ? +params[2] : 1 };
     return new Date(new Date(res.year, res.month, res.day).getTime() + 540 * 60 * 1000);
+  },
+
+  isPossibleDate(date: Date, candidates: Date[]) {
+    return (
+      candidates.filter(
+        (candidate) =>
+          candidate.getFullYear() == date.getFullYear() &&
+          candidate.getMonth() == date.getMonth() &&
+          candidate.getDate() == date.getDate()
+      ).length != 0
+    );
   }
 };
 

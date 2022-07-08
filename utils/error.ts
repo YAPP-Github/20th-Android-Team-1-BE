@@ -1,20 +1,19 @@
+import timeUtil from './time';
+
 export class ApplicationError extends Error {
-  timestamp: Date;
+  timestamp: string;
   status: number;
   error: string;
   exception: string;
-  message: string;
 
-  constructor(error: string, status = 500) {
-    super(error);
-    this.timestamp = new Date();
+  constructor(message: string, status = 500, error = '') {
+    super(message);
+    this.timestamp = timeUtil.formatDate2String(new Date());
     this.status = status;
     this.error = error;
     this.exception = '';
-    this.message = '';
   }
 }
-
 export class NotFoundException extends ApplicationError {
   constructor(model: string, id: number | string) {
     super(`[NotFoundError] id ${id} not found in ${model}`, 404);

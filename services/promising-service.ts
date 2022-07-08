@@ -15,7 +15,6 @@ import color from '../constants/color.json';
 import index from '../constants/color-index.json';
 import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
-import userService from './user-service';
 
 interface ColorType {
   FIRST: string;
@@ -26,15 +25,13 @@ interface ColorType {
 }
 
 class PromisingService {
-  async create(promisingInfo: PromisingInfo) {
+  async create(promisingInfo: PromisingInfo, owner: User) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
-    const user = await User.findOne({ where: { id: promisingInfo.ownerId } });
-
-    if (!user) throw new NotFoundException('User', promisingInfo.ownerId);
     if (!category) throw new NotFoundException('CategoryKeyword', promisingInfo.categoryId);
 
     const promising = new PromisingModel(promisingInfo);
     const savedPromising = await promising.save();
+    await promising.$set('owner', owner);
     const promisingResponse = new PromisingResponse(savedPromising, category);
 
     return promisingResponse;
@@ -75,9 +72,8 @@ class PromisingService {
     return promisingList;
   }
 
-  async responseTime(promisingId: number, userId: number, timeInfo: TimeRequest) {
+  async responseTime(promisingId: number, user: User, timeInfo: TimeRequest) {
     const promising = await this.getPromisingInfo(promisingId);
-    const user = await userService.findOneById(userId);
 
     const savedEvent: EventModel = await eventService.create(promising, user);
     const savedTime = await timeService.create(savedEvent, timeInfo);

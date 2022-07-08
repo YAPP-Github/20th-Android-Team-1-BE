@@ -17,6 +17,8 @@ import { TimeRequest } from '../dtos/time/request';
 import { PromisingResponse } from '../dtos/promising/response';
 import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
+import categoryService from '../services/category-service';
+import { CategoryResponse } from '../dtos/category/response';
 
 @JsonController('/promisings')
 class PromisingController {
@@ -24,15 +26,17 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, ...promisingInfo } = req;
-    const userId = res.locals.user.id;
 
-    const promisingResponse: PromisingResponse = await promisingService.create(promisingInfo);
+    const promisingResponse: PromisingResponse = await promisingService.create(
+      promisingInfo,
+      res.locals.user
+    );
     const promisingId = promisingResponse.id;
 
     const timeInfo: TimeRequest = { unit, timeTable };
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
       promisingId,
-      userId,
+      res.locals.user,
       timeInfo
     );
 
@@ -85,8 +89,15 @@ class PromisingController {
     @BodyParam('promiseDate') date: Date,
     @Res() res: Response
   ) {
-    const response = await promisingService.confirm(promisingId, date, res.locals.user);
-    return res.status(200).send(response);
+    const promise = await promisingService.confirm(promisingId, date, res.locals.user);
+    return res.status(200).send(promise);
+  }
+
+  @Get('/categories')
+  @UseBefore(UserAuthMiddleware)
+  async getPromisingCategories(@Res() res: Response) {
+    const categories = await categoryService.getAll();
+    return res.status(200).send(categories.map((category) => new CategoryResponse(category)));
   }
 }
 
