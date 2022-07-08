@@ -65,7 +65,10 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const timeTable = await promisingService.getTimeTable(promisingId);
-    return res.status(200).send(timeTable);
+    const promisingDateResponse= await promisingDateService.findDatesById(promisingId);    
+    
+    const timeResponse = {timeTable, availDate:promisingDateResponse }
+    return res.status(200).send(timeResponse);
   }
 
   @Get('/user')
