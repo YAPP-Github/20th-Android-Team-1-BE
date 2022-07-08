@@ -114,6 +114,13 @@ const timeUtil = {
       timeUnits.push(this.formatDate2String(new Date(cur)));
     }
     return timeUnits;
+  },
+
+  string2Date(str: string) {
+    //yyyy-mm-dd or yyyy-mm
+    const params = str.split('-');
+    const res = { year: +params[0], month: +params[1] - 1, day: params[2] ? +params[2] : 1 };
+    return new Date(new Date(res.year, res.month, res.day).getTime() + 540 * 60 * 1000);
   }
 };
 
