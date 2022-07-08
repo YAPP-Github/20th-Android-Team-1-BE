@@ -21,7 +21,7 @@ class PromiseService {
     return savedPromise;
   }
 
-  async getPromiseByUser(userId: number) {
+  async getPromisesByUser(userId: number) {
     const promises: Array<PromiseModel> = await PromiseModel.findAll({
       include: [
         {
@@ -33,13 +33,14 @@ class PromiseService {
         }
       ],
       raw: true
-    });    
-    const promiseMember:any = await promiseUserService.findPromiseMembers(promises,userId);    
+    });
+    const promiseMember: any = await promiseUserService.findPromiseMembers(promises, userId);
     return promiseMember;
   }
 
-  async getPromiseByMonth(userId: number, dateTime: Date) {
-    const year = dateTime.getFullYear(), month = dateTime.getMonth() + 1
+  async getPromisesByMonth(userId: number, dateTime: Date) {
+    const year = dateTime.getFullYear(),
+      month = dateTime.getMonth() + 1;
     const promises: Array<PromiseModel> = await PromiseModel.findAll({
       include: [
         {
@@ -56,13 +57,15 @@ class PromiseService {
           sequelize.where(sequelize.fn('YEAR', sequelize.col('promiseDate')), year),
           sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month)
         ]
-      },
+      }
     });
     return promises;
   }
 
   async getPromisesByDate(userId: number, dateTime: Date) {
-    const year = dateTime.getFullYear(), month = dateTime.getMonth() + 1, date = dateTime.getDate();
+    const year = dateTime.getFullYear(),
+      month = dateTime.getMonth() + 1,
+      date = dateTime.getDate();
     const dateString = year + '-' + month + '-' + date;
 
     const promises: Array<PromiseModel> = await PromiseModel.findAll({
