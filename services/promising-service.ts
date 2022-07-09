@@ -1,6 +1,10 @@
 import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import { PromisingResponse, TimeTableResponse, TimeTableUnit } from '../dtos/promising/response';
+import {
+  CreatedPromisingResponse,
+  TimeTableResponse,
+  TimeTableUnit
+} from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
@@ -15,6 +19,8 @@ import color from '../constants/color.json';
 import index from '../constants/color-index.json';
 import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
+import PromisingDateModel from '../models/promising-date';
+import promisingDateService from './promising-date-service';
 
 interface ColorType {
   FIRST: string;
@@ -25,20 +31,35 @@ interface ColorType {
 }
 
 class PromisingService {
-  async create(promisingInfo: PromisingInfo, owner: User) {
+  async create(
+    promisingInfo: PromisingInfo,
+    owner: User,
+    availDate: Date[],
+    timeInfo: TimeRequest
+  ) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
     if (!category) throw new NotFoundException('CategoryKeyword', promisingInfo.categoryId);
 
     const promising = new PromisingModel(promisingInfo);
-    const savedPromising = await promising.save();
+    await promising.save();
     await promising.$set('owner', owner);
-    const promisingResponse = new PromisingResponse(savedPromising, category);
+    await promising.$set('ownCategory', category);
 
-    return promisingResponse;
+    const promisingDates = await promisingDateService.create(promising, availDate);
+    await this.responseTime(promising, owner, timeInfo);
+
+    return new CreatedPromisingResponse(promising, promisingDates);
   }
 
   async getPromisingInfo(promisingId: number) {
-    const promising = await PromisingModel.findOne({ where: { id: promisingId } });
+    const promising = await PromisingModel.findOne({
+      where: { id: promisingId },
+      include: [
+        {
+          model: PromisingDateModel
+        }
+      ]
+    });
     if (!promising) throw new NotFoundException('Promising', promisingId);
 
     return promising;
@@ -50,7 +71,7 @@ class PromisingService {
         model: EventModel,
         required: true,
         where: { userId: userId },
-        attributes: ['eventId']
+        attributes: []
       },
       raw: true
     });
@@ -64,7 +85,10 @@ class PromisingService {
 
     for (let i = 0; i < promisingList.length; i++) {
       const promisingInfo = promisingList[i];
-      promisingInfo['ownEvents.eventId'] = undefined;
+      const userCount = await EventModel.count({ where: { promisingId: promisingInfo.id } });
+
+      promisingInfo.memberCount = userCount;
+
       if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
         promisingInfo.isOwn = true;
       else promisingInfo.isOwn = false;
@@ -72,11 +96,9 @@ class PromisingService {
     return promisingList;
   }
 
-  async responseTime(promisingId: number, user: User, timeInfo: TimeRequest) {
-    const promising = await this.getPromisingInfo(promisingId);
-
+  async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {
     const savedEvent: EventModel = await eventService.create(promising, user);
-    const savedTime = await timeService.create(savedEvent, timeInfo);
+    const savedTime = await timeService.create(promising, savedEvent, timeInfo);
 
     return { savedEvent, savedTime };
   }

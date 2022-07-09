@@ -2,21 +2,32 @@ import PromisingModel from '../../models/promising';
 import CategoryKeyword from '../../models/category-keyword';
 import { UserResponse } from '../user/response';
 import timeUtil from '../../utils/time';
+import PromisingDateModel from '../../models/promising-date';
+
+export class CreatedPromisingResponse {
+  promising: PromisingResponse;
+  availableDates: PromisingDateModel[];
+
+  constructor(promising: PromisingModel, dates: PromisingDateModel[]) {
+    this.promising = new PromisingResponse(promising, promising.ownCategory);
+    this.availableDates = dates;
+  }
+}
 
 export class PromisingResponse {
   id: number;
   promisingName: string;
   ownerId: number;
-  minTime: Date;
-  maxTime: Date;
+  minTime: string;
+  maxTime: string;
   category: CategoryKeyword | any;
 
   constructor(promising: PromisingModel, category: CategoryKeyword | null) {
     this.id = promising.id;
     this.promisingName = promising.promisingName;
     this.ownerId = promising.ownerId;
-    this.minTime = promising.minTime;
-    this.maxTime = promising.maxTime;
+    this.minTime = timeUtil.formatDate2String(promising.minTime);
+    this.maxTime = timeUtil.formatDate2String(promising.maxTime);
     this.category = category;
   }
 }

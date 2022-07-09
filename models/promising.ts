@@ -13,6 +13,7 @@ import {
 import User from './user';
 import EventModel from './event';
 import CategoryKeyword from './category-keyword';
+import PromisingDateModel from './promising-date';
 
 @Table({ tableName: 'Promising', modelName: 'Promising' })
 class PromisingModel extends Model {
@@ -46,6 +47,9 @@ class PromisingModel extends Model {
 
   @HasMany(() => EventModel)
   ownEvents: EventModel[];
+
+  @HasMany(() => PromisingDateModel)
+  ownPromisingDates: PromisingDateModel[];
 
   @BelongsTo(() => User, 'ownerId')
   owner: User;

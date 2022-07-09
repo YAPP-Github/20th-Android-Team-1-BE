@@ -12,42 +12,47 @@ import {
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
-import PromisingModel from '../models/promising';
 import { TimeRequest } from '../dtos/time/request';
-import { PromisingResponse } from '../dtos/promising/response';
+import { CreatedPromisingResponse } from '../dtos/promising/response';
 import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse } from '../dtos/category/response';
+import { BadRequestException } from '../utils/error';
+import timeUtil from '../utils/time';
+import promisingDateService from '../services/promising-date-service';
 
 @JsonController('/promisings')
 class PromisingController {
   @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
-    const { unit, timeTable, ...promisingInfo } = req;
-
-    const promisingResponse: PromisingResponse = await promisingService.create(
-      promisingInfo,
-      res.locals.user
-    );
-    const promisingId = promisingResponse.id;
+    const { unit, timeTable, availDate } = req;
+    const promisingReq = {
+      promisingName: req.promisingName,
+      minTime: req.minTime,
+      maxTime: req.maxTime,
+      placeName: req.placeName,
+      categoryId: req.categoryId
+    };
+    if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
 
     const timeInfo: TimeRequest = { unit, timeTable };
-    const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
-      promisingId,
+    const response: CreatedPromisingResponse = await promisingService.create(
+      promisingReq,
       res.locals.user,
+      availDate,
       timeInfo
     );
-
-    return res.status(200).send({ promisingResponse, eventTimeResponse });
+    return res.status(200).send(response);
   }
 
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
-  async getPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
-    if (!promisingId) throw new ValidationException('promisingId');
-    const promisingResponse: PromisingModel = await promisingService.getPromisingInfo(promisingId);
+  async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
+    if (!promisingId) throw new ValidationException('');
+    const promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
+
     return res.status(200).send(promisingResponse);
   }
 
@@ -55,7 +60,10 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const timeTable = await promisingService.getTimeTable(promisingId);
-    return res.status(200).send(timeTable);
+    const promisingDateResponse = await promisingDateService.findDatesById(promisingId);
+
+    const timeResponse = { timeTable, availDate: promisingDateResponse };
+    return res.status(200).send(timeResponse);
   }
 
   @Get('/user')
@@ -73,10 +81,22 @@ class PromisingController {
     @Body() timeInfo: TimeRequest,
     @Res() res: Response
   ) {
-    const userId = res.locals.user.id;
+    const user = res.locals.user;
+    const promising = await promisingService.getPromisingInfo(promisingId);
+    const availDates = await promisingDateService.findDatesById(promising.id);
+
+    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
+      timeInfo,
+      promising,
+      availDates
+    );
+    if (!isPossibleTimeInfo) {
+      throw new BadRequestException('dateTime', 'not available or over maxTime');
+    }
+
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
-      promisingId,
-      userId,
+      promising,
+      user,
       timeInfo
     );
     return res.status(200).send(eventTimeResponse);

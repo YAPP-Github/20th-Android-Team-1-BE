@@ -1,5 +1,6 @@
-import { TimeRequest } from '../dtos/time/request';
+import { TimeRequest, TimeForChangingDate } from '../dtos/time/request';
 import TimeResponse from '../dtos/time/response';
+import PromisingModel from '../models/promising';
 
 const timeUtil = {
   HOUR: 60,
@@ -26,7 +27,7 @@ const timeUtil = {
     return resString;
   },
 
-  boolean2Time(timeInfo: TimeRequest) {
+  boolean2Time(timeInfo: TimeRequest, promising: PromisingModel) {
     const { unit, timeTable } = timeInfo;
     let resultList: Array<TimeResponse> = [];
 
@@ -56,20 +57,31 @@ const timeUtil = {
           }
         }
       }
-      dateList = this.getDateList(unit, day, availList);
+      const timeFormat = {
+        unit,
+        day,
+        indexList: availList,
+        minTime: promising.minTime,
+        maxTime: promising.maxTime
+      };
+      dateList = this.getDateList(timeFormat);
       resultList = resultList.concat(dateList);
     }
     return resultList;
   },
 
-  getDateList(unit: number, day: Date, indexList: Array<any>) {
+  getDateList(timeFormat: TimeForChangingDate) {
+    const { unit, day, indexList, minTime, maxTime } = timeFormat;
+
     const resultList: Array<TimeResponse> = [];
     const dayTime = new Date(day);
-
+    const minTimeDate = minTime.getHours() * 60 + minTime.getMinutes();
+    const maxTimeDate = maxTime.getHours() * 60 + maxTime.getMinutes();
     const time = unit * 60;
+
     for (let i = 0; i < indexList.length; i++) {
       let { startDate, endDate } = indexList[i];
-      (startDate = startDate * time), (endDate = endDate * time);
+      (startDate = startDate * time + minTimeDate), (endDate = endDate * time + minTimeDate);
 
       let startHour = Math.trunc(startDate / 60) + 9,
         endHour = Math.trunc(endDate / 60) + 9;
@@ -133,6 +145,32 @@ const timeUtil = {
           candidate.getDate() == date.getDate()
       ).length != 0
     );
+  },
+
+  async checkTimeResponseList(
+    timeResponse: TimeRequest,
+    promising: PromisingModel,
+    availDateList: Date[]
+  ) {
+    const { unit, timeTable } = timeResponse;
+    const { minTime, maxTime } = promising;
+
+    const maxHour = maxTime.getHours(),
+      minHour = minTime.getHours();
+    const count = (unit / 0.5) * (maxHour - minHour);
+
+    for (let i = 0; i < timeTable.length; i++) {
+      const timeList = timeTable[i].times;
+      const dateTime = timeTable[i].date;
+
+      if (!(Object.values(availDateList).indexOf(dateTime) > -1)) {
+        return false;
+      }
+      if (timeList.length > count) {
+        return false;
+      }
+    }
+    return true;
   }
 };
 

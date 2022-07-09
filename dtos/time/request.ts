@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty } from 'class-validator'; 
 
 class TimeRequest {
     @IsNotEmpty()
@@ -14,4 +14,25 @@ class TimeOfDay {
     times: Array<boolean>;
 }
 
-export { TimeRequest, TimeOfDay }
+export default class indexTime {
+    @IsNotEmpty()
+    startDate: number;
+    @IsNotEmpty()
+    endDate: number;
+}
+
+
+class TimeForChangingDate {
+    @IsNotEmpty()
+    unit: number;
+    @IsNotEmpty()
+    day: Date;
+    @IsNotEmpty()
+    indexList: Array<indexTime>;
+    @IsNotEmpty()
+    minTime: Date;
+    @IsNotEmpty()
+    maxTime: Date;
+}
+
+export { TimeRequest, TimeOfDay,TimeForChangingDate,indexTime }
