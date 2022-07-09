@@ -1,5 +1,4 @@
-import { PromisingRequest } from '../dtos/promising/request';
-import { TimeRequest } from '../dtos/time/request';
+import { TimeRequest,TimeForChangingDate } from '../dtos/time/request';
 import TimeResponse from '../dtos/time/response';
 import PromisingModel from '../models/promising';
 import { BadRequestException } from './error';
@@ -59,19 +58,22 @@ const timeUtil = {
           }
         }
       }
-      dateList = this.getDateList(unit, day, availList,promising);
+      const timeFormat = { unit, day, indexList: availList, minTime: promising.minTime, maxTime: promising.maxTime}
+      dateList = this.getDateList(timeFormat);
       resultList = resultList.concat(dateList);
     }
     return resultList;
   },
 
-  getDateList(unit: number, day: Date, indexList: Array<any>, promising: PromisingModel) {
+  getDateList(timeFormat : TimeForChangingDate) {
+    const { unit, day, indexList, minTime, maxTime } = timeFormat
+
     const resultList: Array<TimeResponse> = [];
     const dayTime = new Date(day);
-    const {minTime,maxTime} = promising;
     const minTimeDate  = (minTime.getHours()*60)+minTime.getMinutes()
     const maxTimeDate  = (maxTime.getHours()*60)+maxTime.getMinutes()
     const time = unit * 60; 
+    
     for (let i = 0; i < indexList.length; i++) {
       let { startDate, endDate } = indexList[i];
       (startDate = (startDate * time)+minTimeDate), (endDate = (endDate * time)+minTimeDate);
