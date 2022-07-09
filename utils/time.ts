@@ -136,15 +136,16 @@ const timeUtil = {
     return new Date(new Date(res.year, res.month, res.day).getTime() + 540 * 60 * 1000);
   },
 
-  isPossibleDate(date: Date, candidates: Date[]) {
+  isSameDate(date: Date, other: Date) {
     return (
-      candidates.filter(
-        (candidate) =>
-          candidate.getFullYear() == date.getFullYear() &&
-          candidate.getMonth() == date.getMonth() &&
-          candidate.getDate() == date.getDate()
-      ).length != 0
+      other.getFullYear() == date.getFullYear() &&
+      other.getMonth() == date.getMonth() &&
+      other.getDate() == date.getDate()
     );
+  },
+
+  isPossibleDate(date: Date, candidates: Date[]) {
+    return candidates.filter((candidate) => this.isSameDate(date, candidate)).length != 0;
   },
 
   async checkTimeResponseList(
@@ -171,6 +172,14 @@ const timeUtil = {
       }
     }
     return true;
+  },
+
+  getIndexFromMinTime(minTime: Date, curTime: Date, unit: number) {
+    if (!this.isSameDate(minTime, curTime)) return -1;
+    if (minTime.getTime() > curTime.getTime()) return -1;
+
+    const diffMinutes = (curTime.getTime() - minTime.getTime()) / (1000 * 60);
+    return Math.floor(diffMinutes / (this.HOUR * unit));
   }
 };
 
