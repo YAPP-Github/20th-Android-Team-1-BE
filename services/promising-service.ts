@@ -15,6 +15,7 @@ import color from '../constants/color.json';
 import index from '../constants/color-index.json';
 import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
+import PromisingDateModel from '../models/promising-date';
 
 interface ColorType {
   FIRST: string;
@@ -38,7 +39,10 @@ class PromisingService {
   }
 
   async getPromisingInfo(promisingId: number) {
-    const promising = await PromisingModel.findOne({ where: { id: promisingId } });
+    const promising = await PromisingModel.findOne({ where: { id: promisingId },
+      include:[{
+      model:PromisingDateModel
+    }] }); 
     if (!promising) throw new NotFoundException('Promising', promisingId);
 
     return promising;

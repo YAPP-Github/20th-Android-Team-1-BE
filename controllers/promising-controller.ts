@@ -12,7 +12,6 @@ import {
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
-import PromisingModel from '../models/promising';
 import { TimeRequest } from '../dtos/time/request';
 import { PromisingResponse } from '../dtos/promising/response';
 import { EventTimeResponse } from '../dtos/event/response';
@@ -20,7 +19,6 @@ import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse } from '../dtos/category/response';
 import promiseDateService from '../services/promise-date-service';
-import userService from '../services/user-service';
 import { BadRequestException } from '../utils/error';
 import promisingDateService from '../services/promise-date-service'
 
@@ -53,12 +51,9 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
-    let promisingResponse: any  = await promisingService.getPromisingInfo(promisingId);
-
-    const promisingDateResponse= await promisingDateService.findDatesById(promisingId);    
-    const promisingInfo = {promisingResponse, availDate:promisingDateResponse }
+    const promisingResponse: any  = await promisingService.getPromisingInfo(promisingId);
    
-    return res.status(200).send(promisingInfo);
+    return res.status(200).send(promisingResponse);
   }
 
   @Get('/:promisingId/time-table')
