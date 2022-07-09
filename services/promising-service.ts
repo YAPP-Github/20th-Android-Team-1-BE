@@ -79,8 +79,7 @@ class PromisingService {
     return promisingList;
   }
 
-  async responseTime(promisingId: number, user: User, timeInfo: TimeRequest) {
-    const promising = await this.getPromisingInfo(promisingId);
+  async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {
 
     const savedEvent: EventModel = await eventService.create(promising, user);
     const savedTime = await timeService.create(promising, savedEvent, timeInfo);

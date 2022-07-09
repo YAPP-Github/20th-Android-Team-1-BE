@@ -21,6 +21,9 @@ import { CategoryResponse } from '../dtos/category/response';
 import promiseDateService from '../services/promise-date-service';
 import { BadRequestException } from '../utils/error';
 import promisingDateService from '../services/promise-date-service'
+import timeUtil from '../utils/time';
+import userService from '../services/user-service';
+import PromisingModel from '../models/promising';
 
 @JsonController('/promisings')
 class PromisingController {
@@ -33,14 +36,14 @@ class PromisingController {
     
     const promisingResponse: PromisingResponse = await promisingService.create(
       promisingInfo,
-      res.locals.user
+      res.locals.user,
     );
-    const promisingId = promisingResponse.id;
+    const promising = new PromisingModel(promisingResponse)
 
     const promisingDate = await promiseDateService.create(promisingResponse,availDate)
     const timeInfo: TimeRequest = { unit, timeTable };
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
-      promisingId,
+      promising,
       res.locals.user,
       timeInfo
     );
@@ -82,9 +85,15 @@ class PromisingController {
     @Res() res: Response
   ) {
     const user = res.locals.user;
+    const promising = await promisingService.getPromisingInfo(promisingId);
+
+    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(timeInfo, promising)
+    if(!isPossibleTimeInfo){
+      throw new BadRequestException('dateTime','not available or over maxTime');
+    }
 
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
-      promisingId,
+      promising,
       user,
       timeInfo
     );

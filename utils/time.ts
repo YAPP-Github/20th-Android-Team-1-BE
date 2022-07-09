@@ -1,7 +1,7 @@
 import { TimeRequest,TimeForChangingDate } from '../dtos/time/request';
 import TimeResponse from '../dtos/time/response';
 import PromisingModel from '../models/promising';
-import { BadRequestException } from './error';
+import promisingDateService from '../services/promise-date-service'
 
 const timeUtil = {
   HOUR: 60,
@@ -78,9 +78,6 @@ const timeUtil = {
       let { startDate, endDate } = indexList[i];
       (startDate = (startDate * time)+minTimeDate), (endDate = (endDate * time)+minTimeDate);
       
-      if(endDate > maxTimeDate)
-        throw new BadRequestException('availDate','over MaxTime')
-
         let startHour = Math.trunc(startDate / 60) + 9,
         endHour = Math.trunc(endDate / 60) + 9;
       startHour = startHour > 23 ? Math.trunc(startHour % 24) : startHour;
@@ -136,6 +133,28 @@ const timeUtil = {
           candidate.getDate() == date.getDate()
       ).length != 0
     );
+  },
+
+  async checkTimeResponseList(timeResponse: TimeRequest,promising:PromisingModel ){
+    const {unit, timeTable } = timeResponse;
+    const {minTime, maxTime} = promising;
+
+    const maxHour = maxTime.getHours(), minHour = minTime.getHours()
+    const count = (unit/0.5)*(maxHour-minHour);
+    const availDateList = await promisingDateService.findDatesById(promising.id)
+
+    for(let i=0;i<timeTable.length;i++){
+      const timeList = timeTable[i].times;
+      const dateTime = timeTable[i].date;
+
+      if (!(Object.values(availDateList).indexOf(dateTime) > -1)){
+        return false;
+      }
+      if(timeList.length> count){
+        return false;
+      }
+    }
+    return true;
   }
 };
 
