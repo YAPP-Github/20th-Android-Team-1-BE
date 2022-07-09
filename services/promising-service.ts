@@ -159,7 +159,6 @@ class PromisingService {
     const events = promising.ownEvents;
     const timeMap: Map<string, TimeTableIndexType> = new Map();
     const allUsers: UserResponse[] = [];
-    console.log(promising.minTime, 'promising Mintime');
     events.forEach(({ user, eventTimes }) => {
       allUsers.push(new UserResponse(user));
       eventTimes.forEach((timeBlock) => {

@@ -13,7 +13,7 @@ class PromisingRequest {
   @IsNotEmpty()
   unit: number;
   @IsNotEmpty()
-  timeTable: Array<TimeOfDay>; 
+  timeTable: Array<TimeOfDay>;
   @IsNotEmpty()
   availDate: Array<Date>;
 

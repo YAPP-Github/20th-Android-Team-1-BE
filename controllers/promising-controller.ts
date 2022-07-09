@@ -14,7 +14,6 @@ import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
 import { CreatedPromisingResponse } from '../dtos/promising/response';
-import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse } from '../dtos/category/response';
@@ -28,7 +27,6 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, availDate } = req;
-    console.log(req.minTime);
     const promisingReq = {
       promisingName: req.promisingName,
       minTime: req.minTime,
@@ -36,7 +34,6 @@ class PromisingController {
       placeName: req.placeName,
       categoryId: req.categoryId
     };
-    console.log(typeof promisingReq.minTime);
     if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
 
     const timeInfo: TimeRequest = { unit, timeTable };
@@ -94,8 +91,6 @@ class PromisingController {
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promising.id);
 
-    console.log(promising.minTime);
-    console.log(availDates[0]);
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
       timeInfo,
       promising.minTime,
