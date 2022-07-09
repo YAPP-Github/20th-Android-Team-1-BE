@@ -97,14 +97,16 @@ class PromisingService {
     return { savedEvent, savedTime };
   }
 
-  async confirm(id: number, date: Date, owner: User) {
+  async confirm(id: number, owner: User, date: Date, availDates: Date[]) {
     const promising = await this.findOneById(id);
     if (promising.ownerId != owner.id)
       throw new UnAuthorizedException('User is not owner of Promising');
-    if (!(promising.minTime <= date))
-      throw new BadRequestException('promiseDate', 'before minimum time.');
-    if (!(date <= promising.maxTime))
-      throw new BadRequestException('promiseDate', 'after maximum time.');
+    if (!timeUtil.isPossibleDate(date, availDates))
+      throw new BadRequestException('date', 'is not available date');
+    if (timeUtil.compareTime(date, promising.minTime) == -1)
+      throw new BadRequestException('date', 'is earlier than minTime');
+    if (timeUtil.compareTime(date, promising.maxTime) == 1)
+      throw new BadRequestException('date', 'is later than maxTime');
 
     const members = await eventService.findPossibleUsers(id, date);
     const category = await promising.$get('ownCategory');
@@ -136,10 +138,58 @@ class PromisingService {
     });
     if (!promising) throw new NotFoundException('Promising', id);
 
-    const events = promising.ownEvents;
+    const { map, users } = this.transformEvents2MapAndUsers(promising, unit);
+
+    const timeTable = Array.from(map, ([date, obj]) => {
+      const units = Object.keys(obj)
+        .sort((a, b) => a.localeCompare(b))
+        .map((value) => {
+          const blockIdx = parseInt(value) as keyof TimeTableIndexType;
+          const colorStr = index[promising.ownEvents.length - 1][
+            obj[blockIdx]!.length
+          ] as keyof ColorType;
+
+          return new TimeTableUnit(
+            blockIdx,
+            obj[blockIdx]!.length,
+            obj[blockIdx]!,
+            parseInt(color[colorStr], 16)
+          );
+        });
+
+      return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
+    });
+    const colors = index[[promising.ownEvents].length - 1].map((colorStr) =>
+      parseInt(color[colorStr as keyof ColorType], 16)
+    );
+    const totalCount = timeUtil.getIndexFromMinTime(promising.minTime, promising.maxTime, unit) / 2;
+
+    return new TimeTableResponse(
+      users,
+      colors,
+      promising.minTime,
+      promising.maxTime,
+      totalCount,
+      unit,
+      timeTable
+    );
+  }
+
+  async findOneById(id: number) {
+    const promising: PromisingModel | null = await PromisingModel.findByPk(id);
+    if (!promising) throw new NotFoundException('Promising', id);
+
+    return promising;
+  }
+
+  async deleteOneById(id: number) {
+    await PromisingModel.destroy({ where: { id } });
+  }
+
+  transformEvents2MapAndUsers(promising: PromisingModel, unit: number) {
     const timeMap: Map<string, TimeTableIndexType> = new Map();
     const allUsers: UserResponse[] = [];
-    events.forEach(({ user, eventTimes }) => {
+    promising.ownEvents.forEach(({ user, eventTimes }) => {
       allUsers.push(new UserResponse(user));
       eventTimes.forEach((timeBlock) => {
         timeUtil
@@ -169,47 +219,7 @@ class PromisingService {
       });
     });
 
-    const timeTable = Array.from(timeMap, ([date, obj]) => {
-      const units = Object.keys(obj)
-        .sort((a, b) => a.localeCompare(b))
-        .map((value) => {
-          const blockIdx: keyof TimeTableIndexType = parseInt(value) as keyof TimeTableIndexType;
-          const colorStr: keyof ColorType = index[events.length - 1][
-            obj[blockIdx]!.length
-          ] as keyof ColorType;
-          return new TimeTableUnit(
-            blockIdx,
-            obj[blockIdx]!.length,
-            obj[blockIdx]!,
-            parseInt(color[colorStr], 16)
-          );
-        });
-      return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
-    });
-    const colors = index[events.length - 1].map((colorStr) =>
-      parseInt(color[colorStr as keyof ColorType], 16)
-    );
-
-    return new TimeTableResponse(
-      allUsers,
-      colors,
-      promising.minTime,
-      promising.maxTime,
-      timeUtil.getIndexFromMinTime(promising.minTime, promising.maxTime, unit) / 2,
-      unit,
-      timeTable
-    );
-  }
-
-  async findOneById(id: number) {
-    const promising: PromisingModel | null = await PromisingModel.findByPk(id);
-    if (!promising) throw new NotFoundException('Promising', id);
-
-    return promising;
-  }
-
-  async deleteOneById(id: number) {
-    await PromisingModel.destroy({ where: { id } });
+    return { map: timeMap, users: allUsers };
   }
 }
 

@@ -112,7 +112,13 @@ class PromisingController {
     @BodyParam('promiseDate') date: Date,
     @Res() res: Response
   ) {
-    const promise = await promisingService.confirm(promisingId, date, res.locals.user);
+    const availDates = await promisingDateService.findDatesById(promisingId);
+    const promise = await promisingService.confirm(
+      promisingId,
+      res.locals.user,
+      new Date(date),
+      availDates
+    );
     return res.status(200).send(promise);
   }
 

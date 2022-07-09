@@ -115,7 +115,7 @@ const timeUtil = {
     const min = date.getMinutes();
     const sec = date.getSeconds();
 
-    return `${year}-${mon.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hour
+    return `${year}-${mon.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour
       .toString()
       .padStart(2, '0')}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   },
@@ -173,6 +173,15 @@ const timeUtil = {
     const hourDiff = curTime.getHours() - minTime.getHours();
     const minDiff = hourDiff * 60 + (curTime.getMinutes() - minTime.getMinutes());
     return minDiff < 0 ? -1 : minDiff / (this.HOUR * unit);
+  },
+
+  compareTime(date: Date, other: Date) {
+    if (date.getHours() == other.getHours()) {
+      if (date.getMinutes() == other.getMinutes()) {
+        if (date.getSeconds() == other.getSeconds()) return 0;
+        else return date.getSeconds() < other.getSeconds() ? -1 : 1;
+      } else return date.getMinutes() < other.getMinutes() ? -1 : 1;
+    } else return date.getHours() < other.getHours() ? -1 : 1;
   }
 };
 
