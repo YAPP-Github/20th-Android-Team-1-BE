@@ -38,7 +38,7 @@ export class TimeTableResponse {
   minTime: string;
   maxTime: string;
   unit: number;
-  timeTable: TimeTableUnit[];
+  timeTable: TimeTableDate[];
 
   constructor(
     users: UserResponse[],
@@ -46,7 +46,7 @@ export class TimeTableResponse {
     minTime: Date,
     maxTime: Date,
     unit: number,
-    timeTable: TimeTableUnit[]
+    timeTable: TimeTableDate[]
   ) {
     this.users = users;
     this.colors = colors;
@@ -57,14 +57,24 @@ export class TimeTableResponse {
   }
 }
 
-export class TimeTableUnit {
+export class TimeTableDate {
   date: string;
+  units: TimeTableUnit[];
+
+  constructor(date: string, units: TimeTableUnit[]) {
+    this.date = date;
+    this.units = units;
+  }
+}
+
+export class TimeTableUnit {
+  index: number;
   count: number;
   users: UserResponse[];
   color: string;
 
-  constructor(date: string, count: number, users: UserResponse[], color: string) {
-    this.date = date;
+  constructor(index: number, count: number, users: UserResponse[], color: string) {
+    this.index = index;
     this.count = count;
     this.users = users;
     this.color = color;

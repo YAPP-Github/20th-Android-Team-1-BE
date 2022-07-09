@@ -2,6 +2,7 @@ import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import {
   CreatedPromisingResponse,
+  TimeTableDate,
   TimeTableResponse,
   TimeTableUnit
 } from '../dtos/promising/response';
@@ -28,6 +29,19 @@ interface ColorType {
   THIRD: string;
   FOURTH: string;
   FIFTH: string;
+}
+
+interface TimeTableIndexType {
+  0?: UserResponse[];
+  1?: UserResponse[];
+  2?: UserResponse[];
+  3?: UserResponse[];
+  4?: UserResponse[];
+  5?: UserResponse[];
+  6?: UserResponse[];
+  7?: UserResponse[];
+  8?: UserResponse[];
+  9?: UserResponse[];
 }
 
 class PromisingService {
@@ -143,7 +157,7 @@ class PromisingService {
     if (!promising) throw new NotFoundException('Promising', id);
 
     const events = promising.ownEvents;
-    const timeMap: Map<string, UserResponse[]> = new Map();
+    const timeMap: Map<string, TimeTableIndexType> = new Map();
     const allUsers: UserResponse[] = [];
     events.forEach(({ user, eventTimes }) => {
       allUsers.push(new UserResponse(user));
@@ -151,18 +165,46 @@ class PromisingService {
         timeUtil
           .sliceTimeBlockByUnit(new Date(timeBlock.startTime), new Date(timeBlock.endTime), unit)
           .forEach((timeUnit) => {
-            if (!timeMap.has(timeUnit)) {
-              timeMap.set(timeUnit, [new UserResponse(user)]);
+            const dateStr = timeUnit.substring(0, 10);
+            const key = timeUtil.getIndexFromMinTime(
+              promising.minTime,
+              new Date(timeUnit),
+              unit
+            ) as keyof TimeTableIndexType;
+            if (!timeMap.has(dateStr)) {
+              const obj: TimeTableIndexType = {};
+              obj[key] = [new UserResponse(user)];
+              timeMap.set(dateStr, obj);
             } else {
-              timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, new UserResponse(user)]);
+              if (!timeMap.get(dateStr)![key]) {
+                timeMap.get(dateStr)![key] = [new UserResponse(user)];
+              } else {
+                timeMap.get(dateStr)![key] = [
+                  ...timeMap.get(dateStr)![key]!,
+                  new UserResponse(user)
+                ];
+              }
             }
           });
       });
     });
 
-    const timeTable = Array.from(timeMap, ([date, users]) => {
-      const colorStr: keyof ColorType = index[events.length - 1][users.length] as keyof ColorType;
-      return new TimeTableUnit(date, users.length, users, color[colorStr]);
+    const timeTable = Array.from(timeMap, ([date, obj]) => {
+      const units = Object.keys(obj)
+        .sort((a, b) => a.localeCompare(b))
+        .map((value) => {
+          const blockIdx: keyof TimeTableIndexType = parseInt(value) as keyof TimeTableIndexType;
+          const colorStr: keyof ColorType = index[events.length - 1][
+            obj[blockIdx]!.length
+          ] as keyof ColorType;
+          return new TimeTableUnit(
+            blockIdx,
+            obj[blockIdx]!.length,
+            obj[blockIdx]!,
+            color[colorStr]
+          );
+        });
+      return new TimeTableDate(date, units);
     });
     const colors = index[events.length - 1].map((colorStr) => color[colorStr as keyof ColorType]);
 
