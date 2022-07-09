@@ -2,6 +2,7 @@ import express from 'express';
 import { useExpressServer } from 'routing-controllers';
 import UserController from './controllers/user-controller';
 import PromisingController from './controllers/promising-controller';
+import PromiseController from './controllers/promise-controller';
 import db from './models';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
@@ -22,7 +23,7 @@ app.use(bodyParser.json());
 
 useExpressServer(app, {
   routePrefix: '/api',
-  controllers: [UserController, PromisingController],
+  controllers: [UserController, PromisingController, PromiseController],
   defaultErrorHandler: false,
   middlewares: [ErrorHandler]
 });

@@ -5,7 +5,7 @@ import {
   TimeTableResponse,
   TimeTableUnit
 } from '../dtos/promising/response';
-import { PromiseReponse } from '../dtos/promise/response';
+import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
 import CategoryKeyword from '../models/category-keyword';
@@ -123,7 +123,7 @@ class PromisingService {
       members
     );
     await this.deleteOneById(id);
-    return new PromiseReponse(promise, owner, category!);
+    return new PromiseResponse(promise, owner, category!, members);
   }
 
   async getTimeTable(id: number, unit = 0.5) {
