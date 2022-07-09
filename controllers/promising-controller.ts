@@ -56,12 +56,10 @@ class PromisingController {
     const promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
 
-    return res
-      .status(200)
-      .send({
-        ...promisingResponse,
-        availDates: availDates.map((date) => timeUtil.formatDate2String(new Date(date)))
-      });
+    return res.status(200).send({
+      ...promisingResponse,
+      availDates: availDates.map((date) => timeUtil.formatDate2String(date))
+    });
   }
 
   @Get('/:promisingId/time-table')
@@ -72,7 +70,7 @@ class PromisingController {
 
     const timeResponse = {
       ...timeTable,
-      availDates: availDates.map((date) => timeUtil.formatDate2String(new Date(date)))
+      availDates: availDates.map((date) => timeUtil.formatDate2String(date))
     };
     return res.status(200).send(timeResponse);
   }
@@ -96,9 +94,12 @@ class PromisingController {
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promising.id);
 
+    console.log(promising.minTime);
+    console.log(availDates[0]);
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
       timeInfo,
-      promising,
+      promising.minTime,
+      promising.maxTime,
       availDates
     );
     if (!isPossibleTimeInfo) {

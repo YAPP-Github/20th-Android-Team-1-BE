@@ -154,33 +154,26 @@ const timeUtil = {
 
   async checkTimeResponseList(
     timeResponse: TimeRequest,
-    promising: PromisingModel,
-    availDateList: Date[]
+    minTime: Date,
+    maxTime: Date,
+    availDates: Date[]
   ) {
     const { unit, timeTable } = timeResponse;
-    const { minTime, maxTime } = promising;
 
-    const maxHour = maxTime.getHours(),
-      minHour = minTime.getHours();
-    const count = (unit / 0.5) * (maxHour - minHour);
+    const maxHour = maxTime.getHours();
+    const minHour = minTime.getHours();
+    const count = (1 / unit) * (maxHour - minHour);
 
     for (let i = 0; i < timeTable.length; i++) {
       const timeList = timeTable[i].times;
-      const dateTime = timeTable[i].date;
+      const date = new Date(timeTable[i].date);
 
-      if (!(Object.values(availDateList).indexOf(dateTime) > -1)) {
-        return false;
-      }
-      if (timeList.length > count) {
-        return false;
-      }
+      if (!this.isPossibleDate(date, availDates) || timeList.length > count) return false;
     }
     return true;
   },
 
   getIndexFromMinTime(minTime: Date, curTime: Date, unit: number) {
-    console.log(minTime.toISOString());
-    console.log(curTime.toISOString());
     const hourDiff = curTime.getHours() - minTime.getHours();
     const minDiff = hourDiff * 60 + (curTime.getMinutes() - minTime.getMinutes());
     return minDiff < 0 ? -1 : minDiff / (this.HOUR * unit);

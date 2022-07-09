@@ -9,13 +9,9 @@ export class CreatedPromisingResponse {
   availableDates: string[];
 
   constructor(promising: PromisingModel, dates: PromisingDateModel[]) {
-    console.log('????????');
     this.promising = new PromisingResponse(promising, promising.ownCategory);
     this.availableDates = dates.map((date) => {
-      console.log('!!!!!');
-      console.log(new Date(date.date));
-      console.log(timeUtil.formatDate2String(new Date(date.date)));
-      return timeUtil.formatDate2String(new Date(date.date));
+      return timeUtil.formatDate2String(date.date);
     });
   }
 }
