@@ -13,49 +13,46 @@ import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
-import { PromisingResponse } from '../dtos/promising/response';
+import { CreatedPromisingResponse } from '../dtos/promising/response';
 import { EventTimeResponse } from '../dtos/event/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse } from '../dtos/category/response';
-import promiseDateService from '../services/promise-date-service';
 import { BadRequestException } from '../utils/error';
-import promisingDateService from '../services/promise-date-service'
 import timeUtil from '../utils/time';
-import userService from '../services/user-service';
-import PromisingModel from '../models/promising';
+import promisingDateService from '../services/promising-date-service';
 
 @JsonController('/promisings')
 class PromisingController {
   @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
-    const { unit, timeTable, availDate,...promisingInfo } = req;
-    if (availDate.length>10)
-      throw new BadRequestException('availDate', 'over maximum count');
-    
-    const promisingResponse: PromisingResponse = await promisingService.create(
-      promisingInfo,
-      res.locals.user,
-    );
-    const promising = new PromisingModel(promisingResponse)
+    const { unit, timeTable, availDate } = req;
+    const promisingReq = {
+      promisingName: req.promisingName,
+      minTime: req.minTime,
+      maxTime: req.maxTime,
+      placeName: req.placeName,
+      categoryId: req.categoryId
+    };
+    if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
 
-    const promisingDate = await promiseDateService.create(promisingResponse,availDate)
     const timeInfo: TimeRequest = { unit, timeTable };
-    const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
-      promising,
+    const response: CreatedPromisingResponse = await promisingService.create(
+      promisingReq,
       res.locals.user,
+      availDate,
       timeInfo
     );
-    return res.status(200).send({ promisingResponse, eventTimeResponse, promisingDate });
-  } 
+    return res.status(200).send(response);
+  }
 
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
-    const promisingResponse: any  = await promisingService.getPromisingInfo(promisingId);
-   
+    const promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
+
     return res.status(200).send(promisingResponse);
   }
 
@@ -63,9 +60,9 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const timeTable = await promisingService.getTimeTable(promisingId);
-    const promisingDateResponse= await promisingDateService.findDatesById(promisingId);    
-    
-    const timeResponse = {timeTable, availDate:promisingDateResponse }
+    const promisingDateResponse = await promisingDateService.findDatesById(promisingId);
+
+    const timeResponse = { timeTable, availDate: promisingDateResponse };
     return res.status(200).send(timeResponse);
   }
 
@@ -86,10 +83,15 @@ class PromisingController {
   ) {
     const user = res.locals.user;
     const promising = await promisingService.getPromisingInfo(promisingId);
+    const availDates = await promisingDateService.findDatesById(promising.id);
 
-    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(timeInfo, promising)
-    if(!isPossibleTimeInfo){
-      throw new BadRequestException('dateTime','not available or over maxTime');
+    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
+      timeInfo,
+      promising,
+      availDates
+    );
+    if (!isPossibleTimeInfo) {
+      throw new BadRequestException('dateTime', 'not available or over maxTime');
     }
 
     const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
