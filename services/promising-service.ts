@@ -22,27 +22,7 @@ import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
-
-interface ColorType {
-  FIRST: string;
-  SECOND: string;
-  THIRD: string;
-  FOURTH: string;
-  FIFTH: string;
-}
-
-interface TimeTableIndexType {
-  0?: UserResponse[];
-  1?: UserResponse[];
-  2?: UserResponse[];
-  3?: UserResponse[];
-  4?: UserResponse[];
-  5?: UserResponse[];
-  6?: UserResponse[];
-  7?: UserResponse[];
-  8?: UserResponse[];
-  9?: UserResponse[];
-}
+import { ColorType, TimeTableIndexType } from '../utils/type';
 
 class PromisingService {
   async create(
