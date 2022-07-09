@@ -14,6 +14,7 @@ class TimeService {
       promising
     ) as Array<TimeResponse>;
 
+    resultList.forEach((date) => console.log(date.startTime, date.endTime));
     if (resultList.length == 0) {
       eventService.updateIsAbsent(eventInfo.id, true);
       return responseList;

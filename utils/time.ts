@@ -79,12 +79,13 @@ const timeUtil = {
     const maxTimeDate = maxTime.getHours() * 60 + maxTime.getMinutes();
     const time = unit * 60;
 
+    console.log(minTime, maxTime);
     for (let i = 0; i < indexList.length; i++) {
       let { startDate, endDate } = indexList[i];
       (startDate = startDate * time + minTimeDate), (endDate = endDate * time + minTimeDate);
 
-      let startHour = Math.trunc(startDate / 60) + 9,
-        endHour = Math.trunc(endDate / 60) + 9;
+      let startHour = Math.trunc(startDate / 60),
+        endHour = Math.trunc(endDate / 60);
       startHour = startHour > 23 ? Math.trunc(startHour % 24) : startHour;
       endHour = endHour > 23 ? Math.trunc(endHour % 24) : endHour;
 
@@ -94,6 +95,7 @@ const timeUtil = {
         month = dayTime.getMonth() + 1,
         year = dayTime.getFullYear();
 
+      console.log(year, month, date, startHour, startMin);
       const startTime = new Date(
         year + '.' + month + '.' + date + ' ' + startHour + ':' + startMin + ':00'
       );
@@ -108,6 +110,7 @@ const timeUtil = {
   },
 
   formatDate2String(date: Date) {
+    console.log(date);
     const year = date.getFullYear();
     const mon = date.getMonth() + 1;
     const day = date.getDate();
@@ -115,6 +118,7 @@ const timeUtil = {
     const min = date.getMinutes();
     const sec = date.getSeconds();
 
+    console.log(hour);
     return `${year}-${mon.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hour
       .toString()
       .padStart(2, '0')}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
@@ -175,11 +179,11 @@ const timeUtil = {
   },
 
   getIndexFromMinTime(minTime: Date, curTime: Date, unit: number) {
-    if (!this.isSameDate(minTime, curTime)) return -1;
-    if (minTime.getTime() > curTime.getTime()) return -1;
-
-    const diffMinutes = (curTime.getTime() - minTime.getTime()) / (1000 * 60);
-    return Math.floor(diffMinutes / (this.HOUR * unit));
+    console.log(minTime.toISOString());
+    console.log(curTime.toISOString());
+    const hourDiff = curTime.getHours() - minTime.getHours();
+    const minDiff = hourDiff * 60 + (curTime.getMinutes() - minTime.getMinutes());
+    return minDiff < 0 ? -1 : minDiff / (this.HOUR * unit);
   }
 };
 

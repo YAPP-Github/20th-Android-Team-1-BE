@@ -159,6 +159,7 @@ class PromisingService {
     const events = promising.ownEvents;
     const timeMap: Map<string, TimeTableIndexType> = new Map();
     const allUsers: UserResponse[] = [];
+    console.log(promising.minTime, 'promising Mintime');
     events.forEach(({ user, eventTimes }) => {
       allUsers.push(new UserResponse(user));
       eventTimes.forEach((timeBlock) => {
@@ -201,18 +202,21 @@ class PromisingService {
             blockIdx,
             obj[blockIdx]!.length,
             obj[blockIdx]!,
-            color[colorStr]
+            parseInt(color[colorStr], 16)
           );
         });
-      return new TimeTableDate(date, units);
+      return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
     });
-    const colors = index[events.length - 1].map((colorStr) => color[colorStr as keyof ColorType]);
+    const colors = index[events.length - 1].map((colorStr) =>
+      parseInt(color[colorStr as keyof ColorType], 16)
+    );
 
     return new TimeTableResponse(
       allUsers,
       colors,
       promising.minTime,
       promising.maxTime,
+      timeUtil.getIndexFromMinTime(promising.minTime, promising.maxTime, unit) / 2,
       unit,
       timeTable
     );

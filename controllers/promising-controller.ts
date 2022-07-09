@@ -28,6 +28,7 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, availDate } = req;
+    console.log(req.minTime);
     const promisingReq = {
       promisingName: req.promisingName,
       minTime: req.minTime,
@@ -35,6 +36,7 @@ class PromisingController {
       placeName: req.placeName,
       categoryId: req.categoryId
     };
+    console.log(typeof promisingReq.minTime);
     if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
 
     const timeInfo: TimeRequest = { unit, timeTable };
@@ -52,17 +54,26 @@ class PromisingController {
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
     const promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
+    const availDates = await promisingDateService.findDatesById(promisingId);
 
-    return res.status(200).send(promisingResponse);
+    return res
+      .status(200)
+      .send({
+        ...promisingResponse,
+        availDates: availDates.map((date) => timeUtil.formatDate2String(new Date(date)))
+      });
   }
 
   @Get('/:promisingId/time-table')
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const timeTable = await promisingService.getTimeTable(promisingId);
-    const promisingDateResponse = await promisingDateService.findDatesById(promisingId);
+    const availDates = await promisingDateService.findDatesById(promisingId);
 
-    const timeResponse = { timeTable, availDate: promisingDateResponse };
+    const timeResponse = {
+      ...timeTable,
+      availDates: availDates.map((date) => timeUtil.formatDate2String(new Date(date)))
+    };
     return res.status(200).send(timeResponse);
   }
 
@@ -94,12 +105,8 @@ class PromisingController {
       throw new BadRequestException('dateTime', 'not available or over maxTime');
     }
 
-    const eventTimeResponse: EventTimeResponse = await promisingService.responseTime(
-      promising,
-      user,
-      timeInfo
-    );
-    return res.status(200).send(eventTimeResponse);
+    await promisingService.responseTime(promising, user, timeInfo);
+    return res.status(201).send();
   }
 
   @Post('/:promisingId/confirmation')

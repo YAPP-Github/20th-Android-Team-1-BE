@@ -6,11 +6,17 @@ import PromisingDateModel from '../../models/promising-date';
 
 export class CreatedPromisingResponse {
   promising: PromisingResponse;
-  availableDates: PromisingDateModel[];
+  availableDates: string[];
 
   constructor(promising: PromisingModel, dates: PromisingDateModel[]) {
+    console.log('????????');
     this.promising = new PromisingResponse(promising, promising.ownCategory);
-    this.availableDates = dates;
+    this.availableDates = dates.map((date) => {
+      console.log('!!!!!');
+      console.log(new Date(date.date));
+      console.log(timeUtil.formatDate2String(new Date(date.date)));
+      return timeUtil.formatDate2String(new Date(date.date));
+    });
   }
 }
 
@@ -34,17 +40,19 @@ export class PromisingResponse {
 
 export class TimeTableResponse {
   users: UserResponse[];
-  colors: string[];
+  colors: number[];
   minTime: string;
   maxTime: string;
+  totalCount: number;
   unit: number;
   timeTable: TimeTableDate[];
 
   constructor(
     users: UserResponse[],
-    colors: string[],
+    colors: number[],
     minTime: Date,
     maxTime: Date,
+    totalCount: number,
     unit: number,
     timeTable: TimeTableDate[]
   ) {
@@ -52,6 +60,7 @@ export class TimeTableResponse {
     this.colors = colors;
     this.minTime = timeUtil.formatDate2String(minTime);
     this.maxTime = timeUtil.formatDate2String(maxTime);
+    this.totalCount = totalCount;
     this.unit = unit;
     this.timeTable = timeTable;
   }
@@ -59,11 +68,11 @@ export class TimeTableResponse {
 
 export class TimeTableDate {
   date: string;
-  units: TimeTableUnit[];
+  blocks: TimeTableUnit[];
 
-  constructor(date: string, units: TimeTableUnit[]) {
+  constructor(date: string, blocks: TimeTableUnit[]) {
     this.date = date;
-    this.units = units;
+    this.blocks = blocks;
   }
 }
 
@@ -71,9 +80,9 @@ export class TimeTableUnit {
   index: number;
   count: number;
   users: UserResponse[];
-  color: string;
+  color: number;
 
-  constructor(index: number, count: number, users: UserResponse[], color: string) {
+  constructor(index: number, count: number, users: UserResponse[], color: number) {
     this.index = index;
     this.count = count;
     this.users = users;
