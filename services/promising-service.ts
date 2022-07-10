@@ -139,31 +139,32 @@ class PromisingService {
     if (!promising) throw new NotFoundException('Promising', id);
 
     const { map, users } = this.transformEvents2MapAndUsers(promising, unit);
+    const { minTime, maxTime, ownEvents } = promising;
 
-    const timeTable = Array.from(map, ([date, obj]) => {
-      const units = Object.keys(obj)
+    const timeTable = Array.from(map, ([date, usersByDate]) => {
+      const units = Object.keys(usersByDate)
         .sort((a, b) => a.localeCompare(b))
-        .map((value) => {
-          const blockIdx = parseInt(value) as keyof TimeTableIndexType;
-          const colorStr = index[promising.ownEvents.length - 1][
-            obj[blockIdx]!.length
+        .map((key) => {
+          const blockIdx = parseInt(key) as keyof TimeTableIndexType;
+          const colorStr = index[ownEvents.length - 1][
+            usersByDate[blockIdx]!.length
           ] as keyof ColorType;
 
           return new TimeTableUnit(
             blockIdx,
-            obj[blockIdx]!.length,
-            obj[blockIdx]!,
+            usersByDate[blockIdx]!.length,
+            usersByDate[blockIdx]!,
             parseInt(color[colorStr], 16)
           );
         });
 
       return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
     });
-    const colors = index[[promising.ownEvents].length - 1].map((colorStr) =>
+
+    const colors = index[[ownEvents].length - 1].map((colorStr) =>
       parseInt(color[colorStr as keyof ColorType], 16)
     );
-    const totalCount = timeUtil.getIndexFromMinTime(promising.minTime, promising.maxTime, unit) / 2;
-
+    const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
     return new TimeTableResponse(
       users,
       colors,
@@ -173,17 +174,6 @@ class PromisingService {
       unit,
       timeTable
     );
-  }
-
-  async findOneById(id: number) {
-    const promising: PromisingModel | null = await PromisingModel.findByPk(id);
-    if (!promising) throw new NotFoundException('Promising', id);
-
-    return promising;
-  }
-
-  async deleteOneById(id: number) {
-    await PromisingModel.destroy({ where: { id } });
   }
 
   transformEvents2MapAndUsers(promising: PromisingModel, unit: number) {
@@ -196,30 +186,39 @@ class PromisingService {
           .sliceTimeBlockByUnit(new Date(timeBlock.startTime), new Date(timeBlock.endTime), unit)
           .forEach((timeUnit) => {
             const dateStr = timeUnit.substring(0, 10);
-            const key = timeUtil.getIndexFromMinTime(
-              promising.minTime,
-              new Date(timeUnit),
-              unit
-            ) as keyof TimeTableIndexType;
-            if (!timeMap.has(dateStr)) {
-              const obj: TimeTableIndexType = {};
-              obj[key] = [new UserResponse(user)];
-              timeMap.set(dateStr, obj);
-            } else {
-              if (!timeMap.get(dateStr)![key]) {
-                timeMap.get(dateStr)![key] = [new UserResponse(user)];
-              } else {
-                timeMap.get(dateStr)![key] = [
-                  ...timeMap.get(dateStr)![key]!,
-                  new UserResponse(user)
-                ];
-              }
-            }
+            const key = timeUtil.getIndexFromMinTime(promising.minTime, new Date(timeUnit), unit);
+            this.bindUsersByDateTime(dateStr, key as keyof TimeTableIndexType, user, timeMap);
           });
       });
     });
 
     return { map: timeMap, users: allUsers };
+  }
+
+  bindUsersByDateTime(
+    date: string,
+    key: keyof TimeTableIndexType,
+    user: User,
+    map: Map<string, TimeTableIndexType>
+  ) {
+    if (!map.has(date)) {
+      map.set(date, { [key]: [new UserResponse(user)] });
+    } else if (!map.get(date)![key]) {
+      map.get(date)![key] = [new UserResponse(user)];
+    } else {
+      map.get(date)![key] = [...map.get(date)![key]!, new UserResponse(user)];
+    }
+  }
+
+  async findOneById(id: number) {
+    const promising: PromisingModel | null = await PromisingModel.findByPk(id);
+    if (!promising) throw new NotFoundException('Promising', id);
+
+    return promising;
+  }
+
+  async deleteOneById(id: number) {
+    await PromisingModel.destroy({ where: { id } });
   }
 }
 
