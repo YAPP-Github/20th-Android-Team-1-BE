@@ -85,6 +85,25 @@ class PromiseService {
     });
     return await promiseUserService.findPromiseMembers(promises);
   }
+
+  async getPromisesById(promiseId: number) {
+    const promises: Array<PromiseModel> = await PromiseModel.findAll({
+      include: [
+        {
+          model: User,
+          as: 'members',
+          attributes: [],
+          through: { attributes: [] }
+        },  
+        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+        { model: CategoryKeyword, as: 'category', required: true },
+        ],
+        where: {promiseId: promiseId}
+      },
+    );
+    return await promiseUserService.findPromiseMembers(promises);
+  }
+
 }
 
 export default new PromiseService();

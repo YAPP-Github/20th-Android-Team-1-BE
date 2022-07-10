@@ -55,6 +55,20 @@ class PromiseController {
     );
     return res.status(200).send(response);
   }
+
+  @Get('/:promiseId')
+  @UseBefore(UserAuthMiddleware)
+  async getPromiseById(@Param('promiseId') promiseId: number, @Res() res: Response) {
+    if (!promiseId) throw new ValidationException('promiseId');
+
+    const promises = await promiseService.getPromisesById(promiseId);
+    const response = promises.map(
+      (promise: PromiseModel) =>
+        new PromiseResponse(promise, promise.owner, promise.category, promise.members)
+    );
+    return res.status(200).send(response);
+  }
+
 }
 
 export default PromiseController;
