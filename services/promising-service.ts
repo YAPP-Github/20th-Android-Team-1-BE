@@ -2,6 +2,7 @@ import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import {
   CreatedPromisingResponse,
+  TimeTableDate,
   TimeTableResponse,
   TimeTableUnit
 } from '../dtos/promising/response';
@@ -21,14 +22,7 @@ import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
-
-interface ColorType {
-  FIRST: string;
-  SECOND: string;
-  THIRD: string;
-  FOURTH: string;
-  FIFTH: string;
-}
+import { ColorType, TimeTableIndexType } from '../utils/type';
 
 class PromisingService {
   async create(
@@ -103,14 +97,16 @@ class PromisingService {
     return { savedEvent, savedTime };
   }
 
-  async confirm(id: number, date: Date, owner: User) {
+  async confirm(id: number, owner: User, date: Date, availDates: Date[]) {
     const promising = await this.findOneById(id);
     if (promising.ownerId != owner.id)
       throw new UnAuthorizedException('User is not owner of Promising');
-    if (!(promising.minTime <= date))
-      throw new BadRequestException('promiseDate', 'before minimum time.');
-    if (!(date <= promising.maxTime))
-      throw new BadRequestException('promiseDate', 'after maximum time.');
+    if (!timeUtil.isPossibleDate(date, availDates))
+      throw new BadRequestException('date', 'is not available date');
+    if (timeUtil.compareTime(date, promising.minTime) == -1)
+      throw new BadRequestException('date', 'is earlier than minTime');
+    if (timeUtil.compareTime(date, promising.maxTime) == 1)
+      throw new BadRequestException('date', 'is later than maxTime');
 
     const members = await eventService.findPossibleUsers(id, date);
     const category = await promising.$get('ownCategory');
@@ -142,38 +138,76 @@ class PromisingService {
     });
     if (!promising) throw new NotFoundException('Promising', id);
 
-    const events = promising.ownEvents;
-    const timeMap: Map<string, UserResponse[]> = new Map();
+    const { map, users } = this.transformEvents2MapAndUsers(promising, unit);
+    const { minTime, maxTime, ownEvents } = promising;
+
+    const timeTable = Array.from(map, ([date, usersByDate]) => {
+      const units = Object.keys(usersByDate)
+        .sort((a, b) => a.localeCompare(b))
+        .map((key) => {
+          const blockIdx = parseInt(key) as keyof TimeTableIndexType;
+          const colorStr = index[ownEvents.length - 1][
+            usersByDate[blockIdx]!.length
+          ] as keyof ColorType;
+
+          return new TimeTableUnit(
+            blockIdx,
+            usersByDate[blockIdx]!.length,
+            usersByDate[blockIdx]!,
+            parseInt(color[colorStr], 16)
+          );
+        });
+
+      return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
+    });
+
+    const colors = index[[ownEvents].length - 1].map((colorStr) =>
+      parseInt(color[colorStr as keyof ColorType], 16)
+    );
+    const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
+    return new TimeTableResponse(
+      users,
+      colors,
+      promising.minTime,
+      promising.maxTime,
+      totalCount,
+      unit,
+      timeTable
+    );
+  }
+
+  transformEvents2MapAndUsers(promising: PromisingModel, unit: number) {
+    const timeMap: Map<string, TimeTableIndexType> = new Map();
     const allUsers: UserResponse[] = [];
-    events.forEach(({ user, eventTimes }) => {
+    promising.ownEvents.forEach(({ user, eventTimes }) => {
       allUsers.push(new UserResponse(user));
       eventTimes.forEach((timeBlock) => {
         timeUtil
           .sliceTimeBlockByUnit(new Date(timeBlock.startTime), new Date(timeBlock.endTime), unit)
           .forEach((timeUnit) => {
-            if (!timeMap.has(timeUnit)) {
-              timeMap.set(timeUnit, [new UserResponse(user)]);
-            } else {
-              timeMap.set(timeUnit, [...timeMap.get(timeUnit)!, new UserResponse(user)]);
-            }
+            const dateStr = timeUnit.substring(0, 10);
+            const key = timeUtil.getIndexFromMinTime(promising.minTime, new Date(timeUnit), unit);
+            this.bindUsersByDateTime(dateStr, key as keyof TimeTableIndexType, user, timeMap);
           });
       });
     });
 
-    const timeTable = Array.from(timeMap, ([date, users]) => {
-      const colorStr: keyof ColorType = index[events.length - 1][users.length] as keyof ColorType;
-      return new TimeTableUnit(date, users.length, users, color[colorStr]);
-    });
-    const colors = index[events.length - 1].map((colorStr) => color[colorStr as keyof ColorType]);
+    return { map: timeMap, users: allUsers };
+  }
 
-    return new TimeTableResponse(
-      allUsers,
-      colors,
-      promising.minTime,
-      promising.maxTime,
-      unit,
-      timeTable
-    );
+  bindUsersByDateTime(
+    date: string,
+    key: keyof TimeTableIndexType,
+    user: User,
+    map: Map<string, TimeTableIndexType>
+  ) {
+    if (!map.has(date)) {
+      map.set(date, { [key]: [new UserResponse(user)] });
+    } else if (!map.get(date)![key]) {
+      map.get(date)![key] = [new UserResponse(user)];
+    } else {
+      map.get(date)![key] = [...map.get(date)![key]!, new UserResponse(user)];
+    }
   }
 
   async findOneById(id: number) {

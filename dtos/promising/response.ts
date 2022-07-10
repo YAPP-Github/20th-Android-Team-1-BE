@@ -6,11 +6,13 @@ import PromisingDateModel from '../../models/promising-date';
 
 export class CreatedPromisingResponse {
   promising: PromisingResponse;
-  availableDates: PromisingDateModel[];
+  availableDates: string[];
 
   constructor(promising: PromisingModel, dates: PromisingDateModel[]) {
     this.promising = new PromisingResponse(promising, promising.ownCategory);
-    this.availableDates = dates;
+    this.availableDates = dates.map((date) => {
+      return timeUtil.formatDate2String(date.date);
+    });
   }
 }
 
@@ -34,37 +36,50 @@ export class PromisingResponse {
 
 export class TimeTableResponse {
   users: UserResponse[];
-  colors: string[];
+  colors: number[];
   minTime: string;
   maxTime: string;
+  totalCount: number;
   unit: number;
-  timeTable: TimeTableUnit[];
+  timeTable: TimeTableDate[];
 
   constructor(
     users: UserResponse[],
-    colors: string[],
+    colors: number[],
     minTime: Date,
     maxTime: Date,
+    totalCount: number,
     unit: number,
-    timeTable: TimeTableUnit[]
+    timeTable: TimeTableDate[]
   ) {
     this.users = users;
     this.colors = colors;
     this.minTime = timeUtil.formatDate2String(minTime);
     this.maxTime = timeUtil.formatDate2String(maxTime);
+    this.totalCount = totalCount;
     this.unit = unit;
     this.timeTable = timeTable;
   }
 }
 
-export class TimeTableUnit {
+export class TimeTableDate {
   date: string;
+  blocks: TimeTableUnit[];
+
+  constructor(date: string, blocks: TimeTableUnit[]) {
+    this.date = date;
+    this.blocks = blocks;
+  }
+}
+
+export class TimeTableUnit {
+  index: number;
   count: number;
   users: UserResponse[];
-  color: string;
+  color: number;
 
-  constructor(date: string, count: number, users: UserResponse[], color: string) {
-    this.date = date;
+  constructor(index: number, count: number, users: UserResponse[], color: number) {
+    this.index = index;
     this.count = count;
     this.users = users;
     this.color = color;

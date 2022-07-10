@@ -26,7 +26,7 @@ class PromisingDateService {
     if (!promisingDateResponse) throw new NotFoundException('PromisingDate in', promisingId);
 
     const promisingDateList = promisingDateResponse.map(
-      (promisingDateResponse) => promisingDateResponse.date
+      (promisingDateResponse) => new Date(promisingDateResponse.date)
     );
     return promisingDateList;
   }

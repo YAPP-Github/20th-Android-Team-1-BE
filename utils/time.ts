@@ -83,8 +83,8 @@ const timeUtil = {
       let { startDate, endDate } = indexList[i];
       (startDate = startDate * time + minTimeDate), (endDate = endDate * time + minTimeDate);
 
-      let startHour = Math.trunc(startDate / 60) + 9,
-        endHour = Math.trunc(endDate / 60) + 9;
+      let startHour = Math.trunc(startDate / 60),
+        endHour = Math.trunc(endDate / 60);
       startHour = startHour > 23 ? Math.trunc(startHour % 24) : startHour;
       endHour = endHour > 23 ? Math.trunc(endHour % 24) : endHour;
 
@@ -115,7 +115,7 @@ const timeUtil = {
     const min = date.getMinutes();
     const sec = date.getSeconds();
 
-    return `${year}-${mon.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')} ${hour
+    return `${year}-${mon.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour
       .toString()
       .padStart(2, '0')}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   },
@@ -136,41 +136,52 @@ const timeUtil = {
     return new Date(new Date(res.year, res.month, res.day).getTime() + 540 * 60 * 1000);
   },
 
-  isPossibleDate(date: Date, candidates: Date[]) {
+  isSameDate(date: Date, other: Date) {
     return (
-      candidates.filter(
-        (candidate) =>
-          candidate.getFullYear() == date.getFullYear() &&
-          candidate.getMonth() == date.getMonth() &&
-          candidate.getDate() == date.getDate()
-      ).length != 0
+      other.getFullYear() == date.getFullYear() &&
+      other.getMonth() == date.getMonth() &&
+      other.getDate() == date.getDate()
     );
+  },
+
+  isPossibleDate(date: Date, candidates: Date[]) {
+    return candidates.filter((candidate) => this.isSameDate(date, candidate)).length != 0;
   },
 
   async checkTimeResponseList(
     timeResponse: TimeRequest,
-    promising: PromisingModel,
-    availDateList: Date[]
+    minTime: Date,
+    maxTime: Date,
+    availDates: Date[]
   ) {
     const { unit, timeTable } = timeResponse;
-    const { minTime, maxTime } = promising;
 
-    const maxHour = maxTime.getHours(),
-      minHour = minTime.getHours();
-    const count = (unit / 0.5) * (maxHour - minHour);
+    const maxHour = maxTime.getHours();
+    const minHour = minTime.getHours();
+    const count = (1 / unit) * (maxHour - minHour);
 
     for (let i = 0; i < timeTable.length; i++) {
       const timeList = timeTable[i].times;
-      const dateTime = timeTable[i].date;
+      const date = new Date(timeTable[i].date);
 
-      if (!(Object.values(availDateList).indexOf(dateTime) > -1)) {
-        return false;
-      }
-      if (timeList.length > count) {
-        return false;
-      }
+      if (!this.isPossibleDate(date, availDates) || timeList.length > count) return false;
     }
     return true;
+  },
+
+  getIndexFromMinTime(minTime: Date, curTime: Date, unit: number) {
+    const hourDiff = curTime.getHours() - minTime.getHours();
+    const minDiff = hourDiff * 60 + (curTime.getMinutes() - minTime.getMinutes());
+    return minDiff < 0 ? -1 : minDiff / (this.HOUR * unit);
+  },
+
+  compareTime(date: Date, other: Date) {
+    if (date.getHours() == other.getHours()) {
+      if (date.getMinutes() == other.getMinutes()) {
+        if (date.getSeconds() == other.getSeconds()) return 0;
+        else return date.getSeconds() < other.getSeconds() ? -1 : 1;
+      } else return date.getMinutes() < other.getMinutes() ? -1 : 1;
+    } else return date.getHours() < other.getHours() ? -1 : 1;
   }
 };
 
