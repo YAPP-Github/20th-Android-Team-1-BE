@@ -6,12 +6,18 @@ import { BadRequestException, ValidationException } from '../utils/error';
 import { PromiseResponse } from '../dtos/promise/response';
 import PromiseModel from '../models/promise';
 import timeUtil from '../utils/time';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
 @JsonController('/promises')
 class PromiseController {
+  @OpenAPI({
+    security: [{ bearerAuth: [] }],
+    summary: 'Get Promise List By User (based on access token).'
+  })
+  @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/user')
   @UseBefore(UserAuthMiddleware)
-  async getPromisesById(@Res() res: Response) {
+  async getPromisesByUser(@Res() res: Response) {
     const userId = res.locals.user.id;
 
     const promises = await promiseService.getPromisesByUser(userId);
