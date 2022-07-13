@@ -1,16 +1,7 @@
 import promisingService from '../services/promising-service';
-import {
-  JsonController,
-  Body,
-  Post,
-  Res,
-  UseBefore,
-  Get,
-  Param,
-  BodyParam
-} from 'routing-controllers';
+import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
-import { PromisingRequest } from '../dtos/promising/request';
+import { ConfirmPromisingRequest, PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
 import { CreatedPromisingResponse } from '../dtos/promising/response';
@@ -20,7 +11,8 @@ import { CategoryResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
 import timeUtil from '../utils/time';
 import promisingDateService from '../services/promising-date-service';
-import { OpenAPI } from 'routing-controllers-openapi';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { PromiseResponse } from '../dtos/promise/response';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -107,18 +99,26 @@ class PromisingController {
     return res.status(201).send();
   }
 
+  @OpenAPI({
+    summary: 'Confirm Promising to Promise',
+    description: 'User have to be owner of Promising. promiseDate format is yyyy-mm-ddThh:mm:ss.'
+  })
+  @ResponseSchema(PromiseResponse)
   @Post('/:promisingId/confirmation')
   @UseBefore(UserAuthMiddleware)
   async confirmPromising(
     @Param('promisingId') promisingId: number,
-    @BodyParam('promiseDate') date: Date,
+    @Body() req: ConfirmPromisingRequest,
     @Res() res: Response
   ) {
+    const dateTime = new Date(req.promiseDate);
+    if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
+      throw new BadRequestException('dateTime', 'Not valid date');
     const availDates = await promisingDateService.findDatesById(promisingId);
     const promise = await promisingService.confirm(
       promisingId,
       res.locals.user,
-      new Date(date),
+      dateTime,
       availDates
     );
     return res.status(200).send(promise);

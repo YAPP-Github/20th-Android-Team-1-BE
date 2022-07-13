@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { TimeOfDay } from '../time/request';
 
 class PromisingRequest {
@@ -39,4 +39,10 @@ class PromisingInfo {
   placeName: string;
 }
 
-export { PromisingInfo, PromisingRequest };
+class ConfirmPromisingRequest {
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  promiseDate: string;
+}
+
+export { PromisingInfo, PromisingRequest, ConfirmPromisingRequest };

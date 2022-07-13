@@ -2,7 +2,7 @@ import { JsonController, Res, Get, UseBefore, Param } from 'routing-controllers'
 import { Response } from 'express';
 import promiseService from '../services/promise-service';
 import { UserAuthMiddleware } from '../middlewares/auth';
-import { BadRequestException, ValidationException } from '../utils/error';
+import { BadRequestException } from '../utils/error';
 import { PromiseResponse } from '../dtos/promise/response';
 import PromiseModel from '../models/promise';
 import timeUtil from '../utils/time';
@@ -25,12 +25,14 @@ class PromiseController {
     );
     return res.status(200).send(response);
   }
-  @OpenAPI({ summary: "Get User's Promise List By Month (yyyy-mm / yyyy-mm-dd Date ignored)" })
+  @OpenAPI({
+    summary: "Get User's Promise List By Month",
+    description: 'dateTime format is yyyy-mm or yyyy-mm-dd (date ignored)'
+  })
   @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/month/:dateTime')
   @UseBefore(UserAuthMiddleware)
   async getPromiseByMonth(@Param('dateTime') dateStr: string, @Res() res: Response) {
-    if (!dateStr) throw new ValidationException('dateTime');
     const dateTime = timeUtil.string2Date(dateStr);
     if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
       throw new BadRequestException('dateTime', 'Not valid date');
@@ -43,12 +45,14 @@ class PromiseController {
     );
     return res.status(200).send(response);
   }
-  @OpenAPI({ summary: "Get User's Promise List By Date (yyyy-mm(-01) / yyyy-mm-dd )" })
+  @OpenAPI({
+    summary: "Get User's Promise List By Date",
+    description: 'dateTime format is yyyy-mm-dd or yyyy-mm (default date is 1)'
+  })
   @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/date/:dateTime')
   @UseBefore(UserAuthMiddleware)
   async getPromisesByDate(@Param('dateTime') dateStr: string, @Res() res: Response) {
-    if (!dateStr) throw new ValidationException('dateTime');
     const dateTime = timeUtil.string2Date(dateStr);
     if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
       throw new BadRequestException('dateTime', 'Not valid date');
