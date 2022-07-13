@@ -23,8 +23,8 @@ class PromisingController {
     const { unit, timeTable, availDate } = req;
     const promisingReq = {
       promisingName: req.promisingName,
-      minTime: req.minTime,
-      maxTime: req.maxTime,
+      minTime: new Date(req.minTime),
+      maxTime: new Date(req.maxTime),
       placeName: req.placeName,
       categoryId: req.categoryId
     };
