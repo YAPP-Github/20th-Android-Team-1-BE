@@ -1,12 +1,5 @@
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsDateString,
-  IsInt,
-  IsOptional,
-  IsString,
-  ValidateNested
-} from 'class-validator';
+import { IsArray, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 import CategoryKeyword from '../../models/category-keyword';
 import PromiseModel from '../../models/promise';
@@ -22,7 +15,7 @@ export class PromiseResponse {
   @IsString()
   promiseName: string;
 
-  @IsDateString()
+  @IsString({})
   promiseDate: string;
 
   @ValidateNested()

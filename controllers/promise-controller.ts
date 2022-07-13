@@ -8,12 +8,10 @@ import PromiseModel from '../models/promise';
 import timeUtil from '../utils/time';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 
+@OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promises')
 class PromiseController {
-  @OpenAPI({
-    security: [{ bearerAuth: [] }],
-    summary: 'Get Promise List By User (based on access token).'
-  })
+  @OpenAPI({ summary: 'Get Promise List By User (based on access token).' })
   @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/user')
   @UseBefore(UserAuthMiddleware)

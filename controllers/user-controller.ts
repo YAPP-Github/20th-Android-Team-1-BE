@@ -7,12 +7,10 @@ import User from '../models/user';
 import userService from '../services/user-service';
 import { BadRequestException } from '../utils/error';
 
+@OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/users')
 class UserController {
-  @OpenAPI({
-    security: [{ bearerAuth: [] }],
-    summary: 'Sign up User with KAKAO Access Token.'
-  })
+  @OpenAPI({ summary: 'Sign up User with KAKAO Access Token.' })
   @ResponseSchema(UserResponse)
   @Post('/sign-up')
   @UseBefore(TokenValidMiddleware)
