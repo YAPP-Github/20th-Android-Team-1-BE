@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 import CategoryKeyword from '../../models/category-keyword';
 import PromiseModel from '../../models/promise';
@@ -22,6 +22,9 @@ export class PromiseResponse {
   @Type(() => UserResponse)
   owner: UserResponse;
 
+  @IsBoolean()
+  isOwner: boolean;
+
   @ValidateNested()
   @Type(() => CategoryKeyword)
   category: CategoryResponse;
@@ -40,7 +43,13 @@ export class PromiseResponse {
   @IsString()
   placeName: string;
 
-  constructor(promise: PromiseModel, owner: User, category: CategoryKeyword, members: User[]) {
+  constructor(
+    promise: PromiseModel,
+    owner: User,
+    category: CategoryKeyword,
+    members: User[],
+    isOwner: boolean
+  ) {
     this.id = promise.id;
     this.promiseName = promise.promiseName;
     this.promiseDate = timeUtil.formatDate2String(promise.promiseDate);
@@ -48,5 +57,6 @@ export class PromiseResponse {
     this.owner = new UserResponse(owner);
     this.category = new CategoryResponse(category);
     this.members = members.map((user) => new UserResponse(user));
+    this.isOwner = isOwner;
   }
 }

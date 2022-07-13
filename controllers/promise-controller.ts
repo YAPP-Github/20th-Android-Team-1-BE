@@ -21,7 +21,13 @@ class PromiseController {
     const promises = await promiseService.getPromisesByUser(userId);
     const response = promises.map(
       (promise: PromiseModel) =>
-        new PromiseResponse(promise, promise.owner, promise.category, promise.members)
+        new PromiseResponse(
+          promise,
+          promise.owner,
+          promise.category,
+          promise.members,
+          res.locals.user.id == promise.owner.id
+        )
     );
     return res.status(200).send(response);
   }
@@ -41,7 +47,13 @@ class PromiseController {
     const promises = await promiseService.getPromisesByMonth(userId, dateTime);
     const response = promises.map(
       (promise: PromiseModel) =>
-        new PromiseResponse(promise, promise.owner, promise.category, promise.members)
+        new PromiseResponse(
+          promise,
+          promise.owner,
+          promise.category,
+          promise.members,
+          res.locals.user.id == promise.owner.id
+        )
     );
     return res.status(200).send(response);
   }
@@ -61,7 +73,13 @@ class PromiseController {
     const promises = await promiseService.getPromisesByDate(userId, dateTime);
     const response = promises.map(
       (promise: PromiseModel) =>
-        new PromiseResponse(promise, promise.owner, promise.category, promise.members)
+        new PromiseResponse(
+          promise,
+          promise.owner,
+          promise.category,
+          promise.members,
+          res.locals.user.id == promise.owner.id
+        )
     );
     return res.status(200).send(response);
   }
