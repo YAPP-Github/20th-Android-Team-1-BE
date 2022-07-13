@@ -29,12 +29,10 @@ const routingControllerOptions = {
 useExpressServer(app, routingControllerOptions);
 const PORT = process.env.PORT || 8080;
 
-// Parse class-validator classes into JSON Schema:
 const schemas = validationMetadatasToSchemas({
   refPointerPrefix: '#/components/schemas/'
 });
 
-// Parse routing-controllers classes into OpenAPI spec:
 const storage = getMetadataArgsStorage();
 const spec = routingControllersToSpec(storage, routingControllerOptions, {
   components: {
@@ -44,8 +42,8 @@ const spec = routingControllersToSpec(storage, routingControllerOptions, {
     }
   },
   info: {
-    description: 'Generated with `routing-controllers-openapi`',
-    title: 'A sample API',
+    description: '`PLANZ` API Document',
+    title: 'API Docs',
     version: '1.0.0'
   }
 });

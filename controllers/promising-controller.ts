@@ -20,6 +20,7 @@ import { CategoryResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
 import timeUtil from '../utils/time';
 import promisingDateService from '../services/promising-date-service';
+import { OpenAPI } from 'routing-controllers-openapi';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')

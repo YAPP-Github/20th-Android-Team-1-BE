@@ -11,7 +11,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promises')
 class PromiseController {
-  @OpenAPI({ summary: 'Get Promise List By User (based on access token).' })
+  @OpenAPI({ summary: "Get User's Promise List" })
   @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/user')
   @UseBefore(UserAuthMiddleware)
@@ -25,7 +25,8 @@ class PromiseController {
     );
     return res.status(200).send(response);
   }
-
+  @OpenAPI({ summary: "Get User's Promise List By Month (yyyy-mm / yyyy-mm-dd Date ignored)" })
+  @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/month/:dateTime')
   @UseBefore(UserAuthMiddleware)
   async getPromiseByMonth(@Param('dateTime') dateStr: string, @Res() res: Response) {
@@ -42,7 +43,8 @@ class PromiseController {
     );
     return res.status(200).send(response);
   }
-
+  @OpenAPI({ summary: "Get User's Promise List By Date (yyyy-mm(-01) / yyyy-mm-dd )" })
+  @ResponseSchema(PromiseResponse, { isArray: true })
   @Get('/date/:dateTime')
   @UseBefore(UserAuthMiddleware)
   async getPromisesByDate(@Param('dateTime') dateStr: string, @Res() res: Response) {
