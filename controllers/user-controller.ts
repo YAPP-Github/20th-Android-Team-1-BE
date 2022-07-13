@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { Post, JsonController, Res, UseBefore } from 'routing-controllers';
+import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { UserResponse } from '../dtos/user/response';
 import { TokenValidMiddleware } from '../middlewares/auth';
 import User from '../models/user';
@@ -8,6 +9,11 @@ import { BadRequestException } from '../utils/error';
 
 @JsonController('/users')
 class UserController {
+  @OpenAPI({
+    security: [{ bearerAuth: [] }],
+    summary: 'Sign up User with KAKAO Access Token.'
+  })
+  @ResponseSchema(UserResponse)
   @Post('/sign-up')
   @UseBefore(TokenValidMiddleware)
   async signUp(@Res() res: Response) {
