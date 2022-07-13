@@ -1,8 +1,9 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { TimeOfDay } from '../time/request';
 
 class PromisingRequest {
-  @IsNotEmpty()
+  @IsString()
+  @MaxLength(10)
   promisingName: string;
   @IsNotEmpty()
   minTime: Date;
@@ -17,11 +18,14 @@ class PromisingRequest {
   @IsNotEmpty()
   availDate: Array<Date>;
 
+  @IsOptional()
+  @MaxLength(10)
   placeName: string;
 }
 
 class PromisingInfo {
-  @IsNotEmpty()
+  @IsString()
+  @MaxLength(10)
   promisingName: string;
   @IsNotEmpty()
   minTime: Date;
@@ -30,6 +34,8 @@ class PromisingInfo {
   @IsNotEmpty()
   categoryId: number;
 
+  @IsOptional()
+  @MaxLength(10)
   placeName: string;
 }
 
