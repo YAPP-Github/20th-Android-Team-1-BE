@@ -30,11 +30,11 @@ class AuthService {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      if (!response.data.kakao_account.name && !response.data.kakao_account.profile.nickname)
-        throw new UnAuthorizedException('Kakao account name or profile nickname is required.');
+      if (!response.data.kakao_account.profile.nickname)
+        throw new UnAuthorizedException('Kakao account profile nickname is required.');
       return {
         id: response.data.id,
-        userName: response.data.kakao_account.name || response.data.kakao_account.profile.nickname,
+        userName: response.data.kakao_account.profile.nickname.substring(0, 5),
         accessToken: token
       };
     } catch (err: any) {

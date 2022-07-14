@@ -119,7 +119,7 @@ class PromisingService {
       members
     );
     await this.deleteOneById(id);
-    return new PromiseResponse(promise, owner, category!, members);
+    return new PromiseResponse(promise, owner, category!, members, true);
   }
 
   async getTimeTable(id: number, unit = 0.5) {
