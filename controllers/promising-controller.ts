@@ -21,6 +21,8 @@ import { BadRequestException } from '../utils/error';
 import timeUtil from '../utils/time';
 import promisingDateService from '../services/promising-date-service';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
+import { PromiseResponse } from '../dtos/promise/response';
+import { ConfirmPromisingRequest } from '../dtos/promising/request';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
