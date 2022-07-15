@@ -1,9 +1,10 @@
 import { Op } from 'sequelize';
+import PromiseModel from '../models/promise';
 import PromiseUser from '../models/promise-user';
 import User from '../models/user';
 
 class PromiseUserService {
-  async findPromiseMembers(promises: any) {
+  async findPromiseMembers(promises: PromiseModel[]) {
     for (let i = 0; i < promises.length; i++) {
       const members = await PromiseUser.findAll({
         where: { promiseId: promises[i].id },

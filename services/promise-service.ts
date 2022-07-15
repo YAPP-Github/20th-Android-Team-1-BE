@@ -3,6 +3,7 @@ import PromiseModel from '../models/promise';
 import User from '../models/user';
 import sequelize from 'sequelize';
 import promiseUserService from './promise-user-service';
+import { NotFoundException } from '../utils/error';
 
 class PromiseService {
   async create(
@@ -84,6 +85,25 @@ class PromiseService {
       where: sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString)
     });
     return await promiseUserService.findPromiseMembers(promises);
+  }
+
+  async getPromiseById(id: number) {
+    const promise = await PromiseModel.findOne({
+      include: [
+        {
+          model: User,
+          as: 'members',
+          attributes: [],
+          through: { attributes: [] }
+        },
+        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+        { model: CategoryKeyword, as: 'category', required: true }
+      ],
+      where: { promiseId: id }
+    });
+    if (!promise) throw new NotFoundException('Promise', id);
+    const promisesWithMembers = await promiseUserService.findPromiseMembers([promise]);
+    return promisesWithMembers[0];
   }
 }
 
