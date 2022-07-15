@@ -62,12 +62,17 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
-    const promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
-    let availDates = await promisingDateService.findDatesById(promisingId);
+    let promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
+    let availDates = await promisingDateService.findDatesById(promisingId);    
     const availDateList= availDates.map((date) => timeUtil.formatDate2String(date))
+  
+    promisingResponse.ownPromisingDates = availDateList
     
-    promisingResponse.availDate = availDateList
-    return res.status(200).send(promisingResponse);
+    const resJson ={
+      promisingResponse,
+      availDates: availDateList
+    }
+    return res.status(200).send(resJson);
   }
 
   @OpenAPI({
@@ -109,7 +114,7 @@ class PromisingController {
     @Res() res: Response
   ) {
     const user = res.locals.user;
-    const promising = await promisingService.getPromisingInfo(promisingId);
+    const promising = await promisingService.getPromisingDateInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promising.id);
 
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(

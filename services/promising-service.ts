@@ -45,17 +45,26 @@ class PromisingService {
     return new CreatedPromisingResponse(promising, promisingDates);
   }
 
-  async getPromisingInfo(promisingId: number) {
+  async getPromisingDateInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
       where: { id: promisingId },
       include: [
         {
-          model: PromisingDateModel
+          model: PromisingDateModel,
         }
       ]
     });
     if (!promising) throw new NotFoundException('Promising', promisingId);
 
+    return promising;
+  }
+
+  
+  async getPromisingInfo(promisingId: number) {
+    const promising = await PromisingModel.findOne({
+      where: { id: promisingId }
+    });
+    if (!promising) throw new NotFoundException('Promising', promisingId);
     return promising;
   }
 
