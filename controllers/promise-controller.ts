@@ -26,11 +26,12 @@ class PromiseController {
           promise.owner,
           promise.category,
           promise.members,
-          res.locals.user.id == promise.owner.id
+          userId == promise.owner.id
         )
     );
     return res.status(200).send(response);
   }
+
   @OpenAPI({
     summary: "Get User's Promise List By Month",
     description: 'dateTime format is yyyy-mm or yyyy-mm-dd (date ignored)'
@@ -52,11 +53,12 @@ class PromiseController {
           promise.owner,
           promise.category,
           promise.members,
-          res.locals.user.id == promise.owner.id
+          userId == promise.owner.id
         )
     );
     return res.status(200).send(response);
   }
+
   @OpenAPI({
     summary: "Get User's Promise List By Date",
     description: 'dateTime format is yyyy-mm-dd or yyyy-mm (default date is 1)'
@@ -78,25 +80,30 @@ class PromiseController {
           promise.owner,
           promise.category,
           promise.members,
-          res.locals.user.id == promise.owner.id
+          userId == promise.owner.id
         )
     );
     return res.status(200).send(response);
   }
 
+  @OpenAPI({ summary: 'Get Promise information By promiseId' })
+  @ResponseSchema(PromiseResponse)
   @Get('/:promiseId')
   @UseBefore(UserAuthMiddleware)
   async getPromiseById(@Param('promiseId') promiseId: number, @Res() res: Response) {
-    if (!promiseId) throw new ValidationException('promiseId');
+    const userId = res.locals.user.id;
+    const promise = await promiseService.getPromiseById(promiseId);
 
-    const promises = await promiseService.getPromisesById(promiseId);
-    const response = promises.map(
-      (promise: PromiseModel) =>
-        new PromiseResponse(promise, promise.owner, promise.category, promise.members)
+    const response = new PromiseResponse(
+      promise,
+      promise.owner,
+      promise.category,
+      promise.members,
+      userId == promise.owner.id
     );
+
     return res.status(200).send(response);
   }
-
 }
 
 export default PromiseController;
