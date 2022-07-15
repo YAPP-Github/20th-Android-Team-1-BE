@@ -1,3 +1,4 @@
+import { IsInt, IsString } from 'class-validator';
 import {
   AllowNull,
   AutoIncrement,
@@ -14,11 +15,13 @@ import PromisingModel from './promising';
 class CategoryKeyword extends Model {
   @PrimaryKey
   @AutoIncrement
+  @IsInt()
   @Column({ type: DataType.INTEGER, field: 'categoryId' })
   id: number;
 
   @AllowNull(false)
   @Column({ type: DataType.STRING, field: 'categoryKeyword' })
+  @IsString()
   keyword: string;
 
   @HasMany(() => PromisingModel)

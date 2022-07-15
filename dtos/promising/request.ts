@@ -1,25 +1,21 @@
-import { IsNotEmpty, IsOptional } from 'class-validator';
 import { TimeOfDay } from '../time/request';
-import { IsInt, IsString,IsDate,IsArray } from 'class-validator';
+import { IsInt, IsString,IsArray,ValidateNested,MaxLength,Matches,IsNotEmpty, IsOptional } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 import { Type } from 'class-transformer';
-import { Matches } from 'class-validator';
-import { MaxLength } from 'class-validator';
 
 class PromisingRequest {
   @IsString()
   @MaxLength(10)
   promisingName: string;
-  @IsNotEmpty()
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   minTime: Date;
-  @IsNotEmpty()
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   maxTime: Date;
-  @IsNotEmpty()
   @IsInt()
   categoryId: number;
-  @IsNotEmpty()
   unit: number;
-  @IsNotEmpty()
   @IsArray()
   @JSONSchema({
     type: 'array',
@@ -28,9 +24,12 @@ class PromisingRequest {
     }
   })
   @Type(() => TimeOfDay)
+  @ValidateNested()
   timeTable: TimeOfDay[];
-  @IsNotEmpty()
   @IsArray()
+  @IsString()
+  @ValidateNested({ each: true })
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
   availDate: Date[];
   @IsString()
   @IsOptional()
@@ -49,7 +48,6 @@ class PromisingInfo {
   @IsNotEmpty()
   @IsInt()
   categoryId: number;
-
   @IsOptional()
   @MaxLength(10)
   placeName: string;

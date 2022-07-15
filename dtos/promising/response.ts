@@ -3,6 +3,10 @@ import CategoryKeyword from '../../models/category-keyword';
 import { UserResponse } from '../user/response';
 import timeUtil from '../../utils/time';
 import PromisingDateModel from '../../models/promising-date';
+import { IsArray, IsInt, IsString,Matches } from 'class-validator';
+import { ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { JSONSchema } from 'class-validator-jsonschema';
 
 export class CreatedPromisingResponse {
   promising: PromisingResponse;
@@ -17,11 +21,22 @@ export class CreatedPromisingResponse {
 }
 
 export class PromisingResponse {
+  @IsInt()
   id: number;
+  @IsString()
   promisingName: string;
+  @IsInt()
   ownerId: number;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   minTime: string;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   maxTime: string;
+  @IsString()
+  placeName:string;
+  @Type(() => CategoryKeyword)
+  @ValidateNested()
   category: CategoryKeyword | any;
 
   constructor(promising: PromisingModel, category: CategoryKeyword | null) {
@@ -31,16 +46,52 @@ export class PromisingResponse {
     this.minTime = timeUtil.formatDate2String(promising.minTime);
     this.maxTime = timeUtil.formatDate2String(promising.maxTime);
     this.category = category;
+    this.placeName = promising.placeName;
+  }
+}
+
+export class PromisingDateResponse {
+  promising: PromisingModel
+  availDates : Array<string>
+
+  constructor(promising: PromisingModel, availDates: Array<string>) {
+    this.promising= promising;
+    this.availDates= availDates
   }
 }
 
 export class TimeTableResponse {
+  @IsArray()
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/UserResponse'
+    }
+  })
+  @Type(() => UserResponse)
+  @ValidateNested()
   users: UserResponse[];
+  @IsInt()
+  @IsArray()
   colors: number[];
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   minTime: string;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   maxTime: string;
+  @IsInt()
   totalCount: number;
   unit: number;
+  @IsArray()
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/TimeTableDate'
+    }
+  })
+  @Type(() => TimeTableDate)
+  @ValidateNested()
   timeTable: TimeTableDate[];
 
   constructor(
