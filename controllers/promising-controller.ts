@@ -13,7 +13,7 @@ import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
-import { CreatedPromisingResponse, PromisingDateResponse, TimeTableResponse } from '../dtos/promising/response';
+import { CreatedPromisingResponse, PromisingDateResponse, PromisingUserResponse, TimeTableResponse } from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoriesResponse, CategoryResponse } from '../dtos/category/response';
@@ -95,6 +95,7 @@ class PromisingController {
     summary: 'Get promisingList',
     description: 'get promisingList by userId'  })
   @Get('/user')
+  @ResponseSchema(PromisingUserResponse)
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {
     const userId = res.locals.user.id;
