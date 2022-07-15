@@ -11,7 +11,7 @@ export class CreatedPromisingResponse {
   constructor(promising: PromisingModel, dates: PromisingDateModel[]) {
     this.promising = new PromisingResponse(promising, promising.ownCategory);
     this.availableDates = dates.map((date) => {
-      return timeUtil.formatDate2String(date.date);
+      return timeUtil.formatDate2String(new Date(date.date));
     });
   }
 }
