@@ -36,7 +36,8 @@ class PromisingService {
 
     const promisingDates = await promisingDateService.create(promising, availDate);
     await this.responseTime(promising, owner, timeInfo);
-
+    promising.owner = owner;
+    promising.ownCategory = category;
     return new PromisingResponse(promising, category, promisingDates);
   }
 

@@ -145,7 +145,10 @@ const timeUtil = {
   },
 
   isPossibleDate(date: Date, candidates: Date[]) {
-    return candidates.filter((candidate) => this.isSameDate(date, candidate)).length != 0;
+    return (
+      candidates.filter((candidate) => this.isSameDate(new Date(date), new Date(candidate)))
+        .length != 0
+    );
   },
 
   async checkTimeResponseList(
