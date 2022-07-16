@@ -1,22 +1,49 @@
-import { IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { TimeOfDay } from '../time/request';
+import {
+  IsInt,
+  IsString,
+  IsArray,
+  ValidateNested,
+  MaxLength,
+  Matches,
+  IsOptional,
+  IsDate
+} from 'class-validator';
+import { JSONSchema } from 'class-validator-jsonschema';
+import { Type } from 'class-transformer';
 
 class PromisingRequest {
   @IsString()
   @MaxLength(10)
   promisingName: string;
-  @IsNotEmpty()
-  minTime: Date;
-  @IsNotEmpty()
-  maxTime: Date;
-  @IsNotEmpty()
+
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  minTime: string;
+
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  maxTime: string;
+
+  @IsInt()
   categoryId: number;
-  @IsNotEmpty()
+
   unit: number;
-  @IsNotEmpty()
-  timeTable: Array<TimeOfDay>;
-  @IsNotEmpty()
-  availDate: Array<Date>;
+
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/TimeOfDay'
+    }
+  })
+  @IsArray()
+  @Type(() => TimeOfDay)
+  @ValidateNested({ each: true })
+  timeTable: TimeOfDay[];
+
+  @IsArray()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
+  availDate: string[];
 
   @IsOptional()
   @MaxLength(10)
@@ -24,14 +51,16 @@ class PromisingRequest {
 }
 
 class PromisingInfo {
-  @IsString()
   @MaxLength(10)
   promisingName: string;
-  @IsNotEmpty()
+
+  @IsDate()
   minTime: Date;
-  @IsNotEmpty()
+
+  @IsDate()
   maxTime: Date;
-  @IsNotEmpty()
+
+  @IsInt()
   categoryId: number;
 
   @IsOptional()
