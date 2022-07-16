@@ -1,7 +1,7 @@
 import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import {
-  CreatedPromisingResponse,
+  PromisingResponse,
   TimeTableDate,
   TimeTableResponse,
   TimeTableUnit
@@ -42,7 +42,7 @@ class PromisingService {
     const promisingDates = await promisingDateService.create(promising, availDate);
     await this.responseTime(promising, owner, timeInfo);
 
-    return new CreatedPromisingResponse(promising, promisingDates);
+    return new PromisingResponse(promising, category, promisingDates);
   }
 
   async getPromisingDateInfo(promisingId: number) {
@@ -61,7 +61,11 @@ class PromisingService {
 
   async getPromisingInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
-      where: { id: promisingId }
+      where: { id: promisingId },
+      include: [
+        { model: User, as: 'owner' },
+        { model: CategoryKeyword, as: 'ownCategory' }
+      ]
     });
     if (!promising) throw new NotFoundException('Promising', promisingId);
     return promising;

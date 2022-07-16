@@ -2,69 +2,108 @@ import PromisingModel from '../../models/promising';
 import CategoryKeyword from '../../models/category-keyword';
 import { UserResponse } from '../user/response';
 import timeUtil from '../../utils/time';
-import PromisingDateModel from '../../models/promising-date';
-import { IsArray, IsBoolean, IsInt, IsString, Matches,ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Matches,
+  ValidateNested
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
-
+import { CategoryResponse } from '../category/response';
 
 export class PromisingResponse {
   @IsInt()
   id: number;
   @IsString()
   promisingName: string;
-  @IsInt()
-  ownerId: number;
+
+  @Type(() => UserResponse)
+  @ValidateNested()
+  owner: UserResponse;
+
   @IsString()
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   minTime: string;
   @IsString()
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   maxTime: string;
-  @IsString()
-  placeName:string;
-  @Type(() => CategoryKeyword)
-  @ValidateNested()
-  category: CategoryKeyword | any;
 
-  constructor(promising: PromisingModel, category: CategoryKeyword | null) {
-    this.id = promising.id;
-    this.promisingName = promising.promisingName;
-    this.ownerId = promising.ownerId;
-    this.minTime = timeUtil.formatDate2String(promising.minTime);
-    this.maxTime = timeUtil.formatDate2String(promising.maxTime);
-    this.category = category;
-    this.placeName = promising.placeName;
-  }
-}
-
-export class CreatedPromisingResponse {
-  @Type(() => PromisingResponse)
+  @Type(() => CategoryResponse)
   @ValidateNested()
-  promising: PromisingResponse;
+  category: CategoryResponse;
+
   @IsArray()
-  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })  
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
   availableDates: string[];
 
-  constructor(promising: PromisingModel, dates: PromisingDateModel[]) {
-    this.promising = new PromisingResponse(promising, promising.ownCategory);
-    this.availableDates = dates.map((date) => {
-      return timeUtil.formatDate2String(new Date(date.date));
-    });
+  @IsOptional()
+  @IsString()
+  placeName: string;
+
+  constructor(promising: PromisingModel, category: CategoryKeyword, dates: Date[]) {
+    this.id = promising.id;
+    this.promisingName = promising.promisingName;
+    this.owner = new UserResponse(promising.owner);
+    this.minTime = timeUtil.formatDate2String(promising.minTime);
+    this.maxTime = timeUtil.formatDate2String(promising.maxTime);
+    this.category = new CategoryResponse(category);
+    this.placeName = promising.placeName;
+    this.availableDates = dates.map((date) => timeUtil.formatDate2String(new Date(date)));
   }
 }
 
-export class PromisingDateResponse {
-  @Type(() => PromisingModel)
-  @ValidateNested()
-  promising: PromisingModel
+export class PromisingTimeTableResponse extends PromisingResponse {
   @IsArray()
-  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })  
-  availDates : Array<string>
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/UserResponse'
+    }
+  })
+  @Type(() => UserResponse)
+  @ValidateNested()
+  users: UserResponse[];
 
-  constructor(promising: PromisingModel, availDates: Array<string>) {
-    this.promising= promising;
-    this.availDates= availDates
+  @IsInt()
+  @IsArray()
+  colors: number[];
+
+  @IsInt()
+  totalCount: number;
+  @IsNumber()
+  unit: number;
+
+  @IsArray()
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/TimeTableDate'
+    }
+  })
+  @Type(() => TimeTableDate)
+  @ValidateNested()
+  timeTable: TimeTableDate[];
+
+  constructor(
+    promising: PromisingModel,
+    dates: Date[],
+    users: UserResponse[],
+    colors: number[],
+    totalCount: number,
+    unit: number,
+    timeTable: TimeTableDate[]
+  ) {
+    super(promising, promising.ownCategory, dates);
+    this.users = users;
+    this.colors = colors;
+    this.totalCount = totalCount;
+    this.unit = unit;
+    this.timeTable = timeTable;
   }
 }
 
@@ -91,7 +130,8 @@ export class TimeTableResponse {
   @IsInt()
   totalCount: number;
   unit: number;
-  @IsArray()
+
+  @IsArray({ each: true })
   @JSONSchema({
     type: 'array',
     items: {
@@ -122,7 +162,18 @@ export class TimeTableResponse {
 }
 
 export class TimeTableDate {
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   date: string;
+
+  @IsArray()
+  @Type(() => TimeTableUnit)
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/TimeTableUnit'
+    }
+  })
   blocks: TimeTableUnit[];
 
   constructor(date: string, blocks: TimeTableUnit[]) {
@@ -132,10 +183,22 @@ export class TimeTableDate {
 }
 
 export class TimeTableUnit {
+  @IsInt()
   index: number;
+  @IsInt()
   count: number;
-  users: UserResponse[];
+  @IsInt()
   color: number;
+
+  @IsArray()
+  @Type(() => UserResponse)
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/UserResponse'
+    }
+  })
+  users: UserResponse[];
 
   constructor(index: number, count: number, users: UserResponse[], color: number) {
     this.index = index;
@@ -159,11 +222,11 @@ export class PromisingUserResponse {
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   maxTime: string;
   @IsString()
-  placeName:string;
+  placeName: string;
   @IsInt()
-  memberCount:number;
+  memberCount: number;
   @IsBoolean()
-  isOwn:Boolean;
+  isOwn: boolean;
 
   constructor(promising: any) {
     this.id = promising.id;

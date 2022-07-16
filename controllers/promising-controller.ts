@@ -5,10 +5,9 @@ import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
 import {
-  CreatedPromisingResponse,
-  PromisingDateResponse,
-  PromisingUserResponse,
-  TimeTableResponse
+  PromisingResponse,
+  PromisingTimeTableResponse,
+  PromisingUserResponse
 } from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
@@ -19,7 +18,6 @@ import promisingDateService from '../services/promising-date-service';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { PromiseResponse } from '../dtos/promise/response';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
-import PromisingModel from '../models/promising';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -28,8 +26,8 @@ class PromisingController {
     summary: 'Create promising object',
     description: 'Date format = "yyyy-mm-ddThh:mm:ss'
   })
+  @ResponseSchema(PromisingResponse)
   @Post('')
-  @ResponseSchema(CreatedPromisingResponse)
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
     const { unit, timeTable, availDate } = req;
@@ -43,7 +41,7 @@ class PromisingController {
     if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
 
     const timeInfo: TimeRequest = { unit, timeTable };
-    const response: CreatedPromisingResponse = await promisingService.create(
+    const response = await promisingService.create(
       promisingReq,
       res.locals.user,
       availDate,
@@ -52,42 +50,40 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
-  @OpenAPI({
-    summary: 'Get promising List',
-    description: 'get promising by promisingId'
-  })
+  @OpenAPI({ summary: 'Get promising by promisingId' })
+  @ResponseSchema(PromiseResponse)
   @Get('/id/:promisingsId')
-  @ResponseSchema(PromisingDateResponse)
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
-    const promisingResponse: PromisingModel = await promisingService.getPromisingInfo(promisingId);
+    const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
-    const availDateList = availDates.map((date) => timeUtil.formatDate2String(date));
 
-    const resJson: PromisingDateResponse = {
-      promising: promisingResponse,
-      availDates: availDateList
-    };
-    return res.status(200).send(resJson);
+    const response = new PromisingResponse(promising, promising.ownCategory, availDates);
+    return res.status(200).send(response);
   }
 
-  @OpenAPI({
-    summary: 'Get promising time-table',
-    description: 'get promising time-table by promisingId'
-  })
+  @OpenAPI({ summary: 'Get promising time-table' })
   @Get('/:promisingId/time-table')
-  @ResponseSchema(TimeTableResponse)
+  @ResponseSchema(PromisingTimeTableResponse)
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
-    const timeTable = await promisingService.getTimeTable(promisingId);
+    const promising = await promisingService.getPromisingInfo(promisingId);
+    const { users, colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
+      promisingId
+    );
     const availDates = await promisingDateService.findDatesById(promisingId);
 
-    const timeResponse = {
-      ...timeTable,
-      availDates: availDates.map((date) => timeUtil.formatDate2String(date))
-    };
-    return res.status(200).send(timeResponse);
+    const response = new PromisingTimeTableResponse(
+      promising,
+      availDates,
+      users,
+      colors,
+      totalCount,
+      unit,
+      timeTable
+    );
+    return res.status(200).send(response);
   }
 
   @OpenAPI({

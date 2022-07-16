@@ -4,7 +4,7 @@ import PromisingModel from '../models/promising';
 
 class PromisingDateService {
   async create(promisingInfo: PromisingModel, availDates: string[]) {
-    const savedPromisingDateList: Array<PromisingDate> = [];
+    const promisingDates: Array<PromisingDate> = [];
 
     for (let i = 0; i < availDates.length; i++) {
       const dateTime = new Date(availDates[i]);
@@ -14,21 +14,18 @@ class PromisingDateService {
       };
       const promisingDate = new PromisingDate(dateTimeObj);
       const savedPromisingDate = await promisingDate.save();
-      savedPromisingDateList.push(savedPromisingDate);
+      promisingDates.push(savedPromisingDate);
     }
-    return savedPromisingDateList;
+    return promisingDates.map((promisingDate) => promisingDate.date);
   }
 
   async findDatesById(promisingId: number) {
-    const promisingDateResponse = await PromisingDate.findAll({
+    const promisingDates = await PromisingDate.findAll({
       where: { promisingId: promisingId }
     });
-    if (!promisingDateResponse) throw new NotFoundException('PromisingDate in', promisingId);
+    if (!promisingDates) throw new NotFoundException('PromisingDate in', promisingId);
 
-    const promisingDateList = promisingDateResponse.map(
-      (promisingDateResponse) => new Date(promisingDateResponse.date)
-    );
-    return promisingDateList;
+    return promisingDates.map((promisingDate) => promisingDate.date);
   }
 }
 export default new PromisingDateService();
