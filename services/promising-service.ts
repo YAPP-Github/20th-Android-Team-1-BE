@@ -1,11 +1,6 @@
 import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import {
-  CreatedPromisingResponse,
-  TimeTableDate,
-  TimeTableResponse,
-  TimeTableUnit
-} from '../dtos/promising/response';
+import { PromisingResponse, TimeTableDate, TimeTableUnit } from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
@@ -28,7 +23,7 @@ class PromisingService {
   async create(
     promisingInfo: PromisingInfo,
     owner: User,
-    availDate: Date[],
+    availDate: string[],
     timeInfo: TimeRequest
   ) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
@@ -42,10 +37,10 @@ class PromisingService {
     const promisingDates = await promisingDateService.create(promising, availDate);
     await this.responseTime(promising, owner, timeInfo);
 
-    return new CreatedPromisingResponse(promising, promisingDates);
+    return new PromisingResponse(promising, category, promisingDates);
   }
 
-  async getPromisingInfo(promisingId: number) {
+  async getPromisingDateInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
       where: { id: promisingId },
       include: [
@@ -56,6 +51,18 @@ class PromisingService {
     });
     if (!promising) throw new NotFoundException('Promising', promisingId);
 
+    return promising;
+  }
+
+  async getPromisingInfo(promisingId: number) {
+    const promising = await PromisingModel.findOne({
+      where: { id: promisingId },
+      include: [
+        { model: User, as: 'owner' },
+        { model: CategoryKeyword, as: 'ownCategory' }
+      ]
+    });
+    if (!promising) throw new NotFoundException('Promising', promisingId);
     return promising;
   }
 
@@ -165,15 +172,13 @@ class PromisingService {
       parseInt(color[colorStr as keyof ColorType], 16)
     );
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
-    return new TimeTableResponse(
+    return {
       users,
       colors,
-      promising.minTime,
-      promising.maxTime,
       totalCount,
       unit,
       timeTable
-    );
+    };
   }
 
   transformEvents2MapAndUsers(promising: PromisingModel, unit: number) {

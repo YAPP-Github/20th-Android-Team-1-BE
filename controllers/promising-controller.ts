@@ -1,10 +1,14 @@
 import promisingService from '../services/promising-service';
 import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
-import { ConfirmPromisingRequest, PromisingRequest } from '../dtos/promising/request';
+import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
-import { CreatedPromisingResponse } from '../dtos/promising/response';
+import {
+  PromisingResponse,
+  PromisingTimeTableResponse,
+  PromisingUserResponse
+} from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
@@ -14,10 +18,16 @@ import promisingDateService from '../services/promising-date-service';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { PromiseResponse } from '../dtos/promise/response';
 import randomName from '../constants/category-name.json';
+import { ConfirmPromisingRequest } from '../dtos/promising/request';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
 class PromisingController {
+  @OpenAPI({
+    summary: 'Create promising object',
+    description: 'Date format = "yyyy-mm-ddThh:mm:ss'
+  })
+  @ResponseSchema(PromisingResponse)
   @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
@@ -32,7 +42,7 @@ class PromisingController {
     if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
 
     const timeInfo: TimeRequest = { unit, timeTable };
-    const response: CreatedPromisingResponse = await promisingService.create(
+    const response = await promisingService.create(
       promisingReq,
       res.locals.user,
       availDate,
@@ -41,33 +51,47 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
+  @OpenAPI({ summary: 'Get promising by promisingId' })
+  @ResponseSchema(PromiseResponse)
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
-    const promisingResponse: any = await promisingService.getPromisingInfo(promisingId);
+    const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
 
-    return res.status(200).send({
-      ...promisingResponse,
-      availDates: availDates.map((date) => timeUtil.formatDate2String(date))
-    });
+    const response = new PromisingResponse(promising, promising.ownCategory, availDates);
+    return res.status(200).send(response);
   }
 
+  @OpenAPI({ summary: 'Get promising time-table' })
   @Get('/:promisingId/time-table')
+  @ResponseSchema(PromisingTimeTableResponse)
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
-    const timeTable = await promisingService.getTimeTable(promisingId);
+    const promising = await promisingService.getPromisingInfo(promisingId);
+    const { users, colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
+      promisingId
+    );
     const availDates = await promisingDateService.findDatesById(promisingId);
 
-    const timeResponse = {
-      ...timeTable,
-      availDates: availDates.map((date) => timeUtil.formatDate2String(date))
-    };
-    return res.status(200).send(timeResponse);
+    const response = new PromisingTimeTableResponse(
+      promising,
+      availDates,
+      users,
+      colors,
+      totalCount,
+      unit,
+      timeTable
+    );
+    return res.status(200).send(response);
   }
 
+  @OpenAPI({
+    summary: "Get User's Promising list By User"
+  })
   @Get('/user')
+  @ResponseSchema(PromisingUserResponse)
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {
     const userId = res.locals.user.id;
@@ -75,6 +99,11 @@ class PromisingController {
     return res.status(200).send(promisingList);
   }
 
+  @OpenAPI({
+    summary: 'Time-response to promising',
+    description:
+      "Size of times array = (Promising's maxTime - Promising's minTime)/unit. Excesss is ignored. "
+  })
   @Post('/:promisingId/time-response')
   @UseBefore(UserAuthMiddleware)
   async responseTime(
@@ -83,7 +112,7 @@ class PromisingController {
     @Res() res: Response
   ) {
     const user = res.locals.user;
-    const promising = await promisingService.getPromisingInfo(promisingId);
+    const promising = await promisingService.getPromisingDateInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promising.id);
 
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
@@ -97,7 +126,7 @@ class PromisingController {
     }
 
     await promisingService.responseTime(promising, user, timeInfo);
-    return res.status(201).send();
+    return res.status(200).send();
   }
 
   @OpenAPI({
@@ -125,8 +154,10 @@ class PromisingController {
     return res.status(200).send(promise);
   }
 
+  @OpenAPI({ summary: "Get Promising's Category list." })
   @Get('/categories')
   @UseBefore(UserAuthMiddleware)
+  @ResponseSchema(CategoryResponse, { isArray: true })
   async getPromisingCategories(@Res() res: Response) {
     const categories = await categoryService.getAll();
     return res.status(200).send(categories.map((category) => new CategoryResponse(category)));
