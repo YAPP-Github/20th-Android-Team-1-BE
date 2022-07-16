@@ -87,8 +87,7 @@ class PromisingController {
   }
 
   @OpenAPI({
-    summary: 'Get promisingList',
-    description: 'get promisingList by userId'
+    summary: "Get User's Promising list By User"
   })
   @Get('/user')
   @ResponseSchema(PromisingUserResponse)
@@ -102,7 +101,7 @@ class PromisingController {
   @OpenAPI({
     summary: 'Time-response to promising',
     description:
-      'time-table response to promising with promisingId : tableTable>date format= "2022-07-07" times foramt = [0,0,1,1,0,0,0,1,1,0] '
+      "Size of times array = (Promising's maxTime - Promising's minTime)/unit. Excesss is ignored. "
   })
   @Post('/:promisingId/time-response')
   @UseBefore(UserAuthMiddleware)
@@ -126,7 +125,7 @@ class PromisingController {
     }
 
     await promisingService.responseTime(promising, user, timeInfo);
-    return res.status(201).send();
+    return res.status(200).send();
   }
 
   @OpenAPI({
@@ -154,9 +153,7 @@ class PromisingController {
     return res.status(200).send(promise);
   }
 
-  @OpenAPI({
-    summary: 'Get categoryList'
-  })
+  @OpenAPI({ summary: "Get Promising's Category list." })
   @Get('/categories')
   @UseBefore(UserAuthMiddleware)
   @ResponseSchema(CategoryResponse, { isArray: true })
