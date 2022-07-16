@@ -58,15 +58,15 @@ export class PromisingResponse {
 }
 
 export class PromisingTimeTableResponse extends PromisingResponse {
-  @IsArray()
   @JSONSchema({
     type: 'array',
     items: {
       $ref: '#/components/schemas/UserResponse'
     }
   })
+  @IsArray()
   @Type(() => UserResponse)
-  @ValidateNested()
+  @ValidateNested({ each: true })
   users: UserResponse[];
 
   @IsInt()
@@ -78,15 +78,15 @@ export class PromisingTimeTableResponse extends PromisingResponse {
   @IsNumber()
   unit: number;
 
-  @IsArray()
   @JSONSchema({
     type: 'array',
     items: {
       $ref: '#/components/schemas/TimeTableDate'
     }
   })
+  @IsArray()
   @Type(() => TimeTableDate)
-  @ValidateNested()
+  @ValidateNested({ each: true })
   timeTable: TimeTableDate[];
 
   constructor(
@@ -107,73 +107,20 @@ export class PromisingTimeTableResponse extends PromisingResponse {
   }
 }
 
-export class TimeTableResponse {
-  @IsArray()
-  @JSONSchema({
-    type: 'array',
-    items: {
-      $ref: '#/components/schemas/UserResponse'
-    }
-  })
-  @Type(() => UserResponse)
-  @ValidateNested()
-  users: UserResponse[];
-  @IsInt()
-  @IsArray()
-  colors: number[];
-  @IsString()
-  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
-  minTime: string;
-  @IsString()
-  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
-  maxTime: string;
-  @IsInt()
-  totalCount: number;
-  unit: number;
-
-  @IsArray({ each: true })
-  @JSONSchema({
-    type: 'array',
-    items: {
-      $ref: '#/components/schemas/TimeTableDate'
-    }
-  })
-  @Type(() => TimeTableDate)
-  @ValidateNested()
-  timeTable: TimeTableDate[];
-
-  constructor(
-    users: UserResponse[],
-    colors: number[],
-    minTime: Date,
-    maxTime: Date,
-    totalCount: number,
-    unit: number,
-    timeTable: TimeTableDate[]
-  ) {
-    this.users = users;
-    this.colors = colors;
-    this.minTime = timeUtil.formatDate2String(minTime);
-    this.maxTime = timeUtil.formatDate2String(maxTime);
-    this.totalCount = totalCount;
-    this.unit = unit;
-    this.timeTable = timeTable;
-  }
-}
-
 export class TimeTableDate {
   @IsString()
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   date: string;
 
-  @IsArray()
-  @Type(() => TimeTableUnit)
   @JSONSchema({
     type: 'array',
     items: {
       $ref: '#/components/schemas/TimeTableUnit'
     }
   })
+  @IsArray()
+  @Type(() => TimeTableUnit)
+  @ValidateNested({ each: true })
   blocks: TimeTableUnit[];
 
   constructor(date: string, blocks: TimeTableUnit[]) {
@@ -190,14 +137,15 @@ export class TimeTableUnit {
   @IsInt()
   color: number;
 
-  @IsArray()
-  @Type(() => UserResponse)
   @JSONSchema({
     type: 'array',
     items: {
       $ref: '#/components/schemas/UserResponse'
     }
   })
+  @IsArray()
+  @Type(() => UserResponse)
+  @ValidateNested({ each: true })
   users: UserResponse[];
 
   constructor(index: number, count: number, users: UserResponse[], color: number) {

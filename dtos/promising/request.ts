@@ -30,20 +30,18 @@ class PromisingRequest {
 
   unit: number;
 
-  @IsArray()
   @JSONSchema({
     type: 'array',
     items: {
       $ref: '#/components/schemas/TimeOfDay'
     }
   })
+  @IsArray()
   @Type(() => TimeOfDay)
-  @ValidateNested()
+  @ValidateNested({ each: true })
   timeTable: TimeOfDay[];
 
   @IsArray()
-  @IsString()
-  @ValidateNested({ each: true })
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
   availDate: string[];
 

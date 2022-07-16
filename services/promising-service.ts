@@ -1,11 +1,6 @@
 import { PromisingInfo } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import {
-  PromisingResponse,
-  TimeTableDate,
-  TimeTableResponse,
-  TimeTableUnit
-} from '../dtos/promising/response';
+import { PromisingResponse, TimeTableDate, TimeTableUnit } from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
@@ -177,15 +172,13 @@ class PromisingService {
       parseInt(color[colorStr as keyof ColorType], 16)
     );
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
-    return new TimeTableResponse(
+    return {
       users,
       colors,
-      promising.minTime,
-      promising.maxTime,
       totalCount,
       unit,
       timeTable
-    );
+    };
   }
 
   transformEvents2MapAndUsers(promising: PromisingModel, unit: number) {
