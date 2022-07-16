@@ -56,8 +56,8 @@ class PromisingController {
     if (!promisingId) throw new ValidationException('');
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
-
-    const response = new PromisingResponse(promising, promising.ownCategory, availDates);
+    const members = await eventService.findPromisingMembers(promising.id);
+    const response = new PromisingResponse(promising, promising.ownCategory, availDates, members);
     return res.status(200).send(response);
   }
 
@@ -67,15 +67,16 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const promising = await promisingService.getPromisingInfo(promisingId);
-    const { users, colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
+    const { colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
       promisingId
     );
     const availDates = await promisingDateService.findDatesById(promisingId);
 
+    const members = await eventService.findPromisingMembers(promising.id);
     const response = new PromisingTimeTableResponse(
       promising,
       availDates,
-      users,
+      members,
       colors,
       totalCount,
       unit,

@@ -38,7 +38,8 @@ class PromisingService {
     await this.responseTime(promising, owner, timeInfo);
     promising.owner = owner;
     promising.ownCategory = category;
-    return new PromisingResponse(promising, category, promisingDates);
+    const members = await eventService.findPromisingMembers(promising.id);
+    return new PromisingResponse(promising, category, promisingDates, members);
   }
 
   async getPromisingDateInfo(promisingId: number) {
@@ -82,14 +83,21 @@ class PromisingService {
         { model: PromisingDateModel, as: 'ownPromisingDates', required: true, attributes: ['date'] }
       ]
     });
-    return promisings.map(
-      (promising) =>
+
+    const res = [];
+    for (let i = 0; i < promisings.length; i++) {
+      const promising = promisings[i];
+      const members = await eventService.findPromisingMembers(promising.id);
+      res.push(
         new PromisingResponse(
           promising,
           promising.ownCategory,
-          promising.ownPromisingDates.map((promisingDate) => promisingDate.date)
+          promising.ownPromisingDates.map((promisingDate) => promisingDate.date),
+          members
         )
-    );
+      );
+    }
+    return res;
   }
 
   async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {
@@ -143,7 +151,7 @@ class PromisingService {
     });
     if (!promising) throw new NotFoundException('Promising', id);
 
-    const { map, users } = this.transformEvents2MapAndUsers(promising, unit);
+    const map = this.transformEvents2MapAndUsers(promising, unit);
     const { minTime, maxTime, ownEvents } = promising;
 
     const timeTable = Array.from(map, ([date, usersByDate]) => {
@@ -171,7 +179,6 @@ class PromisingService {
     );
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
     return {
-      users,
       colors,
       totalCount,
       unit,
@@ -195,7 +202,7 @@ class PromisingService {
       });
     });
 
-    return { map: timeMap, users: allUsers };
+    return timeMap;
   }
 
   bindUsersByDateTime(

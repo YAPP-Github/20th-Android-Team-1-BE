@@ -40,7 +40,7 @@ class EventService {
   async findPromisingMembers(promisingId: number) {
     const events = await EventModel.findAll({
       where: {
-        '$promising.promisingId$': { [Op.eq]: promisingId }
+        promisingId: promisingId
       },
       include: [{ model: User, as: 'user', required: true }]
     });
