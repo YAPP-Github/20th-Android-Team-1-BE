@@ -28,7 +28,7 @@ class PromisingService {
   async create(
     promisingInfo: PromisingInfo,
     owner: User,
-    availDate: Date[],
+    availDate: string[],
     timeInfo: TimeRequest
   ) {
     const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
@@ -50,7 +50,7 @@ class PromisingService {
       where: { id: promisingId },
       include: [
         {
-          model: PromisingDateModel,
+          model: PromisingDateModel
         }
       ]
     });
@@ -59,7 +59,6 @@ class PromisingService {
     return promising;
   }
 
-  
   async getPromisingInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
       where: { id: promisingId }

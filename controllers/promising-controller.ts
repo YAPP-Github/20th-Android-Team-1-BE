@@ -1,22 +1,18 @@
 import promisingService from '../services/promising-service';
-import {
-  JsonController,
-  Body,
-  Post,
-  Res,
-  UseBefore,
-  Get,
-  Param,
-  BodyParam
-} from 'routing-controllers';
+import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
-import { CreatedPromisingResponse, PromisingDateResponse, PromisingUserResponse, TimeTableResponse } from '../dtos/promising/response';
+import {
+  CreatedPromisingResponse,
+  PromisingDateResponse,
+  PromisingUserResponse,
+  TimeTableResponse
+} from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
-import { CategoriesResponse, CategoryResponse } from '../dtos/category/response';
+import { CategoryResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
 import timeUtil from '../utils/time';
 import promisingDateService from '../services/promising-date-service';
@@ -30,7 +26,8 @@ import PromisingModel from '../models/promising';
 class PromisingController {
   @OpenAPI({
     summary: 'Create promising object',
-    description: 'dateTime Format = "yyyy-MM-dd HH:mmXXX' })
+    description: 'Date format = "yyyy-mm-ddThh:mm:ss'
+  })
   @Post('')
   @ResponseSchema(CreatedPromisingResponse)
   @UseBefore(UserAuthMiddleware)
@@ -57,29 +54,31 @@ class PromisingController {
 
   @OpenAPI({
     summary: 'Get promising List',
-    description: 'get promising by promisingId'  })
+    description: 'get promising by promisingId'
+  })
   @Get('/id/:promisingsId')
   @ResponseSchema(PromisingDateResponse)
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
-    let promisingResponse: PromisingModel = await promisingService.getPromisingInfo(promisingId);
-    const availDates = await promisingDateService.findDatesById(promisingId);    
-    const availDateList= availDates.map((date) => timeUtil.formatDate2String(date))
+    const promisingResponse: PromisingModel = await promisingService.getPromisingInfo(promisingId);
+    const availDates = await promisingDateService.findDatesById(promisingId);
+    const availDateList = availDates.map((date) => timeUtil.formatDate2String(date));
 
-    const resJson:PromisingDateResponse ={
+    const resJson: PromisingDateResponse = {
       promising: promisingResponse,
       availDates: availDateList
-    }
+    };
     return res.status(200).send(resJson);
   }
 
   @OpenAPI({
     summary: 'Get promising time-table',
-    description: 'get promising time-table by promisingId'  })
+    description: 'get promising time-table by promisingId'
+  })
   @Get('/:promisingId/time-table')
   @ResponseSchema(TimeTableResponse)
-  @UseBefore(UserAuthMiddleware)   
+  @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const timeTable = await promisingService.getTimeTable(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
@@ -93,7 +92,8 @@ class PromisingController {
 
   @OpenAPI({
     summary: 'Get promisingList',
-    description: 'get promisingList by userId'  })
+    description: 'get promisingList by userId'
+  })
   @Get('/user')
   @ResponseSchema(PromisingUserResponse)
   @UseBefore(UserAuthMiddleware)
@@ -105,7 +105,9 @@ class PromisingController {
 
   @OpenAPI({
     summary: 'Time-response to promising',
-    description: 'time-table response to promising with promisingId : tableTable>date format= "2022-07-07" times foramt = [0,0,1,1,0,0,0,1,1,0] '  })
+    description:
+      'time-table response to promising with promisingId : tableTable>date format= "2022-07-07" times foramt = [0,0,1,1,0,0,0,1,1,0] '
+  })
   @Post('/:promisingId/time-response')
   @UseBefore(UserAuthMiddleware)
   async responseTime(
@@ -157,10 +159,11 @@ class PromisingController {
   }
 
   @OpenAPI({
-    summary: 'Get categoryList'  })
+    summary: 'Get categoryList'
+  })
   @Get('/categories')
   @UseBefore(UserAuthMiddleware)
-  @ResponseSchema(CategoriesResponse)
+  @ResponseSchema(CategoryResponse, { isArray: true })
   async getPromisingCategories(@Res() res: Response) {
     const categories = await categoryService.getAll();
     return res.status(200).send(categories.map((category) => new CategoryResponse(category)));

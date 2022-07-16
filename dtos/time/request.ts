@@ -1,4 +1,12 @@
-import { ValidateNested, IsArray, IsNotEmpty,IsString,Matches,IsNumber } from 'class-validator';
+import {
+  ValidateNested,
+  IsArray,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  IsNumber,
+  IsBoolean
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
 
@@ -14,7 +22,7 @@ class TimeRequest {
   })
   @Type(() => TimeOfDay)
   @ValidateNested()
-  timeTable: Array<TimeOfDay>;
+  timeTable: TimeOfDay[];
 }
 
 class TimeOfDay {
@@ -22,7 +30,7 @@ class TimeOfDay {
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   date: Date;
   @IsArray()
-  @IsNumber({},{each: true})
+  @IsBoolean({ each: true })
   times: boolean[];
 }
 
