@@ -11,12 +11,13 @@ import {
 } from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
-import { CategoryResponse } from '../dtos/category/response';
+import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
 import timeUtil from '../utils/time';
 import promisingDateService from '../services/promising-date-service';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { PromiseResponse } from '../dtos/promise/response';
+import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
@@ -160,6 +161,29 @@ class PromisingController {
   async getPromisingCategories(@Res() res: Response) {
     const categories = await categoryService.getAll();
     return res.status(200).send(categories.map((category) => new CategoryResponse(category)));
+  }
+
+  @OpenAPI({
+    summary: 'Get random Promising name by categoryId',
+    description: 'Category by categoryId must exist.'
+  })
+  @ResponseSchema(RandomNameResponse)
+  @Get('/categories/:categoryId/name')
+  @UseBefore(UserAuthMiddleware)
+  async getPromisingRandomNameByCategory(
+    @Param('categoryId') categoryId: number,
+    @Res() res: Response
+  ) {
+    const category = await categoryService.getOneById(categoryId);
+    const names = randomName[category.id];
+    if (!names)
+      throw new BadRequestException(
+        'categoryId',
+        'random names with requested categoryId not found'
+      );
+
+    const randomIdx = Math.floor(Math.random() * names.length);
+    return res.status(200).send(new RandomNameResponse(randomName[category.id][randomIdx]));
   }
 }
 

@@ -28,7 +28,7 @@ export class ValidationException extends ApplicationError {
 
 export class BadRequestException extends ApplicationError {
   constructor(param: any, message = 'not appropriate') {
-    super(`parameter ${param} ${message}.`, 400);
+    super(`[BadRequestError] parameter ${param} : ${message}.`, 400);
   }
 }
 

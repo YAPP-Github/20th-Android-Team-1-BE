@@ -1,4 +1,4 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsInt, IsString, MaxLength } from 'class-validator';
 import CategoryKeyword from '../../models/category-keyword';
 
 export class CategoryResponse {
@@ -10,5 +10,14 @@ export class CategoryResponse {
   constructor(category: CategoryKeyword) {
     this.id = category.id;
     this.keyword = category.keyword;
+  }
+}
+
+export class RandomNameResponse {
+  @MaxLength(10)
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
   }
 }
