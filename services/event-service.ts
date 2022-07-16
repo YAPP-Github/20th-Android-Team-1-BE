@@ -3,30 +3,22 @@ import EventModel from '../models/event';
 import PromisingModel from '../models/promising';
 import TimeModel from '../models/time';
 import User from '../models/user';
-import EventRequest from '../dtos/event/request';
-import { ValidationException } from '../utils/error';
+import { BadRequestException } from '../utils/error';
 
 class EventService {
-  async create(promising: PromisingModel, user: User) {
-    const eventInfo: EventRequest = { promisingId: promising.id, userId: user.id };
-    const event = new EventModel(eventInfo);
-    const savedEvent = await event.save();
+  async create(promising: PromisingModel, user: User, isAbsent: boolean | null = null) {
+    const exist = await this.isResponsedBefore(promising, user);
+    if (exist) throw new BadRequestException('User', 'already responsed to Promising');
 
-    await savedEvent.$set('promising', promising);
-    await savedEvent.$set('user', user);
-
-    return savedEvent;
+    const event = new EventModel({ promisingId: promising.id, userId: user.id, isAbsent });
+    return await event.save();
   }
-  async updateIsAbsent(eventId: number, isAbsent: boolean) {
-    if (!eventId) throw new ValidationException('eventId');
-    if (!isAbsent) throw new ValidationException('isAbsent');
 
-    const updatedEvent = await EventModel.update(
-      { isAbsent: isAbsent },
-      { where: { eventId: eventId } }
-    );
-
-    return updatedEvent;
+  async isResponsedBefore(promising: PromisingModel, user: User) {
+    const exist = await EventModel.findOne({
+      where: { promisingId: promising.id, userId: user.id }
+    });
+    return !exist;
   }
 
   async findPossibleUsers(promisingId: number, date: Date) {
@@ -41,6 +33,16 @@ class EventService {
         { model: PromisingModel, as: 'promising', required: true },
         { model: User, as: 'user', required: true }
       ]
+    });
+    return events.map((event) => event.user);
+  }
+
+  async findPromisingMembers(promisingId: number) {
+    const events = await EventModel.findAll({
+      where: {
+        '$promising.promisingId$': { [Op.eq]: promisingId }
+      },
+      include: [{ model: User, as: 'user', required: true }]
     });
     return events.map((event) => event.user);
   }

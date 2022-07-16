@@ -68,37 +68,34 @@ class PromisingService {
   }
 
   async getPromisingByUser(userId: number) {
-    const promisingList: Array<object> | any = await PromisingModel.findAll({
-      include: {
-        model: EventModel,
-        required: true,
-        where: { userId: userId },
-        attributes: []
-      },
-      raw: true
+    const promisings = await PromisingModel.findAll({
+      include: [
+        {
+          model: EventModel,
+          required: true,
+          where: {
+            userId: userId
+          }
+        },
+        { model: User, as: 'owner', required: true },
+        { model: CategoryKeyword, as: 'ownCategory', required: true },
+        { model: PromisingDateModel, as: 'ownPromisingDates', required: true, attributes: ['date'] }
+      ]
     });
-
-    const ownPromisingList: Array<PromisingModel> = await PromisingModel.findAll({
-      attributes: ['promisingId'],
-      where: { ownerId: userId },
-      raw: true
-    });
-    const ownPromisingIdList = Object.values(ownPromisingList.map((x: any) => x.promisingId));
-
-    for (let i = 0; i < promisingList.length; i++) {
-      const promisingInfo = promisingList[i];
-      const userCount = await EventModel.count({ where: { promisingId: promisingInfo.id } });
-
-      promisingInfo.memberCount = userCount;
-
-      if (Object.values(ownPromisingIdList).indexOf(promisingInfo.id) > -1)
-        promisingInfo.isOwn = true;
-      else promisingInfo.isOwn = false;
-    }
-    return promisingList;
+    return promisings.map(
+      (promising) =>
+        new PromisingResponse(
+          promising,
+          promising.ownCategory,
+          promising.ownPromisingDates.map((promisingDate) => promisingDate.date)
+        )
+    );
   }
 
   async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {
+    const exist = await eventService.isResponsedBefore(promising, user);
+    if (exist) throw new BadRequestException('User', 'already responsed to Promising');
+
     const savedEvent: EventModel = await eventService.create(promising, user);
     const savedTime = await timeService.create(promising, savedEvent, timeInfo);
 

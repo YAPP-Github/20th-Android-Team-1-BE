@@ -3,8 +3,8 @@ import EventModel from '../models/event';
 import timeUtil from '../utils/time';
 import TimeResponse from '../dtos/time/response';
 import TimeModel from '../models/time';
-import eventService from './event-service';
 import PromisingModel from '../models/promising';
+import { BadRequestException } from '../utils/error';
 
 class TimeService {
   async create(promising: PromisingModel, eventInfo: EventModel, timeInfo: TimeRequest) {
@@ -15,8 +15,7 @@ class TimeService {
     ) as Array<TimeResponse>;
 
     if (resultList.length == 0) {
-      eventService.updateIsAbsent(eventInfo.id, true);
-      return responseList;
+      throw new BadRequestException('times', 'available time is zero');
     }
 
     for (let i = 0; i < resultList.length; i++) {
