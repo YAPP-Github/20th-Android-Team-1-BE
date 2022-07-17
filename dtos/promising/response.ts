@@ -87,7 +87,7 @@ export class PromisingTimeTableResponse extends PromisingResponse {
   @ValidateNested({ each: true })
   members: UserResponse[];
 
-  @IsInt()
+  @IsInt({ each: true })
   @IsArray()
   colors: number[];
 
