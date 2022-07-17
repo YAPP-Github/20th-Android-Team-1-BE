@@ -61,7 +61,11 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
-  @OpenAPI({ summary: 'Get promising time-table' })
+  @OpenAPI({
+    summary: 'Get promising time-table',
+    description:
+      'members = 응답한 모든 사용자 배열 (불참 포함), colors = 인원수별 블록 컬러값 (0~ 최대) </p> <p> unit = 한 시간 기준 블록의 크기 ( unit = 0.5, block 당 30분), totalCount = 전체 minTime ~ maxTime 사이 시간 (13:00 ~ 15:00 totalCount = 2)'
+  })
   @Get('/:promisingId/time-table')
   @ResponseSchema(PromisingTimeTableResponse)
   @UseBefore(UserAuthMiddleware)

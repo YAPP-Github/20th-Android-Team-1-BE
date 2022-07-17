@@ -93,7 +93,7 @@ export class PromisingTimeTableResponse extends PromisingResponse {
 
   @IsInt()
   totalCount: number;
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 1 })
   unit: number;
 
   @JSONSchema({
