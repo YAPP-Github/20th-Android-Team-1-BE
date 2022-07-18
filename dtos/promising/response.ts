@@ -15,6 +15,7 @@ import {
 import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
 import { CategoryResponse } from '../category/response';
+import User from '../../models/user';
 
 export class PromisingResponse {
   @IsInt()
@@ -41,11 +42,27 @@ export class PromisingResponse {
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
   availableDates: string[];
 
+  @JSONSchema({
+    type: 'array',
+    items: {
+      $ref: '#/components/schemas/UserResponse'
+    }
+  })
+  @IsArray()
+  @Type(() => UserResponse)
+  @ValidateNested({ each: true })
+  members: UserResponse[];
+
   @IsOptional()
   @IsString()
   placeName: string;
 
-  constructor(promising: PromisingModel, category: CategoryKeyword, dates: Date[]) {
+  constructor(
+    promising: PromisingModel,
+    category: CategoryKeyword,
+    dates: Date[],
+    members: User[]
+  ) {
     this.id = promising.id;
     this.promisingName = promising.promisingName;
     this.owner = new UserResponse(promising.owner);
@@ -54,6 +71,7 @@ export class PromisingResponse {
     this.category = new CategoryResponse(category);
     this.placeName = promising.placeName;
     this.availableDates = dates.map((date) => timeUtil.formatDate2String(new Date(date)));
+    this.members = members.map((member) => new UserResponse(member));
   }
 }
 
@@ -67,15 +85,15 @@ export class PromisingTimeTableResponse extends PromisingResponse {
   @IsArray()
   @Type(() => UserResponse)
   @ValidateNested({ each: true })
-  users: UserResponse[];
+  members: UserResponse[];
 
-  @IsInt()
+  @IsInt({ each: true })
   @IsArray()
   colors: number[];
 
   @IsInt()
   totalCount: number;
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 1 })
   unit: number;
 
   @JSONSchema({
@@ -92,14 +110,13 @@ export class PromisingTimeTableResponse extends PromisingResponse {
   constructor(
     promising: PromisingModel,
     dates: Date[],
-    users: UserResponse[],
+    members: User[],
     colors: number[],
     totalCount: number,
     unit: number,
     timeTable: TimeTableDate[]
   ) {
-    super(promising, promising.ownCategory, dates);
-    this.users = users;
+    super(promising, promising.ownCategory, dates, members);
     this.colors = colors;
     this.totalCount = totalCount;
     this.unit = unit;

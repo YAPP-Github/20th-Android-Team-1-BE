@@ -4,6 +4,7 @@ import User from '../models/user';
 import sequelize from 'sequelize';
 import promiseUserService from './promise-user-service';
 import { NotFoundException } from '../utils/error';
+import { Op } from 'sequelize';
 
 class PromiseService {
   async create(
@@ -23,45 +24,67 @@ class PromiseService {
   }
 
   async getPromisesByUser(userId: number) {
-    const promises: Array<PromiseModel> = await PromiseModel.findAll({
-      include: [
-        {
-          model: User,
-          as: 'members',
-          where: { userId: userId },
-          attributes: [],
-          through: { attributes: [] }
-        },
-        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
-        { model: CategoryKeyword, as: 'category', required: true }
-      ]
+    const includeConds = [
+      {
+        model: User,
+        as: 'members',
+        where: { userId: userId },
+        attributes: [],
+        through: { attributes: [] }
+      },
+      { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+      { model: CategoryKeyword, as: 'category', required: true }
+    ];
+    const promisesFuture = await PromiseModel.findAll({
+      include: includeConds,
+      where: { promiseDate: { [Op.gte]: new Date() } },
+      order: [['promiseDate', 'ASC']]
     });
-    return await promiseUserService.findPromiseMembers(promises);
+
+    const promisesPast = await PromiseModel.findAll({
+      include: includeConds,
+      where: { promiseDate: { [Op.lt]: new Date() } },
+      order: [['promiseDate', 'ASC']]
+    });
+    return await promiseUserService.findPromiseMembers([...promisesFuture, ...promisesPast]);
   }
 
   async getPromisesByMonth(userId: number, dateTime: Date) {
-    const year = dateTime.getFullYear(),
-      month = dateTime.getMonth() + 1;
-    const promises: Array<PromiseModel> = await PromiseModel.findAll({
-      include: [
-        {
-          model: User,
-          as: 'members',
-          where: { userId: userId },
-          attributes: [],
-          through: { attributes: [] }
-        },
-        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
-        { model: CategoryKeyword, as: 'category', required: true }
-      ],
+    const year = dateTime.getFullYear();
+    const month = dateTime.getMonth() + 1;
+    const includeConds = [
+      {
+        model: User,
+        as: 'members',
+        where: { userId: userId },
+        attributes: [],
+        through: { attributes: [] }
+      },
+      { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+      { model: CategoryKeyword, as: 'category', required: true }
+    ];
+    const whereConds = [
+      sequelize.where(sequelize.fn('YEAR', sequelize.col('promiseDate')), year),
+      sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month)
+    ];
+
+    const promisesFuture = await PromiseModel.findAll({
+      include: includeConds,
       where: {
-        [sequelize.Op.and]: [
-          sequelize.where(sequelize.fn('YEAR', sequelize.col('promiseDate')), year),
-          sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month)
-        ]
-      }
+        [sequelize.Op.and]: [...whereConds, { promiseDate: { [Op.gte]: new Date() } }]
+      },
+      order: [['promiseDate', 'ASC']]
     });
-    return await promiseUserService.findPromiseMembers(promises);
+
+    const promisesPast = await PromiseModel.findAll({
+      include: includeConds,
+      where: {
+        [sequelize.Op.and]: [...whereConds, { promiseDate: { [Op.lt]: new Date() } }]
+      },
+      order: [['promiseDate', 'ASC']]
+    });
+
+    return await promiseUserService.findPromiseMembers([...promisesFuture, ...promisesPast]);
   }
 
   async getPromisesByDate(userId: number, dateTime: Date) {
@@ -69,22 +92,40 @@ class PromiseService {
       month = dateTime.getMonth() + 1,
       date = dateTime.getDate();
     const dateString = year + '-' + month + '-' + date;
+    const includeConds = [
+      {
+        model: User,
+        as: 'members',
+        where: { userId: userId },
+        attributes: [],
+        through: { attributes: [] }
+      },
+      { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
+      { model: CategoryKeyword, as: 'category', required: true }
+    ];
 
-    const promises: Array<PromiseModel> = await PromiseModel.findAll({
-      include: [
-        {
-          model: User,
-          as: 'members',
-          where: { userId: userId },
-          attributes: [],
-          through: { attributes: [] }
-        },
-        { model: User, as: 'owner', attributes: { exclude: ['accessToken'] }, required: true },
-        { model: CategoryKeyword, as: 'category', required: true }
-      ],
-      where: sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString)
+    const promisesFuture = await PromiseModel.findAll({
+      include: includeConds,
+      where: {
+        [Op.and]: [
+          sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString),
+          { promiseDate: { [Op.gte]: new Date() } }
+        ]
+      },
+      order: [['promiseDate', 'ASC']]
     });
-    return await promiseUserService.findPromiseMembers(promises);
+
+    const promisesPast = await PromiseModel.findAll({
+      include: includeConds,
+      where: {
+        [Op.and]: [
+          sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString),
+          { promiseDate: { [Op.lt]: new Date() } }
+        ]
+      },
+      order: [['promiseDate', 'ASC']]
+    });
+    return await promiseUserService.findPromiseMembers([...promisesFuture, ...promisesPast]);
   }
 
   async getPromiseById(id: number) {

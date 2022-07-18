@@ -4,11 +4,7 @@ import { UserAuthMiddleware } from '../middlewares/auth';
 import { PromisingRequest } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
-import {
-  PromisingResponse,
-  PromisingTimeTableResponse,
-  PromisingUserResponse
-} from '../dtos/promising/response';
+import { PromisingResponse, PromisingTimeTableResponse } from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
@@ -19,6 +15,7 @@ import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { PromiseResponse } from '../dtos/promise/response';
 import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
+import eventService from '../services/event-service';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -52,33 +49,38 @@ class PromisingController {
   }
 
   @OpenAPI({ summary: 'Get promising by promisingId' })
-  @ResponseSchema(PromiseResponse)
+  @ResponseSchema(PromisingResponse)
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     if (!promisingId) throw new ValidationException('');
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
-
-    const response = new PromisingResponse(promising, promising.ownCategory, availDates);
+    const members = await eventService.findPromisingMembers(promising.id);
+    const response = new PromisingResponse(promising, promising.ownCategory, availDates, members);
     return res.status(200).send(response);
   }
 
-  @OpenAPI({ summary: 'Get promising time-table' })
+  @OpenAPI({
+    summary: 'Get promising time-table',
+    description:
+      'members = 응답한 모든 사용자 배열 (불참 포함), colors = 인원수별 블록 컬러값 (0~ 최대) </p> <p> unit = 한 시간 기준 블록의 크기 ( unit = 0.5, block 당 30분), totalCount = 전체 minTime ~ maxTime 사이 시간 (13:00 ~ 15:00 totalCount = 2)'
+  })
   @Get('/:promisingId/time-table')
   @ResponseSchema(PromisingTimeTableResponse)
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const promising = await promisingService.getPromisingInfo(promisingId);
-    const { users, colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
+    const { colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
       promisingId
     );
     const availDates = await promisingDateService.findDatesById(promisingId);
 
+    const members = await eventService.findPromisingMembers(promising.id);
     const response = new PromisingTimeTableResponse(
       promising,
       availDates,
-      users,
+      members,
       colors,
       totalCount,
       unit,
@@ -87,16 +89,24 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
-  @OpenAPI({
-    summary: "Get User's Promising list By User"
-  })
+  @OpenAPI({ summary: "Get User's Promising list By User" })
+  @ResponseSchema(PromisingResponse, { isArray: true })
   @Get('/user')
-  @ResponseSchema(PromisingUserResponse)
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {
     const userId = res.locals.user.id;
-    const promisingList = await promisingService.getPromisingByUser(userId);
-    return res.status(200).send(promisingList);
+    const response = await promisingService.getPromisingByUser(userId);
+    return res.status(200).send(response);
+  }
+
+  @OpenAPI({ summary: 'Reject Promising', description: 'User must not be owner of Promising' })
+  @Post('/:promisingId/time-response/rejection')
+  @UseBefore(UserAuthMiddleware)
+  async rejectPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    const user = res.locals.user;
+    const promising = await promisingService.getPromisingInfo(promisingId);
+    await eventService.create(promising, user, true);
+    return res.status(200).send();
   }
 
   @OpenAPI({

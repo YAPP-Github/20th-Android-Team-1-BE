@@ -13,15 +13,15 @@ import { JSONSchema } from 'class-validator-jsonschema';
 class TimeRequest {
   @IsNumber()
   unit: number;
-  @IsArray()
   @JSONSchema({
     type: 'array',
     items: {
       $ref: '#/components/schemas/TimeOfDay'
     }
   })
+  @IsArray()
   @Type(() => TimeOfDay)
-  @ValidateNested()
+  @ValidateNested({ each: true })
   timeTable: TimeOfDay[];
 }
 
