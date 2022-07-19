@@ -1,10 +1,14 @@
 import promisingService from '../services/promising-service';
 import { JsonController, Body, Post, Res, UseBefore, Get, Param } from 'routing-controllers';
 import { UserAuthMiddleware } from '../middlewares/auth';
-import { PromisingRequest } from '../dtos/promising/request';
+import { PromisingRequest, PromisingSession } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
-import { PromisingResponse, PromisingTimeTableResponse } from '../dtos/promising/response';
+import {
+  PromisingResponse,
+  PromisingTimeTableResponse,
+  SessionResponse
+} from '../dtos/promising/response';
 import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
@@ -21,33 +25,31 @@ import eventService from '../services/event-service';
 @JsonController('/promisings')
 class PromisingController {
   @OpenAPI({
-    summary: 'Create promising object',
+    summary: 'Temporarily save Promising (disappears after 5 minutes)',
     description: 'Date format = "yyyy-mm-ddThh:mm:ss'
   })
   @ResponseSchema(PromisingResponse)
   @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
-    const { unit, timeTable, availDate } = req;
-    const promisingReq = {
-      promisingName: req.promisingName,
-      minTime: new Date(req.minTime),
-      maxTime: new Date(req.maxTime),
-      placeName: req.placeName,
-      categoryId: req.categoryId
-    };
-    if (availDate.length > 10) throw new BadRequestException('availDate', 'over maximum count');
-
-    const timeInfo: TimeRequest = { unit, timeTable };
-    const response = await promisingService.create(
-      promisingReq,
-      res.locals.user,
-      availDate,
-      timeInfo
+    const promisingSession = new PromisingSession(
+      req.promisingName,
+      req.minTime,
+      req.maxTime,
+      req.categoryId,
+      res.locals.user.id,
+      req.availableDates,
+      req.placeName
     );
+    if (req.availableDates.length > 10)
+      throw new BadRequestException('availDate', 'over maximum count');
+
+    const uuid = await promisingService.saveSession(promisingSession);
+    const response = new SessionResponse(uuid);
     return res.status(200).send(response);
   }
 
+  @Get('/:uuid/')
   @OpenAPI({
     summary: 'Time-response to promising',
     description:

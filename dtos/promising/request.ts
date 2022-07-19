@@ -1,16 +1,4 @@
-import { TimeOfDay } from '../time/request';
-import {
-  IsInt,
-  IsString,
-  IsArray,
-  ValidateNested,
-  MaxLength,
-  Matches,
-  IsOptional,
-  IsDate
-} from 'class-validator';
-import { JSONSchema } from 'class-validator-jsonschema';
-import { Type } from 'class-transformer';
+import { IsInt, IsString, IsArray, MaxLength, Matches, IsOptional } from 'class-validator';
 
 class PromisingRequest {
   @IsString()
@@ -28,44 +16,59 @@ class PromisingRequest {
   @IsInt()
   categoryId: number;
 
-  unit: number;
-
-  @JSONSchema({
-    type: 'array',
-    items: {
-      $ref: '#/components/schemas/TimeOfDay'
-    }
-  })
-  @IsArray()
-  @Type(() => TimeOfDay)
-  @ValidateNested({ each: true })
-  timeTable: TimeOfDay[];
-
   @IsArray()
   @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
-  availDate: string[];
+  availableDates: string[];
 
   @IsOptional()
   @MaxLength(10)
   placeName: string;
 }
 
-class PromisingInfo {
+class PromisingSession {
+  @IsString()
   @MaxLength(10)
   promisingName: string;
 
-  @IsDate()
-  minTime: Date;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  minTime: string;
 
-  @IsDate()
-  maxTime: Date;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  maxTime: string;
 
   @IsInt()
   categoryId: number;
 
+  @IsInt()
+  ownerId: number;
+
+  @IsArray()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
+  availableDates: string[];
+
   @IsOptional()
   @MaxLength(10)
   placeName: string;
+
+  constructor(
+    promisingName: string,
+    minTime: string,
+    maxTime: string,
+    categoryId: number,
+    ownerId: number,
+    availDates: string[],
+    placeName: string
+  ) {
+    this.placeName = promisingName;
+    this.minTime = minTime;
+    this.maxTime = maxTime;
+    this.categoryId = categoryId;
+    this.ownerId = ownerId;
+    this.availableDates = availDates;
+    this.placeName = placeName;
+  }
 }
 
 class ConfirmPromisingRequest {
@@ -74,4 +77,4 @@ class ConfirmPromisingRequest {
   promiseDate: string;
 }
 
-export { PromisingInfo, PromisingRequest, ConfirmPromisingRequest };
+export { PromisingSession, PromisingRequest, ConfirmPromisingRequest };

@@ -9,6 +9,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
   ValidateNested
 } from 'class-validator';
@@ -201,5 +202,14 @@ export class PromisingUserResponse {
     this.maxTime = timeUtil.formatDate2String(promising.maxTime);
     this.memberCount = promising.memberCount;
     this.isOwn = promising.isOwn;
+  }
+}
+
+export class SessionResponse {
+  @IsString()
+  uuid: string;
+
+  constructor(uuid: string) {
+    this.uuid = uuid;
   }
 }

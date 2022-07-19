@@ -1,4 +1,4 @@
-import { PromisingInfo } from '../dtos/promising/request';
+import { PromisingSession } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import { PromisingResponse, TimeTableDate, TimeTableUnit } from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
@@ -18,29 +18,43 @@ import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, TimeTableIndexType } from '../utils/type';
+import categoryService from './category-service';
+import { redisClient } from '../app';
+import { v4 as uuidv4 } from 'uuid';
 
 class PromisingService {
-  async create(
-    promisingInfo: PromisingInfo,
-    owner: User,
-    availDate: string[],
-    timeInfo: TimeRequest
-  ) {
-    const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
-    if (!category) throw new NotFoundException('CategoryKeyword', promisingInfo.categoryId);
+  async saveSession(session: PromisingSession) {
+    const category = await categoryService.getOneById(session.categoryId);
 
-    const promising = new PromisingModel(promisingInfo);
-    await promising.save();
-    await promising.$set('owner', owner);
-    await promising.$set('ownCategory', category);
+    const minTime = new Date(session.minTime);
+    const maxTime = new Date(session.maxTime);
+    if (!(minTime instanceof Date && !isNaN(minTime.valueOf()))) {
+      throw new BadRequestException('minTime', 'Invalid date');
+    }
+    if (!(maxTime instanceof Date && !isNaN(maxTime.valueOf()))) {
+      throw new BadRequestException('minTime', 'Invalid date');
+    }
 
-    const promisingDates = await promisingDateService.create(promising, availDate);
-    await this.responseTime(promising, owner, timeInfo);
-    promising.owner = owner;
-    promising.ownCategory = category;
-    const members = await eventService.findPromisingMembers(promising.id);
-    return new PromisingResponse(promising, category, promisingDates, members);
+    session.availableDates.forEach((date) => {
+      const check = new Date(date);
+      if (!(check instanceof Date && !isNaN(check.valueOf()))) {
+        throw new BadRequestException('availableDates', 'include Invalid date');
+      }
+    });
+
+    const key = uuidv4();
+    await redisClient.setEx(key, 300, JSON.stringify(session));
+    return key;
   }
+
+  // async create(session: PromisingSession) {
+  //  const promising = new PromisingModel(promisingInfo);
+  //  await promising.save();
+  //  await promising.$set('owner', owner);
+  //  await promising.$set('ownCategory', category);
+  //
+  //  const promisingDates = await promisingDateService.create(promising, availDate);
+  //}
 
   async getPromisingDateInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
