@@ -11,6 +11,7 @@ import * as swaggerUi from 'swagger-ui-express';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
 import { createClient } from 'redis';
+import redisConfig from './config/redis-config.json';
 
 const app = express();
 
@@ -49,7 +50,9 @@ const spec = routingControllersToSpec(storage, routingControllerOptions, {
   }
 });
 
-const redisClient = createClient();
+const redisClient = createClient({
+  socket: { host: redisConfig.development.host }
+});
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec));
 app.listen(PORT, async () => {
