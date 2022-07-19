@@ -27,7 +27,7 @@ export const redisClient = createClient({
     host: redisConfig.development.host,
     port: 6379
   },
-  password: redisConfig.development.password
+  legacyMode: true
 });
 
 const routingControllerOptions = {
@@ -63,9 +63,16 @@ app.listen(PORT, async () => {
   await db.sequelize.sync();
 
   try {
-    await db.sequelize.authenticate().then(() => {
-      console.log('✅ MySQL Database connection is successful');
-    });
+    await redisClient.connect();
+    console.log('✅ Redis connection is successful');
+  } catch (err) {
+    console.log(err);
+    console.log('❎ Redis Running failed');
+  }
+
+  try {
+    await db.sequelize.authenticate();
+    console.log('✅ MySQL Database connection is successful');
     console.log(`✅ Express Server Listening on : http://localhost:${PORT}`);
   } catch (err) {
     console.error(err);
