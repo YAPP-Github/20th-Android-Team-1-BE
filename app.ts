@@ -10,14 +10,25 @@ import { ErrorHandler } from './middlewares/error';
 import * as swaggerUi from 'swagger-ui-express';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
+import redisConfig from './config/redis-config.json';
+import { createClient } from 'redis';
 
 const app = express();
 
 const LOGGER = process.env.LOGGER || 'dev';
+const PORT = process.env.PORT || 8080;
 
 app.use(morgan(LOGGER));
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
+
+export const redisClient = createClient({
+  socket: {
+    host: redisConfig.development.host,
+    port: 6379
+  },
+  password: redisConfig.development.password
+});
 
 const routingControllerOptions = {
   routePrefix: '/api',
@@ -27,7 +38,6 @@ const routingControllerOptions = {
 };
 
 useExpressServer(app, routingControllerOptions);
-const PORT = process.env.PORT || 8080;
 
 const schemas = validationMetadatasToSchemas({
   refPointerPrefix: '#/components/schemas/'
