@@ -48,6 +48,71 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
+  @OpenAPI({
+    summary: 'Time-response to promising',
+    description:
+      "Size of times array = (Promising's maxTime - Promising's minTime)/unit. Excesss is ignored. "
+  })
+  @Post('/:promisingId/time-response')
+  @UseBefore(UserAuthMiddleware)
+  async responseTime(
+    @Param('promisingId') promisingId: number,
+    @Body() timeInfo: TimeRequest,
+    @Res() res: Response
+  ) {
+    const user = res.locals.user;
+    const promising = await promisingService.getPromisingDateInfo(promisingId);
+    const availDates = await promisingDateService.findDatesById(promising.id);
+
+    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
+      timeInfo,
+      promising.minTime,
+      promising.maxTime,
+      availDates
+    );
+    if (!isPossibleTimeInfo) {
+      throw new BadRequestException('dateTime', 'not available or over maxTime');
+    }
+
+    await promisingService.responseTime(promising, user, timeInfo);
+    return res.status(200).send();
+  }
+
+  @OpenAPI({ summary: 'Reject Promising', description: 'User must not be owner of Promising' })
+  @Post('/:promisingId/time-response/rejection')
+  @UseBefore(UserAuthMiddleware)
+  async rejectPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    const user = res.locals.user;
+    const promising = await promisingService.getPromisingInfo(promisingId);
+    await eventService.create(promising, user, true);
+    return res.status(200).send();
+  }
+
+  @OpenAPI({
+    summary: 'Confirm Promising to Promise',
+    description: 'User have to be owner of Promising. promiseDate format is yyyy-mm-ddThh:mm:ss.'
+  })
+  @ResponseSchema(PromiseResponse)
+  @Post('/:promisingId/confirmation')
+  @UseBefore(UserAuthMiddleware)
+  async confirmPromising(
+    @Param('promisingId') promisingId: number,
+    @Body() req: ConfirmPromisingRequest,
+    @Res() res: Response
+  ) {
+    const dateTime = new Date(req.promiseDate);
+    if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
+      throw new BadRequestException('dateTime', 'Not valid date');
+    const availDates = await promisingDateService.findDatesById(promisingId);
+    const promise = await promisingService.confirm(
+      promisingId,
+      res.locals.user,
+      dateTime,
+      availDates
+    );
+    return res.status(200).send(promise);
+  }
+
   @OpenAPI({ summary: 'Get promising by promisingId' })
   @ResponseSchema(PromisingResponse)
   @Get('/id/:promisingsId')
@@ -97,71 +162,6 @@ class PromisingController {
     const userId = res.locals.user.id;
     const response = await promisingService.getPromisingByUser(userId);
     return res.status(200).send(response);
-  }
-
-  @OpenAPI({ summary: 'Reject Promising', description: 'User must not be owner of Promising' })
-  @Post('/:promisingId/time-response/rejection')
-  @UseBefore(UserAuthMiddleware)
-  async rejectPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
-    const user = res.locals.user;
-    const promising = await promisingService.getPromisingInfo(promisingId);
-    await eventService.create(promising, user, true);
-    return res.status(200).send();
-  }
-
-  @OpenAPI({
-    summary: 'Time-response to promising',
-    description:
-      "Size of times array = (Promising's maxTime - Promising's minTime)/unit. Excesss is ignored. "
-  })
-  @Post('/:promisingId/time-response')
-  @UseBefore(UserAuthMiddleware)
-  async responseTime(
-    @Param('promisingId') promisingId: number,
-    @Body() timeInfo: TimeRequest,
-    @Res() res: Response
-  ) {
-    const user = res.locals.user;
-    const promising = await promisingService.getPromisingDateInfo(promisingId);
-    const availDates = await promisingDateService.findDatesById(promising.id);
-
-    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
-      timeInfo,
-      promising.minTime,
-      promising.maxTime,
-      availDates
-    );
-    if (!isPossibleTimeInfo) {
-      throw new BadRequestException('dateTime', 'not available or over maxTime');
-    }
-
-    await promisingService.responseTime(promising, user, timeInfo);
-    return res.status(200).send();
-  }
-
-  @OpenAPI({
-    summary: 'Confirm Promising to Promise',
-    description: 'User have to be owner of Promising. promiseDate format is yyyy-mm-ddThh:mm:ss.'
-  })
-  @ResponseSchema(PromiseResponse)
-  @Post('/:promisingId/confirmation')
-  @UseBefore(UserAuthMiddleware)
-  async confirmPromising(
-    @Param('promisingId') promisingId: number,
-    @Body() req: ConfirmPromisingRequest,
-    @Res() res: Response
-  ) {
-    const dateTime = new Date(req.promiseDate);
-    if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
-      throw new BadRequestException('dateTime', 'Not valid date');
-    const availDates = await promisingDateService.findDatesById(promisingId);
-    const promise = await promisingService.confirm(
-      promisingId,
-      res.locals.user,
-      dateTime,
-      availDates
-    );
-    return res.status(200).send(promise);
   }
 
   @OpenAPI({ summary: "Get Promising's Category list." })
