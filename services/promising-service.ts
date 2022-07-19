@@ -1,6 +1,11 @@
 import { PromisingSession } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import { PromisingResponse, TimeTableDate, TimeTableUnit } from '../dtos/promising/response';
+import {
+  PromisingResponse,
+  PromisingSessionResponse,
+  TimeTableDate,
+  TimeTableUnit
+} from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
@@ -19,8 +24,8 @@ import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, TimeTableIndexType } from '../utils/type';
 import categoryService from './category-service';
-import { redisClient } from '../app';
 import { v4 as uuidv4 } from 'uuid';
+import { redisClient } from '../app';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
@@ -70,6 +75,24 @@ class PromisingService {
     return promising;
   }
 
+  async getPromisingSession(uuid: string, unit = 0.5) {
+    const value = await redisClient.get(uuid);
+    if (!value) throw new NotFoundException('Promising Session', uuid);
+    const session: PromisingSession = JSON.parse(value);
+
+    const totalCount = timeUtil.getIndexFromMinTime(
+      new Date(session.minTime),
+      new Date(session.maxTime),
+      unit
+    );
+    return new PromisingSessionResponse(
+      session.minTime,
+      session.maxTime,
+      totalCount,
+      unit,
+      session.availableDates
+    );
+  }
   async getPromisingInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
       where: { id: promisingId },

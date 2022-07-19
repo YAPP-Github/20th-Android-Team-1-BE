@@ -10,7 +10,6 @@ import { ErrorHandler } from './middlewares/error';
 import * as swaggerUi from 'swagger-ui-express';
 import { validationMetadatasToSchemas } from 'class-validator-jsonschema';
 import { routingControllersToSpec } from 'routing-controllers-openapi';
-import redisConfig from './config/redis-config.json';
 import { createClient } from 'redis';
 
 const app = express();
@@ -21,14 +20,6 @@ const PORT = process.env.PORT || 8080;
 app.use(morgan(LOGGER));
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
-
-export const redisClient = createClient({
-  socket: {
-    host: redisConfig.development.host,
-    port: 6379
-  },
-  legacyMode: true
-});
 
 const routingControllerOptions = {
   routePrefix: '/api',
@@ -58,11 +49,15 @@ const spec = routingControllersToSpec(storage, routingControllerOptions, {
   }
 });
 
+const redisClient = createClient();
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec));
 app.listen(PORT, async () => {
   await db.sequelize.sync();
 
   try {
+    redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
     await redisClient.connect();
     console.log('✅ Redis connection is successful');
   } catch (err) {
@@ -79,3 +74,5 @@ app.listen(PORT, async () => {
     console.log('❎ Express Server Running failed');
   }
 });
+
+export { redisClient };

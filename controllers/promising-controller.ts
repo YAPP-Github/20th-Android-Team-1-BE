@@ -9,7 +9,7 @@ import {
   PromisingTimeTableResponse,
   SessionResponse
 } from '../dtos/promising/response';
-import { ValidationException } from '../utils/error';
+import { NotFoundException, ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
@@ -20,6 +20,8 @@ import { PromiseResponse } from '../dtos/promise/response';
 import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
+import { redisClient } from '../app';
+import stringUtill from '../utils/string';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -49,7 +51,16 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
-  @Get('/:uuid/')
+  @Get('/session/:uuid')
+  @UseBefore(UserAuthMiddleware)
+  async getPromisingSession(@Param('uuid') uuid: string, @Res() res: Response) {
+    if (!stringUtill.isUUIDV4(uuid)) throw new BadRequestException('uuid', 'is not UUID v4 format');
+
+    const response = await promisingService.getPromisingSession(uuid);
+
+    return res.status(200).send(response);
+  }
+
   @OpenAPI({
     summary: 'Time-response to promising',
     description:

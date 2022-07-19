@@ -206,10 +206,40 @@ export class PromisingUserResponse {
 }
 
 export class SessionResponse {
-  @IsString()
+  @IsUUID()
   uuid: string;
 
   constructor(uuid: string) {
     this.uuid = uuid;
+  }
+}
+
+export class PromisingSessionResponse {
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  minTime: string;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  maxTime: string;
+  @IsInt()
+  totalCount: number;
+  @IsNumber()
+  unit: number;
+  @IsArray()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
+  availableDates: string[];
+
+  constructor(
+    minTime: string,
+    maxTime: string,
+    totalCount: number,
+    unit: number,
+    availableDates: string[]
+  ) {
+    this.minTime = minTime;
+    this.maxTime = maxTime;
+    this.totalCount = totalCount;
+    this.unit = unit;
+    this.availableDates = availableDates;
   }
 }
