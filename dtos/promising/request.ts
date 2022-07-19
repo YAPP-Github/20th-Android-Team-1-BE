@@ -61,7 +61,7 @@ class PromisingSession {
     availDates: string[],
     placeName: string
   ) {
-    this.placeName = promisingName;
+    this.promisingName = promisingName;
     this.minTime = minTime;
     this.maxTime = maxTime;
     this.categoryId = categoryId;

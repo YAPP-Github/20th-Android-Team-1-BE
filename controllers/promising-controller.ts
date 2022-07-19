@@ -5,11 +5,13 @@ import { PromisingRequest, PromisingSession } from '../dtos/promising/request';
 import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
 import {
+  CreatedPromisingResponse,
   PromisingResponse,
+  PromisingSessionResponse,
   PromisingTimeTableResponse,
   SessionResponse
 } from '../dtos/promising/response';
-import { NotFoundException, ValidationException } from '../utils/error';
+import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
@@ -20,7 +22,6 @@ import { PromiseResponse } from '../dtos/promise/response';
 import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
-import { redisClient } from '../app';
 import stringUtill from '../utils/string';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
@@ -51,6 +52,11 @@ class PromisingController {
     return res.status(200).send(response);
   }
 
+  @OpenAPI({
+    summary: 'Get Promising Session (Pre-saved Promising Info)',
+    description: 'uuid = UUID v4 format'
+  })
+  @ResponseSchema(PromisingSessionResponse)
   @Get('/session/:uuid')
   @UseBefore(UserAuthMiddleware)
   async getPromisingSession(@Param('uuid') uuid: string, @Res() res: Response) {
@@ -62,7 +68,39 @@ class PromisingController {
   }
 
   @OpenAPI({
-    summary: 'Time-response to promising',
+    summary: 'Time-response to Promising Session (Promising Created)',
+    description: 'Request User has to be owner of Promising Session (Pre-saved Promising)'
+  })
+  @ResponseSchema(CreatedPromisingResponse)
+  @Post('/session/:uuid/time-response')
+  @UseBefore(UserAuthMiddleware)
+  async createAndResponsePromising(
+    @Param('uuid') uuid: string,
+    @Body() timeReq: TimeRequest,
+    @Res() res: Response
+  ) {
+    if (!stringUtill.isUUIDV4(uuid)) throw new BadRequestException('uuid', 'is not UUID v4 format');
+
+    const user = res.locals.user;
+    const promising = await promisingService.create(uuid, user);
+
+    const availDates = await promisingDateService.findDatesById(promising.id);
+    const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
+      timeReq,
+      promising.minTime,
+      promising.maxTime,
+      availDates
+    );
+    if (!isPossibleTimeInfo) {
+      throw new BadRequestException('dateTime', 'not available or over maxTime');
+    }
+
+    await promisingService.responseTime(promising, user, timeReq);
+    return res.status(200).send(new CreatedPromisingResponse(promising.id));
+  }
+
+  @OpenAPI({
+    summary: 'Time-response to Promising',
     description:
       "Size of times array = (Promising's maxTime - Promising's minTime)/unit. Excesss is ignored. "
   })

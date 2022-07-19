@@ -243,3 +243,12 @@ export class PromisingSessionResponse {
     this.availableDates = availableDates;
   }
 }
+
+export class CreatedPromisingResponse {
+  @IsNumber()
+  id: number;
+
+  constructor(id: number) {
+    this.id = id;
+  }
+}

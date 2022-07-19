@@ -52,14 +52,29 @@ class PromisingService {
     return key;
   }
 
-  // async create(session: PromisingSession) {
-  //  const promising = new PromisingModel(promisingInfo);
-  //  await promising.save();
-  //  await promising.$set('owner', owner);
-  //  await promising.$set('ownCategory', category);
-  //
-  //  const promisingDates = await promisingDateService.create(promising, availDate);
-  //}
+  async create(uuid: string, owner: User) {
+    const data = await redisClient.get(uuid);
+    if (!data) throw new NotFoundException('Promising Session', uuid);
+    const session: PromisingSession = JSON.parse(data);
+
+    if (session.ownerId != owner.id)
+      throw new UnAuthorizedException('User is not owner of Promising');
+
+    const category = await categoryService.getOneById(session.categoryId);
+    const promising = new PromisingModel({
+      promisingName: session.promisingName,
+      minTime: new Date(session.minTime),
+      maxTime: new Date(session.maxTime),
+      placeName: session.placeName
+    });
+
+    await promising.save();
+    await promising.$set('owner', owner);
+    await promising.$set('ownCategory', category);
+    await promisingDateService.create(promising, session.availableDates);
+
+    return promising;
+  }
 
   async getPromisingDateInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
@@ -93,6 +108,7 @@ class PromisingService {
       session.availableDates
     );
   }
+
   async getPromisingInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
       where: { id: promisingId },
