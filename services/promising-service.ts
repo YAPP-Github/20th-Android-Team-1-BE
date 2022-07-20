@@ -105,7 +105,7 @@ class PromisingService {
     return new PromisingSessionResponse(
       session.minTime,
       session.maxTime,
-      totalCount,
+      totalCount / 2,
       unit,
       session.availableDates
     );
