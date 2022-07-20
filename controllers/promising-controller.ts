@@ -31,7 +31,7 @@ class PromisingController {
     summary: 'Temporarily save Promising (disappears after 5 minutes)',
     description: 'Date format = "yyyy-mm-ddThh:mm:ss'
   })
-  @ResponseSchema(PromisingResponse)
+  @ResponseSchema(SessionResponse)
   @Post('')
   @UseBefore(UserAuthMiddleware)
   async create(@Body() req: PromisingRequest, @Res() res: Response) {
