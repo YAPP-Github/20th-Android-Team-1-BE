@@ -29,6 +29,11 @@ jobs:
               \"dialect\": \"mysql\"
             }
           }" > config/db-config.json
+          echo  "{
+          \"development\": {
+              \"host\": \"host.docker.internal\",
+            }
+          }" > config/redis-config.json
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2

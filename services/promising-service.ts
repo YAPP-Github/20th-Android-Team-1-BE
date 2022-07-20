@@ -1,6 +1,11 @@
-import { PromisingInfo } from '../dtos/promising/request';
+import { PromisingSession } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import { PromisingResponse, TimeTableDate, TimeTableUnit } from '../dtos/promising/response';
+import {
+  PromisingResponse,
+  PromisingSessionResponse,
+  TimeTableDate,
+  TimeTableUnit
+} from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
@@ -18,28 +23,57 @@ import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, TimeTableIndexType } from '../utils/type';
+import categoryService from './category-service';
+import { v4 as uuidv4 } from 'uuid';
+import { redisClient } from '../app';
 
 class PromisingService {
-  async create(
-    promisingInfo: PromisingInfo,
-    owner: User,
-    availDate: string[],
-    timeInfo: TimeRequest
-  ) {
-    const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
-    if (!category) throw new NotFoundException('CategoryKeyword', promisingInfo.categoryId);
+  async saveSession(session: PromisingSession) {
+    const category = await categoryService.getOneById(session.categoryId);
 
-    const promising = new PromisingModel(promisingInfo);
+    const minTime = new Date(session.minTime);
+    const maxTime = new Date(session.maxTime);
+    if (!(minTime instanceof Date && !isNaN(minTime.valueOf()))) {
+      throw new BadRequestException('minTime', 'Invalid date');
+    }
+    if (!(maxTime instanceof Date && !isNaN(maxTime.valueOf()))) {
+      throw new BadRequestException('minTime', 'Invalid date');
+    }
+
+    session.availableDates.forEach((date) => {
+      const check = new Date(date);
+      if (!(check instanceof Date && !isNaN(check.valueOf()))) {
+        throw new BadRequestException('availableDates', 'include Invalid date');
+      }
+    });
+
+    const key = uuidv4();
+    await redisClient.setEx(key, 300, JSON.stringify(session));
+    return key;
+  }
+
+  async create(uuid: string, owner: User) {
+    const data = await redisClient.get(uuid);
+    if (!data) throw new NotFoundException('Promising Session', uuid);
+    const session: PromisingSession = JSON.parse(data);
+
+    if (session.ownerId != owner.id)
+      throw new UnAuthorizedException('User is not owner of Promising');
+
+    const category = await categoryService.getOneById(session.categoryId);
+    const promising = new PromisingModel({
+      promisingName: session.promisingName,
+      minTime: new Date(session.minTime),
+      maxTime: new Date(session.maxTime),
+      placeName: session.placeName
+    });
+
     await promising.save();
     await promising.$set('owner', owner);
     await promising.$set('ownCategory', category);
+    await promisingDateService.create(promising, session.availableDates);
 
-    const promisingDates = await promisingDateService.create(promising, availDate);
-    await this.responseTime(promising, owner, timeInfo);
-    promising.owner = owner;
-    promising.ownCategory = category;
-    const members = await eventService.findPromisingMembers(promising.id);
-    return new PromisingResponse(promising, category, promisingDates, members);
+    return promising;
   }
 
   async getPromisingDateInfo(promisingId: number) {
@@ -54,6 +88,25 @@ class PromisingService {
     if (!promising) throw new NotFoundException('Promising', promisingId);
 
     return promising;
+  }
+
+  async getPromisingSession(uuid: string, unit = 0.5) {
+    const value = await redisClient.get(uuid);
+    if (!value) throw new NotFoundException('Promising Session', uuid);
+    const session: PromisingSession = JSON.parse(value);
+
+    const totalCount = timeUtil.getIndexFromMinTime(
+      new Date(session.minTime),
+      new Date(session.maxTime),
+      unit
+    );
+    return new PromisingSessionResponse(
+      session.minTime,
+      session.maxTime,
+      totalCount,
+      unit,
+      session.availableDates
+    );
   }
 
   async getPromisingInfo(promisingId: number) {

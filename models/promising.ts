@@ -8,7 +8,9 @@ import {
   ForeignKey,
   BelongsTo,
   DataType,
-  AutoIncrement
+  AutoIncrement,
+  UpdatedAt,
+  CreatedAt
 } from 'sequelize-typescript';
 import User from './user';
 import EventModel from './event';
@@ -44,6 +46,11 @@ class PromisingModel extends Model {
 
   @Column({ type: DataType.STRING })
   placeName: string;
+
+  @CreatedAt
+  createdAt: Date;
+  @UpdatedAt
+  updatedAt: Date;
 
   @HasMany(() => EventModel)
   ownEvents: EventModel[];
