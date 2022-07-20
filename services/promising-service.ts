@@ -27,6 +27,8 @@ import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 
+const EXPIRE_SECONDS = 86400;
+
 class PromisingService {
   async saveSession(session: PromisingSession) {
     const category = await categoryService.getOneById(session.categoryId);
@@ -48,7 +50,7 @@ class PromisingService {
     });
 
     const key = uuidv4();
-    await redisClient.setEx(key, 300, JSON.stringify(session));
+    await redisClient.setEx(key, EXPIRE_SECONDS, JSON.stringify(session));
     return key;
   }
 
