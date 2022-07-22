@@ -6,8 +6,8 @@ import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
 import {
   CreatedPromisingResponse,
-  PromisingResponse,
   PromisingSessionResponse,
+  PromisingTimeStampResponse,
   PromisingTimeTableResponse,
   SessionResponse
 } from '../dtos/promising/response';
@@ -166,7 +166,7 @@ class PromisingController {
   }
 
   @OpenAPI({ summary: 'Get promising by promisingId' })
-  @ResponseSchema(PromisingResponse)
+  @ResponseSchema(PromisingTimeStampResponse)
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
@@ -174,7 +174,12 @@ class PromisingController {
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
     const members = await eventService.findPromisingMembers(promising.id);
-    const response = new PromisingResponse(promising, promising.ownCategory, availDates, members);
+    const response = new PromisingTimeStampResponse(
+      promising,
+      promising.ownCategory,
+      availDates,
+      members
+    );
     return res.status(200).send(response);
   }
 
@@ -207,7 +212,7 @@ class PromisingController {
   }
 
   @OpenAPI({ summary: "Get User's Promising list By User" })
-  @ResponseSchema(PromisingResponse, { isArray: true })
+  @ResponseSchema(PromisingTimeStampResponse, { isArray: true })
   @Get('/user')
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {

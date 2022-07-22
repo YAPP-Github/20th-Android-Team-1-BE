@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException, UnAuthorizedException } from '.
 import {
   PromisingResponse,
   PromisingSessionResponse,
+  PromisingTimeStampResponse,
   TimeTableDate,
   TimeTableUnit
 } from '../dtos/promising/response';
@@ -149,7 +150,7 @@ class PromisingService {
       const promising = promisings[i];
       const members = await eventService.findPromisingMembers(promising.id);
       res.push(
-        new PromisingResponse(
+        new PromisingTimeStampResponse(
           promising,
           promising.ownCategory,
           promising.ownPromisingDates.map((promisingDate) => promisingDate.date),
