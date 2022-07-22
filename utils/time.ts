@@ -144,9 +144,9 @@ const timeUtil = {
     );
   },
 
-  isPossibleDate(date: Date, candidates: Date[]) {
+  isPossibleDate(date: Date, candidates: any) {
     return (
-      candidates.filter((candidate) => this.isSameDate(new Date(date), new Date(candidate)))
+      candidates.filter((candidate: any) => this.isSameDate(new Date(date), new Date(candidate)))
         .length != 0
     );
   },
@@ -155,7 +155,7 @@ const timeUtil = {
     timeResponse: TimeRequest,
     minTime: Date,
     maxTime: Date,
-    availDates: Date[]
+    availDates: Date[] | string[]
   ) {
     const { unit, timeTable } = timeResponse;
 
