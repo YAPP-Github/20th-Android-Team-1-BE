@@ -27,6 +27,7 @@ import { ColorType, TimeTableIndexType } from '../utils/type';
 import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
+import sequelize from 'sequelize';
 
 const EXPIRE_SECONDS = 86400;
 
@@ -142,7 +143,7 @@ class PromisingService {
         { model: CategoryKeyword, as: 'ownCategory', required: true },
         { model: PromisingDateModel, as: 'ownPromisingDates', required: true, attributes: ['date'] }
       ],
-      order: ['updatedAt', 'DESC']
+      order: [['updatedAt', 'DESC']]
     });
 
     const res = [];
@@ -162,7 +163,8 @@ class PromisingService {
   }
 
   async updateTimeStamp(promising: PromisingModel) {
-    await PromisingModel.update({ updatedAt: new Date() }, { where: { id: promising.id } });
+    promising.changed('updatedAt', true);
+    await promising.update({ updatedAt: sequelize.fn('NOW') });
   }
 
   async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {

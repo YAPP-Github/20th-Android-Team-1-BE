@@ -137,6 +137,7 @@ class PromisingController {
     const user = res.locals.user;
     const promising = await promisingService.getPromisingInfo(promisingId);
     await eventService.create(promising, user, true);
+    await promisingService.updateTimeStamp(promising);
     return res.status(200).send();
   }
 
