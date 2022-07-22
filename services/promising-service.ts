@@ -232,7 +232,11 @@ class PromisingService {
   }
 
   async resignOwner(userId: number){
-    await PromisingModel.update({userId:100000},{where:{userId: userId}});
+    const promising = await PromisingModel.findAll({
+      where: {
+        ownerId: userId
+      }});
+    if(promising) await PromisingModel.update({ownerId:100000},{where:{ownerId: userId}});
   }
 }
 

@@ -33,11 +33,11 @@ class UserService {
   }
 
   async delete(userId:number){
-    await User.destroy({ where: { userId } }); 
+    await promiseService.resignOwner(userId);
     await EventService.updateResignMember(userId); 
     await promiseUserService.updateResignMember(userId);
     await promisingService.resignOwner(userId);
-    await promiseService.resignOwner(userId);
+    await User.destroy({ where: { userId } }); 
   }
 
 }

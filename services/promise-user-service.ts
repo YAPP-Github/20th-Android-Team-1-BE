@@ -21,7 +21,12 @@ class PromiseUserService {
   }
   
   async updateResignMember(userId:number){
-    await PromiseUser.update({userId:100000}, {where: {userId:userId}})
+    const promiseUsers = await PromiseUser.findAll({
+      where: {
+        userId: userId
+      }
+    });
+    if(promiseUsers) await PromiseUser.update({userId:100000}, {where: {userId:userId}})
   }
 }
 

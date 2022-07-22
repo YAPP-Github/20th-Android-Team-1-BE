@@ -48,7 +48,12 @@ class EventService {
   }
 
   async updateResignMember(userId: number){
-    await EventModel.update({userId:100000}, {where: {userId:userId}})
+    const events = await EventModel.findAll({
+      where: {
+        userId: userId
+      }
+    });
+    if(events)await EventModel.update({userId:100000}, {where: {userId:userId}})
   }
 }
 
