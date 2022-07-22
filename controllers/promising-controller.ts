@@ -82,20 +82,21 @@ class PromisingController {
     if (!stringUtill.isUUIDV4(uuid)) throw new BadRequestException('uuid', 'is not UUID v4 format');
 
     const user = res.locals.user;
-    const promising = await promisingService.create(uuid, user);
+    const session = await promisingService.getSession(uuid);
 
-    const availDates = await promisingDateService.findDatesById(promising.id);
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
       timeReq,
-      promising.minTime,
-      promising.maxTime,
-      availDates
+      new Date(session.minTime),
+      new Date(session.maxTime),
+      session.availableDates
     );
     if (!isPossibleTimeInfo) {
       throw new BadRequestException('dateTime', 'not available or over maxTime');
     }
 
+    const promising = await promisingService.create(session, user);
     await promisingService.responseTime(promising, user, timeReq);
+    await promisingService.deleteSession(uuid);
     return res.status(200).send(new CreatedPromisingResponse(promising.id));
   }
 
