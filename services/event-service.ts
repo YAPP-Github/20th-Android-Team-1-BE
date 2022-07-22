@@ -48,8 +48,7 @@ class EventService {
   }
 
   async updateResignMember(userId: number){
-      const updatedListMemeberJoined = await EventModel.update({userId:100000}, {where: {userId:userId}})
-      return updatedListMemeberJoined;
+    await EventModel.update({userId:100000}, {where: {userId:userId}})
   }
 }
 

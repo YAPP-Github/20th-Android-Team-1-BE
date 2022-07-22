@@ -232,8 +232,7 @@ class PromisingService {
   }
 
   async resignOwner(userId: number){
-    const resignOwner = await PromisingModel.update({userId:100000},{where:{userId: userId}});
-    return resignOwner;
+    await PromisingModel.update({userId:100000},{where:{userId: userId}});
   }
 }
 
