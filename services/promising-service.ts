@@ -230,6 +230,11 @@ class PromisingService {
   async deleteOneById(id: number) {
     await PromisingModel.destroy({ where: { id } });
   }
+
+  async resignOwner(userId: number){
+    const resignOwner = await PromisingModel.update({userId:100000},{where:{userId: userId}});
+    return resignOwner;
+  }
 }
 
 export default new PromisingService();

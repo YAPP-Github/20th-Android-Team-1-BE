@@ -34,7 +34,7 @@ class EventService {
         { model: User, as: 'user', required: true }
       ]
     });
-    return events.map((event) => event.user);
+    return events.map((event) => event.user); 
   }
 
   async findPromisingMembers(promisingId: number) {
@@ -45,6 +45,11 @@ class EventService {
       include: [{ model: User, as: 'user', required: true }]
     });
     return events.map((event) => event.user);
+  }
+
+  async updateResignMember(userId: number){
+      const updatedListMemeberJoined = await EventModel.update({userId:100000}, {where: {userId:userId}})
+      return updatedListMemeberJoined;
   }
 }
 

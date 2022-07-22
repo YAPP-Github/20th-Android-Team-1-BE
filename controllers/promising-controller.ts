@@ -16,6 +16,7 @@ import { PromiseResponse } from '../dtos/promise/response';
 import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
+import userService from '../services/user-service';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -101,7 +102,7 @@ class PromisingController {
 
   @OpenAPI({ summary: 'Reject Promising', description: 'User must not be owner of Promising' })
   @Post('/:promisingId/time-response/rejection')
-  @UseBefore(UserAuthMiddleware)
+ @UseBefore(UserAuthMiddleware)
   async rejectPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const user = res.locals.user;
     const promising = await promisingService.getPromisingInfo(promisingId);

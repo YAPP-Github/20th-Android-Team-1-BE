@@ -26,6 +26,15 @@ class UserController {
 
     return res.status(200).send(new UserResponse(user));
   }
+  
+  @Post('/resign-member')
+  @UseBefore(TokenValidMiddleware)
+  async reSignMember(@Res() res:Response) {
+    const exist = await userService.exist(res.locals.user.id);
+    if (!exist) throw new BadRequestException('User', 'already removed.');
+    await userService.delete(res.locals.user.id);
+ }
+
 }
 
 export default UserController;

@@ -19,6 +19,11 @@ class PromiseUserService {
     }
     return promises;
   }
+  
+  async updateResignMember(userId:number){
+    const updatedListMemeberJoined = await PromiseUser.update({userId:100000}, {where: {userId:userId}})
+    return updatedListMemeberJoined;
+  }
 }
 
 export default new PromiseUserService();

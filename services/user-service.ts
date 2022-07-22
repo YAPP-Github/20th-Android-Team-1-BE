@@ -1,5 +1,9 @@
 import { NotFoundException } from '../utils/error';
 import User from '../models/user';
+import EventService from './event-service';
+import promisingService from './promising-service';
+import promiseService from './promise-service';
+import promiseUserService from './promise-user-service';
 
 class UserService {
   async create(id: number, userName: string, accessToken: string) {
@@ -27,6 +31,15 @@ class UserService {
     if (!user) throw new NotFoundException('User', id);
     return user;
   }
+
+  async delete(userId:number){
+    const user= await User.destroy({ where: { userId } }); 
+    const event=  await EventService.updateResignMember(userId); 
+    const promiseUser =  await promiseUserService.updateResignMember(userId);
+    const promising=  await promisingService.resignOwner(userId);
+    const promise =  await promiseService.resignOwner(userId);
+     }
+
 }
 
 export default new UserService();

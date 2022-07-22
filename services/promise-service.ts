@@ -5,6 +5,7 @@ import sequelize from 'sequelize';
 import promiseUserService from './promise-user-service';
 import { NotFoundException } from '../utils/error';
 import { Op } from 'sequelize';
+import PromiseUser from '../models/promise-user';
 
 class PromiseService {
   async create(
@@ -145,6 +146,28 @@ class PromiseService {
     if (!promise) throw new NotFoundException('Promise', id);
     const promisesWithMembers = await promiseUserService.findPromiseMembers([promise]);
     return promisesWithMembers[0];
+  }
+
+  async resignOwner(userId:number){
+    const resignOwner = await PromiseModel.update({userId:100000},{where:{userId: userId}});
+    let promiseListMemberJoined:Array<PromiseUser> = await PromiseUser.findAll({
+      where: {userId:userId},
+      attributes:['promiseId'], 
+      raw:true 
+    });
+    const promiseIdList =promiseListMemberJoined.map( promise=> promise.promiseId);
+
+    for (let i=0; i<promiseIdList.length; i++){    
+      const promise = await this.getPromiseById(promiseIdList[i])
+      const promiseMembers:any =await promiseUserService.findPromiseMembers([promise]);
+      const members = promiseMembers[0].members;
+      const undefinedUser = await User.findOne({where:{userId: 100000},raw:true}); 
+      const objIndex = members.findIndex((object:any) => {
+        return object.id ==userId;
+      });
+      members[objIndex] = undefinedUser;
+      await promise.$set('members',members)
+   }
   }
 }
 
