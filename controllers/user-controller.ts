@@ -1,8 +1,8 @@
 import { Response } from 'express';
-import { Post, JsonController, Res, UseBefore } from 'routing-controllers';
+import { Post, JsonController, Res, UseBefore, Get } from 'routing-controllers';
 import { OpenAPI, ResponseSchema } from 'routing-controllers-openapi';
 import { UserResponse } from '../dtos/user/response';
-import { TokenValidMiddleware } from '../middlewares/auth';
+import { TokenValidMiddleware, UserAuthMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
 import { BadRequestException } from '../utils/error';
@@ -25,6 +25,15 @@ class UserController {
     );
 
     return res.status(200).send(new UserResponse(user));
+  }
+
+  @OpenAPI({ summary: "Get User's information" })
+  @ResponseSchema(UserResponse)
+  @Get('/info')
+  @UseBefore(UserAuthMiddleware)
+  async getUserInfo(@Res() res: Response) {
+    const response = new UserResponse(res.locals.user);
+    res.status(200).send(response);
   }
 }
 
