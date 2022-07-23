@@ -44,7 +44,7 @@ class PromisingController {
       req.availableDates,
       req.placeName
     );
-    if (req.availableDates.length > 10)
+    if (req.availableDates.length > 12)
       throw new BadRequestException('availDate', 'over maximum count');
 
     const uuid = await promisingService.saveSession(promisingSession);
