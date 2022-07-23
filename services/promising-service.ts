@@ -1,7 +1,6 @@
 import { PromisingSession } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import {
-  PromisingResponse,
   PromisingSessionResponse,
   PromisingTimeStampResponse,
   TimeTableDate,
@@ -28,8 +27,7 @@ import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
-
-const EXPIRE_SECONDS = 86400;
+import { REDIS_EXPIRE_SECONDS } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
@@ -52,7 +50,7 @@ class PromisingService {
     });
 
     const key = uuidv4();
-    await redisClient.setEx(key, EXPIRE_SECONDS, JSON.stringify(session));
+    await redisClient.setEx(key, REDIS_EXPIRE_SECONDS, JSON.stringify(session));
     return key;
   }
 
