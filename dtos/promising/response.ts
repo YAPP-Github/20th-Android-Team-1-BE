@@ -11,6 +11,7 @@ import {
   IsString,
   IsUUID,
   Matches,
+  MaxLength,
   ValidateNested
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -22,6 +23,7 @@ export class PromisingResponse {
   @IsInt()
   id: number;
   @IsString()
+  @MaxLength(10)
   promisingName: string;
 
   @Type(() => UserResponse)
@@ -56,6 +58,7 @@ export class PromisingResponse {
 
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   placeName: string;
 
   constructor(
@@ -77,16 +80,25 @@ export class PromisingResponse {
 }
 
 export class PromisingTimeStampResponse extends PromisingResponse {
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
   updatedAt: string;
+  @IsBoolean()
+  isOwner: boolean;
+  @IsBoolean()
+  isResponsed: boolean;
 
   constructor(
     promising: PromisingModel,
     category: CategoryKeyword,
     dates: Date[],
-    members: User[]
+    members: User[],
+    user: User
   ) {
     super(promising, category, dates, members);
     this.updatedAt = timeUtil.formatDate2String(promising.updatedAt);
+    this.isOwner = promising.owner.id == user.id;
+    this.isResponsed = members.filter((member) => member.id == user.id).length != 0;
   }
 }
 

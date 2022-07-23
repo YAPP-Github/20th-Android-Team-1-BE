@@ -179,7 +179,8 @@ class PromisingController {
       promising,
       promising.ownCategory,
       availDates,
-      members
+      members,
+      res.locals.user
     );
     return res.status(200).send(response);
   }
@@ -217,8 +218,7 @@ class PromisingController {
   @Get('/user')
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {
-    const userId = res.locals.user.id;
-    const response = await promisingService.getPromisingByUser(userId);
+    const response = await promisingService.getPromisingByUser(res.locals.user);
     return res.status(200).send(response);
   }
 

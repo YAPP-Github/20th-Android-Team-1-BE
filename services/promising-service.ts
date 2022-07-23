@@ -1,7 +1,6 @@
 import { PromisingSession } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
 import {
-  PromisingResponse,
   PromisingSessionResponse,
   PromisingTimeStampResponse,
   TimeTableDate,
@@ -28,8 +27,7 @@ import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
-
-const EXPIRE_SECONDS = 86400;
+import { REDIS_EXPIRE_SECONDS } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
@@ -52,12 +50,12 @@ class PromisingService {
     });
 
     const key = uuidv4();
-    await redisClient.setEx(key, EXPIRE_SECONDS, JSON.stringify(session));
+    await redisClient.setEx(key, REDIS_EXPIRE_SECONDS, JSON.stringify(session));
     return key;
   }
 
   async getSession(uuid: string): Promise<PromisingSession> {
-    const data = await redisClient.get('uuid');
+    const data = await redisClient.get(uuid);
     if (!data) throw new NotFoundException('Promising Session', uuid);
     return JSON.parse(data);
   }
@@ -129,14 +127,14 @@ class PromisingService {
     return promising;
   }
 
-  async getPromisingByUser(userId: number) {
+  async getPromisingByUser(user: User) {
     const promisings = await PromisingModel.findAll({
       include: [
         {
           model: EventModel,
           required: true,
           where: {
-            userId: userId
+            userId: user.id
           }
         },
         { model: User, as: 'owner', required: true },
@@ -155,7 +153,8 @@ class PromisingService {
           promising,
           promising.ownCategory,
           promising.ownPromisingDates.map((promisingDate) => promisingDate.date),
-          members
+          members,
+          user
         )
       );
     }
