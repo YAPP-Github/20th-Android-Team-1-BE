@@ -129,14 +129,14 @@ class PromisingService {
     return promising;
   }
 
-  async getPromisingByUser(userId: number) {
+  async getPromisingByUser(user: User) {
     const promisings = await PromisingModel.findAll({
       include: [
         {
           model: EventModel,
           required: true,
           where: {
-            userId: userId
+            userId: user.id
           }
         },
         { model: User, as: 'owner', required: true },
@@ -155,7 +155,8 @@ class PromisingService {
           promising,
           promising.ownCategory,
           promising.ownPromisingDates.map((promisingDate) => promisingDate.date),
-          members
+          members,
+          user
         )
       );
     }
