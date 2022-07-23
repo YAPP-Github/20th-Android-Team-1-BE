@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException, UnAuthorizedException } from '.
 import {
   PromisingResponse,
   PromisingSessionResponse,
+  PromisingTimeStampResponse,
   TimeTableDate,
   TimeTableUnit
 } from '../dtos/promising/response';
@@ -26,6 +27,7 @@ import { ColorType, TimeTableIndexType } from '../utils/type';
 import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
+import sequelize from 'sequelize';
 
 const EXPIRE_SECONDS = 86400;
 
@@ -54,11 +56,17 @@ class PromisingService {
     return key;
   }
 
-  async create(uuid: string, owner: User) {
-    const data = await redisClient.get(uuid);
+  async getSession(uuid: string): Promise<PromisingSession> {
+    const data = await redisClient.get('uuid');
     if (!data) throw new NotFoundException('Promising Session', uuid);
-    const session: PromisingSession = JSON.parse(data);
+    return JSON.parse(data);
+  }
 
+  async deleteSession(uuid: string) {
+    await redisClient.del(uuid);
+  }
+
+  async create(session: PromisingSession, owner: User) {
     if (session.ownerId != owner.id)
       throw new UnAuthorizedException('User is not owner of Promising');
 
@@ -93,9 +101,7 @@ class PromisingService {
   }
 
   async getPromisingSession(uuid: string, unit = 0.5) {
-    const value = await redisClient.get(uuid);
-    if (!value) throw new NotFoundException('Promising Session', uuid);
-    const session: PromisingSession = JSON.parse(value);
+    const session = await this.getSession(uuid);
 
     const totalCount = timeUtil.getIndexFromMinTime(
       new Date(session.minTime),
@@ -105,7 +111,7 @@ class PromisingService {
     return new PromisingSessionResponse(
       session.minTime,
       session.maxTime,
-      totalCount,
+      totalCount / 2,
       unit,
       session.availableDates
     );
@@ -136,7 +142,8 @@ class PromisingService {
         { model: User, as: 'owner', required: true },
         { model: CategoryKeyword, as: 'ownCategory', required: true },
         { model: PromisingDateModel, as: 'ownPromisingDates', required: true, attributes: ['date'] }
-      ]
+      ],
+      order: [['updatedAt', 'DESC']]
     });
 
     const res = [];
@@ -144,7 +151,7 @@ class PromisingService {
       const promising = promisings[i];
       const members = await eventService.findPromisingMembers(promising.id);
       res.push(
-        new PromisingResponse(
+        new PromisingTimeStampResponse(
           promising,
           promising.ownCategory,
           promising.ownPromisingDates.map((promisingDate) => promisingDate.date),
@@ -155,6 +162,11 @@ class PromisingService {
     return res;
   }
 
+  async updateTimeStamp(promising: PromisingModel) {
+    promising.changed('updatedAt', true);
+    await promising.update({ updatedAt: sequelize.fn('NOW') });
+  }
+
   async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {
     const exist = await eventService.isResponsedBefore(promising, user);
     if (exist) throw new BadRequestException('User', 'already responsed to Promising');
@@ -162,6 +174,7 @@ class PromisingService {
     const savedEvent: EventModel = await eventService.create(promising, user);
     const savedTime = await timeService.create(promising, savedEvent, timeInfo);
 
+    await this.updateTimeStamp(promising);
     return { savedEvent, savedTime };
   }
 

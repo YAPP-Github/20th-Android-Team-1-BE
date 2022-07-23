@@ -6,8 +6,8 @@ import { Response } from 'express';
 import { TimeRequest } from '../dtos/time/request';
 import {
   CreatedPromisingResponse,
-  PromisingResponse,
   PromisingSessionResponse,
+  PromisingTimeStampResponse,
   PromisingTimeTableResponse,
   SessionResponse
 } from '../dtos/promising/response';
@@ -82,20 +82,21 @@ class PromisingController {
     if (!stringUtill.isUUIDV4(uuid)) throw new BadRequestException('uuid', 'is not UUID v4 format');
 
     const user = res.locals.user;
-    const promising = await promisingService.create(uuid, user);
+    const session = await promisingService.getSession(uuid);
 
-    const availDates = await promisingDateService.findDatesById(promising.id);
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
       timeReq,
-      promising.minTime,
-      promising.maxTime,
-      availDates
+      new Date(session.minTime),
+      new Date(session.maxTime),
+      session.availableDates
     );
     if (!isPossibleTimeInfo) {
       throw new BadRequestException('dateTime', 'not available or over maxTime');
     }
 
+    const promising = await promisingService.create(session, user);
     await promisingService.responseTime(promising, user, timeReq);
+    await promisingService.deleteSession(uuid);
     return res.status(200).send(new CreatedPromisingResponse(promising.id));
   }
 
@@ -136,6 +137,7 @@ class PromisingController {
     const user = res.locals.user;
     const promising = await promisingService.getPromisingInfo(promisingId);
     await eventService.create(promising, user, true);
+    await promisingService.updateTimeStamp(promising);
     return res.status(200).send();
   }
 
@@ -165,7 +167,7 @@ class PromisingController {
   }
 
   @OpenAPI({ summary: 'Get promising by promisingId' })
-  @ResponseSchema(PromisingResponse)
+  @ResponseSchema(PromisingTimeStampResponse)
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
@@ -173,7 +175,12 @@ class PromisingController {
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
     const members = await eventService.findPromisingMembers(promising.id);
-    const response = new PromisingResponse(promising, promising.ownCategory, availDates, members);
+    const response = new PromisingTimeStampResponse(
+      promising,
+      promising.ownCategory,
+      availDates,
+      members
+    );
     return res.status(200).send(response);
   }
 
@@ -206,7 +213,7 @@ class PromisingController {
   }
 
   @OpenAPI({ summary: "Get User's Promising list By User" })
-  @ResponseSchema(PromisingResponse, { isArray: true })
+  @ResponseSchema(PromisingTimeStampResponse, { isArray: true })
   @Get('/user')
   @UseBefore(UserAuthMiddleware)
   async getPromisingsByUser(@Res() res: Response) {

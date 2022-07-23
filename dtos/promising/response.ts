@@ -76,6 +76,20 @@ export class PromisingResponse {
   }
 }
 
+export class PromisingTimeStampResponse extends PromisingResponse {
+  updatedAt: string;
+
+  constructor(
+    promising: PromisingModel,
+    category: CategoryKeyword,
+    dates: Date[],
+    members: User[]
+  ) {
+    super(promising, category, dates, members);
+    this.updatedAt = timeUtil.formatDate2String(promising.updatedAt);
+  }
+}
+
 export class PromisingTimeTableResponse extends PromisingResponse {
   @JSONSchema({
     type: 'array',
