@@ -55,7 +55,7 @@ class PromisingService {
   }
 
   async getSession(uuid: string): Promise<PromisingSession> {
-    const data = await redisClient.get('uuid');
+    const data = await redisClient.get(uuid);
     if (!data) throw new NotFoundException('Promising Session', uuid);
     return JSON.parse(data);
   }
