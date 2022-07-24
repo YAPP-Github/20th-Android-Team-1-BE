@@ -1,1 +1,3 @@
 export const REDIS_EXPIRE_SECONDS = 86400;
+
+export const PROMISING_AVAILDABLE_DATES_MAX = 12;

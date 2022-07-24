@@ -23,6 +23,7 @@ import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
 import stringUtill from '../utils/string';
+import { PROMISING_AVAILDABLE_DATES_MAX } from '../constants/number';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -44,7 +45,7 @@ class PromisingController {
       req.availableDates,
       req.placeName
     );
-    if (req.availableDates.length > 12) {
+    if (req.availableDates.length > PROMISING_AVAILDABLE_DATES_MAX) {
       throw new BadRequestException('availableDates', 'over maximum count');
     }
 
