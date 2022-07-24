@@ -23,6 +23,7 @@ import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, TimeTableIndexType } from '../utils/type';
+import {UNKNOWN_USER_ID} from '../constants/nums';
 import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
@@ -296,6 +297,15 @@ class PromisingService {
 
   async deleteOneById(id: number) {
     await PromisingModel.destroy({ where: { id } });
+  }
+
+  async resignOwner(userId: number){
+    const promising = await PromisingModel.findAll({
+      where: {
+        ownerId: userId
+      }});
+    if(!promising) return;
+    PromisingModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
   }
 }
 

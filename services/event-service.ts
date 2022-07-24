@@ -4,6 +4,7 @@ import PromisingModel from '../models/promising';
 import TimeModel from '../models/time';
 import User from '../models/user';
 import { BadRequestException } from '../utils/error';
+import {UNKNOWN_USER_ID} from '../constants/nums';
 
 class EventService {
   async create(promising: PromisingModel, user: User, isAbsent: boolean | null = null) {
@@ -34,7 +35,7 @@ class EventService {
         { model: User, as: 'user', required: true }
       ]
     });
-    return events.map((event) => event.user);
+    return events.map((event) => event.user); 
   }
 
   async findPromisingMembers(promisingId: number) {
@@ -45,6 +46,16 @@ class EventService {
       include: [{ model: User, as: 'user', required: true }]
     });
     return events.map((event) => event.user);
+  }
+
+  async updateResignMember(userId: number){
+    const events = await EventModel.findAll({
+      where: {
+        userId: userId
+      }
+    });
+    if(!events) return;
+    EventModel.update({userId:UNKNOWN_USER_ID}, {where: {userId:userId}})
   }
 }
 

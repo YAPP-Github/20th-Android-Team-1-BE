@@ -26,6 +26,16 @@ class UserController {
 
     return res.status(200).send(new UserResponse(user));
   }
+  
+  @OpenAPI({ summary: 'delete member by userId' })
+  @Post('/resign-member')
+  @UseBefore(TokenValidMiddleware)
+  async reSignMember(@Res() res:Response) {
+    const exist = await userService.exist(res.locals.user.id);
+    if (!exist) throw new BadRequestException('User', 'already removed.');
+    await userService.delete(res.locals.user.id);
+    return res.sendStatus(200);
+ }
 
   @OpenAPI({ summary: "Get User's information" })
   @ResponseSchema(UserResponse)

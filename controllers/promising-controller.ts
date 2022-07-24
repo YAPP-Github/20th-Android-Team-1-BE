@@ -22,6 +22,7 @@ import { PromiseResponse } from '../dtos/promise/response';
 import randomName from '../constants/category-name.json';
 import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
+import userService from '../services/user-service';
 import stringUtill from '../utils/string';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
@@ -81,7 +82,8 @@ class PromisingController {
   ) {
     if (!stringUtill.isUUIDV4(uuid)) throw new BadRequestException('uuid', 'is not UUID v4 format');
 
-    const user = res.locals.user;
+
+const user = res.locals.user;
     const session = await promisingService.getSession(uuid);
 
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
