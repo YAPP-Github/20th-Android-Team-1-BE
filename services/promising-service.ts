@@ -1,6 +1,11 @@
-import { PromisingInfo } from '../dtos/promising/request';
+import { PromisingSession } from '../dtos/promising/request';
 import { BadRequestException, NotFoundException, UnAuthorizedException } from '../utils/error';
-import { PromisingResponse, TimeTableDate, TimeTableUnit } from '../dtos/promising/response';
+import {
+  PromisingSessionResponse,
+  PromisingTimeStampResponse,
+  TimeTableDate,
+  TimeTableUnit
+} from '../dtos/promising/response';
 import { PromiseResponse } from '../dtos/promise/response';
 import { TimeRequest } from '../dtos/time/request';
 import PromisingModel from '../models/promising';
@@ -19,28 +24,65 @@ import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, TimeTableIndexType } from '../utils/type';
 import {UNKNOWN_USER_ID} from '../constants/nums';
+import categoryService from './category-service';
+import { v4 as uuidv4 } from 'uuid';
+import { redisClient } from '../app';
+import sequelize from 'sequelize';
+import { REDIS_EXPIRE_SECONDS } from '../constants/number';
 
 class PromisingService {
-  async create(
-    promisingInfo: PromisingInfo,
-    owner: User,
-    availDate: string[],
-    timeInfo: TimeRequest
-  ) {
-    const category = await CategoryKeyword.findOne({ where: { id: promisingInfo.categoryId } });
-    if (!category) throw new NotFoundException('CategoryKeyword', promisingInfo.categoryId);
+  async saveSession(session: PromisingSession) {
+    const category = await categoryService.getOneById(session.categoryId);
 
-    const promising = new PromisingModel(promisingInfo);
+    const minTime = new Date(session.minTime);
+    const maxTime = new Date(session.maxTime);
+    if (!(minTime instanceof Date && !isNaN(minTime.valueOf()))) {
+      throw new BadRequestException('minTime', 'Invalid date');
+    }
+    if (!(maxTime instanceof Date && !isNaN(maxTime.valueOf()))) {
+      throw new BadRequestException('minTime', 'Invalid date');
+    }
+
+    session.availableDates.forEach((date) => {
+      const check = new Date(date);
+      if (!(check instanceof Date && !isNaN(check.valueOf()))) {
+        throw new BadRequestException('availableDates', 'include Invalid date');
+      }
+    });
+
+    const key = uuidv4();
+    await redisClient.setEx(key, REDIS_EXPIRE_SECONDS, JSON.stringify(session));
+    return key;
+  }
+
+  async getSession(uuid: string): Promise<PromisingSession> {
+    const data = await redisClient.get(uuid);
+    if (!data) throw new NotFoundException('Promising Session', uuid);
+    return JSON.parse(data);
+  }
+
+  async deleteSession(uuid: string) {
+    await redisClient.del(uuid);
+  }
+
+  async create(session: PromisingSession, owner: User) {
+    if (session.ownerId != owner.id)
+      throw new UnAuthorizedException('User is not owner of Promising');
+
+    const category = await categoryService.getOneById(session.categoryId);
+    const promising = new PromisingModel({
+      promisingName: session.promisingName,
+      minTime: new Date(session.minTime),
+      maxTime: new Date(session.maxTime),
+      placeName: session.placeName
+    });
+
     await promising.save();
     await promising.$set('owner', owner);
     await promising.$set('ownCategory', category);
+    await promisingDateService.create(promising, session.availableDates);
 
-    const promisingDates = await promisingDateService.create(promising, availDate);
-    await this.responseTime(promising, owner, timeInfo);
-    promising.owner = owner;
-    promising.ownCategory = category;
-    const members = await eventService.findPromisingMembers(promising.id);
-    return new PromisingResponse(promising, category, promisingDates, members);
+    return promising;
   }
 
   async getPromisingDateInfo(promisingId: number) {
@@ -57,6 +99,23 @@ class PromisingService {
     return promising;
   }
 
+  async getPromisingSession(uuid: string, unit = 0.5) {
+    const session = await this.getSession(uuid);
+
+    const totalCount = timeUtil.getIndexFromMinTime(
+      new Date(session.minTime),
+      new Date(session.maxTime),
+      unit
+    );
+    return new PromisingSessionResponse(
+      session.minTime,
+      session.maxTime,
+      totalCount / 2,
+      unit,
+      session.availableDates
+    );
+  }
+
   async getPromisingInfo(promisingId: number) {
     const promising = await PromisingModel.findOne({
       where: { id: promisingId },
@@ -69,20 +128,21 @@ class PromisingService {
     return promising;
   }
 
-  async getPromisingByUser(userId: number) {
+  async getPromisingByUser(user: User) {
     const promisings = await PromisingModel.findAll({
       include: [
         {
           model: EventModel,
           required: true,
           where: {
-            userId: userId
+            userId: user.id
           }
         },
         { model: User, as: 'owner', required: true },
         { model: CategoryKeyword, as: 'ownCategory', required: true },
         { model: PromisingDateModel, as: 'ownPromisingDates', required: true, attributes: ['date'] }
-      ]
+      ],
+      order: [['updatedAt', 'DESC']]
     });
 
     const res = [];
@@ -90,15 +150,21 @@ class PromisingService {
       const promising = promisings[i];
       const members = await eventService.findPromisingMembers(promising.id);
       res.push(
-        new PromisingResponse(
+        new PromisingTimeStampResponse(
           promising,
           promising.ownCategory,
           promising.ownPromisingDates.map((promisingDate) => promisingDate.date),
-          members
+          members,
+          user
         )
       );
     }
     return res;
+  }
+
+  async updateTimeStamp(promising: PromisingModel) {
+    promising.changed('updatedAt', true);
+    await promising.update({ updatedAt: sequelize.fn('NOW') });
   }
 
   async responseTime(promising: PromisingModel, user: User, timeInfo: TimeRequest) {
@@ -108,6 +174,7 @@ class PromisingService {
     const savedEvent: EventModel = await eventService.create(promising, user);
     const savedTime = await timeService.create(promising, savedEvent, timeInfo);
 
+    await this.updateTimeStamp(promising);
     return { savedEvent, savedTime };
   }
 

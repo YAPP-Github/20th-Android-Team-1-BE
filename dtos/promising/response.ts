@@ -9,7 +9,9 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Matches,
+  MaxLength,
   ValidateNested
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -21,6 +23,7 @@ export class PromisingResponse {
   @IsInt()
   id: number;
   @IsString()
+  @MaxLength(10)
   promisingName: string;
 
   @Type(() => UserResponse)
@@ -55,6 +58,7 @@ export class PromisingResponse {
 
   @IsOptional()
   @IsString()
+  @MaxLength(10)
   placeName: string;
 
   constructor(
@@ -72,6 +76,29 @@ export class PromisingResponse {
     this.placeName = promising.placeName;
     this.availableDates = dates.map((date) => timeUtil.formatDate2String(new Date(date)));
     this.members = members.map((member) => new UserResponse(member));
+  }
+}
+
+export class PromisingTimeStampResponse extends PromisingResponse {
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  updatedAt: string;
+  @IsBoolean()
+  isOwner: boolean;
+  @IsBoolean()
+  isResponsed: boolean;
+
+  constructor(
+    promising: PromisingModel,
+    category: CategoryKeyword,
+    dates: Date[],
+    members: User[],
+    user: User
+  ) {
+    super(promising, category, dates, members);
+    this.updatedAt = timeUtil.formatDate2String(promising.updatedAt);
+    this.isOwner = promising.owner.id == user.id;
+    this.isResponsed = members.filter((member) => member.id == user.id).length != 0;
   }
 }
 
@@ -201,5 +228,53 @@ export class PromisingUserResponse {
     this.maxTime = timeUtil.formatDate2String(promising.maxTime);
     this.memberCount = promising.memberCount;
     this.isOwn = promising.isOwn;
+  }
+}
+
+export class SessionResponse {
+  @IsUUID()
+  uuid: string;
+
+  constructor(uuid: string) {
+    this.uuid = uuid;
+  }
+}
+
+export class PromisingSessionResponse {
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  minTime: string;
+  @IsString()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
+  maxTime: string;
+  @IsInt()
+  totalCount: number;
+  @IsNumber()
+  unit: number;
+  @IsArray()
+  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/, { each: true })
+  availableDates: string[];
+
+  constructor(
+    minTime: string,
+    maxTime: string,
+    totalCount: number,
+    unit: number,
+    availableDates: string[]
+  ) {
+    this.minTime = minTime;
+    this.maxTime = maxTime;
+    this.totalCount = totalCount;
+    this.unit = unit;
+    this.availableDates = availableDates;
+  }
+}
+
+export class CreatedPromisingResponse {
+  @IsNumber()
+  id: number;
+
+  constructor(id: number) {
+    this.id = id;
   }
 }

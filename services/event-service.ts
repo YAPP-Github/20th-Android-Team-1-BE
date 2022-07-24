@@ -19,7 +19,7 @@ class EventService {
     const exist = await EventModel.findOne({
       where: { promisingId: promising.id, userId: user.id }
     });
-    return !exist;
+    return exist != undefined;
   }
 
   async findPossibleUsers(promisingId: number, date: Date) {

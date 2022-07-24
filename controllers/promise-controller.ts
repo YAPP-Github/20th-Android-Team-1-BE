@@ -42,7 +42,7 @@ class PromiseController {
   async getPromiseByMonth(@Param('dateTime') dateStr: string, @Res() res: Response) {
     const dateTime = timeUtil.string2Date(dateStr);
     if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
-      throw new BadRequestException('dateTime', 'Not valid date');
+      throw new BadRequestException('dateTime', 'Invalid date');
     const userId = res.locals.user.id;
 
     const promises = await promiseService.getPromisesByMonth(userId, dateTime);
@@ -69,7 +69,7 @@ class PromiseController {
   async getPromisesByDate(@Param('dateTime') dateStr: string, @Res() res: Response) {
     const dateTime = timeUtil.string2Date(dateStr);
     if (!(dateTime instanceof Date && !isNaN(dateTime.valueOf())))
-      throw new BadRequestException('dateTime', 'Not valid date');
+      throw new BadRequestException('dateTime', 'Invalid date');
     const userId = res.locals.user.id;
 
     const promises = await promiseService.getPromisesByDate(userId, dateTime);
