@@ -18,7 +18,7 @@ import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, TimeTableIndexType } from '../utils/type';
-import unknownUserId from '../constants/nums';
+import {UNKNOWN_USER_ID} from '../constants/nums';
 
 class PromisingService {
   async create(
@@ -238,7 +238,7 @@ class PromisingService {
         ownerId: userId
       }});
     if(!promising) return;
-    PromisingModel.update({ownerId:unknownUserId},{where:{ownerId: userId}});
+    PromisingModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
   }
 }
 

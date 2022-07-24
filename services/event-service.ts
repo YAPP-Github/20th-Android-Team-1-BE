@@ -4,7 +4,7 @@ import PromisingModel from '../models/promising';
 import TimeModel from '../models/time';
 import User from '../models/user';
 import { BadRequestException } from '../utils/error';
-import unknownUserId from '../constants/nums';
+import {UNKNOWN_USER_ID} from '../constants/nums';
 
 class EventService {
   async create(promising: PromisingModel, user: User, isAbsent: boolean | null = null) {
@@ -55,7 +55,7 @@ class EventService {
       }
     });
     if(!events) return;
-    EventModel.update({userId:unknownUserId}, {where: {userId:userId}})
+    EventModel.update({userId:UNKNOWN_USER_ID}, {where: {userId:userId}})
   }
 }
 

@@ -1,7 +1,2 @@
 
-export default class unknownUserId {
-    userId : number;
-    constructor() {
-        this.userId = 100000;
-    }
-}
+export const UNKNOWN_USER_ID = 100000;

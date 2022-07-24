@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import PromiseModel from '../models/promise';
 import PromiseUser from '../models/promise-user';
 import User from '../models/user';
-import unknownUserId from '../constants/nums';
+import {UNKNOWN_USER_ID} from '../constants/nums';
 
 class PromiseUserService {
   async findPromiseMembers(promises: PromiseModel[]) {
@@ -28,7 +28,7 @@ class PromiseUserService {
       }
     });
     if(!promiseUsers) return;
-    await PromiseUser.update({userId:unknownUserId}, {where: {userId:userId}})
+    await PromiseUser.update({userId:UNKNOWN_USER_ID}, {where: {userId:userId}})
   }
 }
 

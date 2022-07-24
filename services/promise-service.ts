@@ -7,7 +7,7 @@ import { NotFoundException } from '../utils/error';
 import { Op } from 'sequelize';
 import PromiseUser from '../models/promise-user';
 import { InternalServerException } from '../utils/error';
-import unknownUserId from '../constants/nums';
+import {UNKNOWN_USER_ID} from '../constants/nums';
 
 class PromiseService {
   async create(
@@ -153,7 +153,7 @@ class PromiseService {
   async resignOwner(userId:number){
     const promises = await PromiseModel.findAll({where:{ownerId:userId}});
     if(!promises)return;
-    const result = await PromiseModel.update({ownerId:unknownUserId},{where:{ownerId: userId}});
+    const result = await PromiseModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
     if( result==[0] ) throw new InternalServerException();
 
     const promiseListMemberJoined= await PromiseUser.findAll({
