@@ -42,11 +42,12 @@ class PromisingService {
       throw new BadRequestException('minTime', 'Invalid date');
     }
 
-    session.availableDates.forEach((date) => {
+    session.availableDates = session.availableDates.sort().map((date) => {
       const check = new Date(date);
       if (!(check instanceof Date && !isNaN(check.valueOf()))) {
         throw new BadRequestException('availableDates', 'include Invalid date');
       }
+      return date;
     });
 
     const key = uuidv4();
