@@ -226,7 +226,7 @@ class PromisingService {
         .sort((a, b) => a.localeCompare(b))
         .map((key) => {
           const blockIdx = parseInt(key) as keyof TimeTableIndexType;
-          const colorStr = index[ownEvents.length - 1][
+          const colorStr = index[ownEvents.length][
             usersByDate[blockIdx]!.length
           ] as keyof ColorType;
 
@@ -241,7 +241,8 @@ class PromisingService {
       return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
     });
 
-    const colors = index[[ownEvents].length - 1].map((colorStr) =>
+    console.log(ownEvents.length, index[ownEvents.length], ownEvents.length);
+    const colors = index[ownEvents.length].map((colorStr) =>
       parseInt(color[colorStr as keyof ColorType], 16)
     );
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
