@@ -154,7 +154,6 @@ class PromiseService {
     const promises = await PromiseModel.findAll({where:{ownerId:userId}});
     if(!promises)return;
     const result = await PromiseModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
-    if( result==[0] ) throw new InternalServerException();
 
     const promiseListMemberJoined= await PromiseUser.findAll({
       where: {userId:userId},
