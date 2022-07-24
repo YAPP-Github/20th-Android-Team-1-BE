@@ -24,6 +24,7 @@ import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
 import userService from '../services/user-service';
 import stringUtill from '../utils/string';
+import { PROMISING_AVAILABLE_DATES_MAX, PROMISING_USER_MAX } from '../constants/number';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -45,8 +46,9 @@ class PromisingController {
       req.availableDates,
       req.placeName
     );
-    if (req.availableDates.length > 10)
-      throw new BadRequestException('availDate', 'over maximum count');
+    if (req.availableDates.length > PROMISING_AVAILABLE_DATES_MAX) {
+      throw new BadRequestException('availableDates', 'over maximum count');
+    }
 
     const uuid = await promisingService.saveSession(promisingSession);
     const response = new SessionResponse(uuid);
@@ -115,7 +117,10 @@ const user = res.locals.user;
     @Res() res: Response
   ) {
     const user = res.locals.user;
-    const promising = await promisingService.getPromisingDateInfo(promisingId);
+    const promising = await promisingService.getPromisingInfo(promisingId);
+    if (promising.ownEvents.length >= PROMISING_USER_MAX) {
+      throw new BadRequestException('User', 'over maximum number');
+    }
     const availDates = await promisingDateService.findDatesById(promising.id);
 
     const isPossibleTimeInfo = await timeUtil.checkTimeResponseList(
@@ -138,6 +143,9 @@ const user = res.locals.user;
   async rejectPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const user = res.locals.user;
     const promising = await promisingService.getPromisingInfo(promisingId);
+    if (promising.ownEvents.length >= PROMISING_USER_MAX) {
+      throw new BadRequestException('User', 'over maximum number');
+    }
     await eventService.create(promising, user, true);
     await promisingService.updateTimeStamp(promising);
     return res.status(200).send();
@@ -190,19 +198,20 @@ const user = res.locals.user;
   @OpenAPI({
     summary: 'Get promising time-table',
     description:
-      'members = 응답한 모든 사용자 배열 (불참 포함), colors = 인원수별 블록 컬러값 (0~ 최대) </p> <p> unit = 한 시간 기준 블록의 크기 ( unit = 0.5, block 당 30분), totalCount = 전체 minTime ~ maxTime 사이 시간 (13:00 ~ 15:00 totalCount = 2)'
+      'members = 응답한 모든 사용자 배열 (불참 포함), colors = 인원수별 블록 컬러값 (1 ~ members 크기) </p> <p> unit = 한 시간 기준 블록의 크기 ( unit = 0.5, block 당 30분), totalCount = 전체 minTime ~ maxTime 사이 시간 (13:00 ~ 15:00 totalCount = 2)'
   })
   @Get('/:promisingId/time-table')
   @ResponseSchema(PromisingTimeTableResponse)
   @UseBefore(UserAuthMiddleware)
   async getTimeTableFromPromising(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const promising = await promisingService.getPromisingInfo(promisingId);
+    const members = await eventService.findPromisingMembers(promising.id);
     const { colors, totalCount, unit, timeTable } = await promisingService.getTimeTable(
-      promisingId
+      promisingId,
+      members.length
     );
     const availDates = await promisingDateService.findDatesById(promisingId);
 
-    const members = await eventService.findPromisingMembers(promising.id);
     const response = new PromisingTimeTableResponse(
       promising,
       availDates,

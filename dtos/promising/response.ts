@@ -96,7 +96,9 @@ export class PromisingTimeStampResponse extends PromisingResponse {
     user: User
   ) {
     super(promising, category, dates, members);
-    this.updatedAt = timeUtil.formatDate2String(promising.updatedAt);
+    const updatedAT2KST = new Date(promising.updatedAt);
+    updatedAT2KST.setHours(updatedAT2KST.getHours() + 9);
+    this.updatedAt = timeUtil.formatDate2String(updatedAT2KST);
     this.isOwner = promising.owner.id == user.id;
     this.isResponsed = members.filter((member) => member.id == user.id).length != 0;
   }

@@ -32,7 +32,7 @@ import { REDIS_EXPIRE_SECONDS } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
-    const category = await categoryService.getOneById(session.categoryId);
+    await categoryService.getOneById(session.categoryId);
 
     const minTime = new Date(session.minTime);
     const maxTime = new Date(session.maxTime);
@@ -43,11 +43,12 @@ class PromisingService {
       throw new BadRequestException('minTime', 'Invalid date');
     }
 
-    session.availableDates.forEach((date) => {
+    session.availableDates = session.availableDates.sort().map((date) => {
       const check = new Date(date);
       if (!(check instanceof Date && !isNaN(check.valueOf()))) {
         throw new BadRequestException('availableDates', 'include Invalid date');
       }
+      return date;
     });
 
     const key = uuidv4();
@@ -121,7 +122,8 @@ class PromisingService {
       where: { id: promisingId },
       include: [
         { model: User, as: 'owner' },
-        { model: CategoryKeyword, as: 'ownCategory' }
+        { model: CategoryKeyword, as: 'ownCategory' },
+        { model: EventModel, as: 'ownEvents' }
       ]
     });
     if (!promising) throw new NotFoundException('Promising', promisingId);
@@ -203,7 +205,7 @@ class PromisingService {
     return new PromiseResponse(promise, owner, category!, members, true);
   }
 
-  async getTimeTable(id: number, unit = 0.5) {
+  async getTimeTable(id: number, memberCount: number, unit = 0.5) {
     const promising = await PromisingModel.findOne({
       include: [
         {
@@ -227,8 +229,8 @@ class PromisingService {
         .sort((a, b) => a.localeCompare(b))
         .map((key) => {
           const blockIdx = parseInt(key) as keyof TimeTableIndexType;
-          const colorStr = index[ownEvents.length - 1][
-            usersByDate[blockIdx]!.length
+          const colorStr = index[ownEvents.length][
+            usersByDate[blockIdx]!.length - 1
           ] as keyof ColorType;
 
           return new TimeTableUnit(
@@ -242,7 +244,7 @@ class PromisingService {
       return new TimeTableDate(timeUtil.formatDate2String(new Date(date)), units);
     });
 
-    const colors = index[[ownEvents].length - 1].map((colorStr) =>
+    const colors = index[memberCount].map((colorStr) =>
       parseInt(color[colorStr as keyof ColorType], 16)
     );
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;

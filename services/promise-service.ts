@@ -71,23 +71,15 @@ class PromiseService {
       sequelize.where(sequelize.fn('MONTH', sequelize.col('promiseDate')), month)
     ];
 
-    const promisesFuture = await PromiseModel.findAll({
+    const promises = await PromiseModel.findAll({
       include: includeConds,
       where: {
-        [sequelize.Op.and]: [...whereConds, { promiseDate: { [Op.gte]: new Date() } }]
+        [sequelize.Op.and]: whereConds
       },
       order: [['promiseDate', 'ASC']]
     });
 
-    const promisesPast = await PromiseModel.findAll({
-      include: includeConds,
-      where: {
-        [sequelize.Op.and]: [...whereConds, { promiseDate: { [Op.lt]: new Date() } }]
-      },
-      order: [['promiseDate', 'ASC']]
-    });
-
-    return await promiseUserService.findPromiseMembers([...promisesFuture, ...promisesPast]);
+    return await promiseUserService.findPromiseMembers(promises);
   }
 
   async getPromisesByDate(userId: number, dateTime: Date) {
@@ -107,28 +99,13 @@ class PromiseService {
       { model: CategoryKeyword, as: 'category', required: true }
     ];
 
-    const promisesFuture = await PromiseModel.findAll({
+    const promises = await PromiseModel.findAll({
       include: includeConds,
-      where: {
-        [Op.and]: [
-          sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString),
-          { promiseDate: { [Op.gte]: new Date() } }
-        ]
-      },
+      where: sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString),
       order: [['promiseDate', 'ASC']]
     });
 
-    const promisesPast = await PromiseModel.findAll({
-      include: includeConds,
-      where: {
-        [Op.and]: [
-          sequelize.where(sequelize.fn('date', sequelize.col('promiseDate')), '=', dateString),
-          { promiseDate: { [Op.lt]: new Date() } }
-        ]
-      },
-      order: [['promiseDate', 'ASC']]
-    });
-    return await promiseUserService.findPromiseMembers([...promisesFuture, ...promisesPast]);
+    return await promiseUserService.findPromiseMembers(promises);
   }
 
   async getPromiseById(id: number) {
