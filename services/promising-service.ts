@@ -31,7 +31,7 @@ import { REDIS_EXPIRE_SECONDS } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
-    const category = await categoryService.getOneById(session.categoryId);
+    await categoryService.getOneById(session.categoryId);
 
     const minTime = new Date(session.minTime);
     const maxTime = new Date(session.maxTime);
