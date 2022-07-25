@@ -6,6 +6,7 @@ import { TokenValidMiddleware, UserAuthMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
 import { BadRequestException } from '../utils/error';
+import { UserAuthMiddleware } from '../middlewares/auth';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/users')
@@ -29,7 +30,7 @@ class UserController {
   
   @OpenAPI({ summary: 'delete member by userId' })
   @Post('/resign-member')
-  @UseBefore(TokenValidMiddleware)
+  @UseBefore(UserAuthMiddleware)
   async reSignMember(@Res() res:Response) {
     const exist = await userService.exist(res.locals.user.id);
     if (!exist) throw new BadRequestException('User', 'already removed.');
