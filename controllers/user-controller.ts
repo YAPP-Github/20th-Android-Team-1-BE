@@ -6,7 +6,6 @@ import { TokenValidMiddleware, UserAuthMiddleware } from '../middlewares/auth';
 import User from '../models/user';
 import userService from '../services/user-service';
 import { BadRequestException } from '../utils/error';
-import { UserAuthMiddleware } from '../middlewares/auth';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/users')
