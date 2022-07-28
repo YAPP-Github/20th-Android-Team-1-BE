@@ -32,14 +32,17 @@ class UserService {
     return user;
   }
 
-  async delete(userId:number){
+  async delete(userId: number) {
     await promiseService.resignOwner(userId);
-    await EventService.updateResignMember(userId); 
+    await EventService.updateResignMember(userId);
     await promiseUserService.updateResignMember(userId);
     await promisingService.resignOwner(userId);
-    await User.destroy({ where: { userId } }); 
+    await User.destroy({ where: { userId } });
   }
 
+  async update(user: User, userName: string) {
+    return await user.update({ userName: userName });
+  }
 }
 
 export default new UserService();
