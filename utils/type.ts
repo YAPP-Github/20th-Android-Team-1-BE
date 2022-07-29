@@ -20,3 +20,11 @@ export interface TimeTableIndexType {
   8?: UserResponse[];
   9?: UserResponse[];
 }
+
+export enum PromisingStatus {
+  Owner = 'OWNER',
+  Confirmed = 'CONFIRMED', // 404 NOT FOUND
+  ResponseAlready = 'RESPONSE_ALREADY',
+  ResponseMaximum = 'RESPONSE_MAXIMUM',
+  ResponsePossible = 'RESPONSE_POSSIBLE'
+}
