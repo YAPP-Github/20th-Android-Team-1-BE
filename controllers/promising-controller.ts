@@ -178,8 +178,8 @@ class PromisingController {
   @ResponseSchema(PromisingStatusResponse)
   @Get('/:promisingId/status')
   @UseBefore(UserAuthMiddleware)
-  async checkPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
-    const status = await promisingService.checkStatus(promisingId, res.locals.user);
+  async getPromisingStatusById(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    const status = await promisingService.getStatus(promisingId, res.locals.user);
     return res.status(200).send(new PromisingStatusResponse(status));
   }
 

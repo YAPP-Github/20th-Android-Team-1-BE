@@ -86,7 +86,7 @@ class PromisingService {
     return promising;
   }
 
-  async checkStatus(promisingId: number, user: User) {
+  async getStatus(promisingId: number, user: User) {
     let promising;
     try {
       promising = await this.getPromisingInfo(promisingId);
