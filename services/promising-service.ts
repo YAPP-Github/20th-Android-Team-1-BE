@@ -99,15 +99,14 @@ class PromisingService {
     if (promising.owner.id == user.id) {
       return PromisingStatus.Owner;
     }
-    const isResponsed = await eventService.isResponsedBefore(promising, user);
-    if (isResponsed) {
+    const responseAlready = await eventService.isResponsedBefore(promising, user);
+    if (responseAlready) {
       return PromisingStatus.ResponseAlready;
     }
     if (promising.ownEvents.length >= PROMISING_USER_MAX) {
       return PromisingStatus.ResponseMaximum;
-    } else {
-      return PromisingStatus.ResponsePossible;
     }
+    return PromisingStatus.ResponsePossible;
   }
 
   async getPromisingDateInfo(promisingId: number) {
