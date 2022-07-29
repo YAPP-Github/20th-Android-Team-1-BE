@@ -24,7 +24,6 @@ import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
 import stringUtill from '../utils/string';
 import { PROMISING_AVAILABLE_DATES_MAX, PROMISING_USER_MAX } from '../constants/number';
-import { PromisingStatus } from '../utils/type';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -175,9 +174,9 @@ class PromisingController {
     return res.status(200).send(promise);
   }
 
-  @OpenAPI({ summary: 'Check Promising and User status by promisingId' })
+  @OpenAPI({ summary: 'Get Promising and User status by promisingId (return Enum)' })
   @ResponseSchema(PromisingStatusResponse)
-  @Get('/:promisingId/check')
+  @Get('/:promisingId/status')
   @UseBefore(UserAuthMiddleware)
   async checkPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const status = await promisingService.checkStatus(promisingId, res.locals.user);
