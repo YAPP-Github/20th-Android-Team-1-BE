@@ -180,7 +180,7 @@ class PromisingController {
   @UseBefore(UserAuthMiddleware)
   async checkPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
     const status = await promisingService.checkStatus(promisingId, res.locals.user);
-    return res.status(200).send(status);
+    return res.status(200).send(new PromisingStatusResponse(status));
   }
 
   @OpenAPI({ summary: 'Get Promising by promisingId' })

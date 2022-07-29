@@ -24,6 +24,10 @@ import { PromisingStatus } from '../../utils/type';
 export class PromisingStatusResponse {
   @IsEnum(PromisingStatus)
   status: string;
+
+  constructor(status: string) {
+    this.status = status;
+  }
 }
 
 export class PromisingResponse {
