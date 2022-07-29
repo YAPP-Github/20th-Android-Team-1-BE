@@ -7,11 +7,11 @@ import { TimeRequest } from '../dtos/time/request';
 import {
   CreatedPromisingResponse,
   PromisingSessionResponse,
+  PromisingStatusResponse,
   PromisingTimeStampResponse,
   PromisingTimeTableResponse,
   SessionResponse
 } from '../dtos/promising/response';
-import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
@@ -174,12 +174,20 @@ class PromisingController {
     return res.status(200).send(promise);
   }
 
-  @OpenAPI({ summary: 'Get promising by promisingId' })
+  @OpenAPI({ summary: 'Get Promising and User status by promisingId (return Enum)' })
+  @ResponseSchema(PromisingStatusResponse)
+  @Get('/:promisingId/status')
+  @UseBefore(UserAuthMiddleware)
+  async getPromisingStatusById(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    const status = await promisingService.getStatus(promisingId, res.locals.user);
+    return res.status(200).send(new PromisingStatusResponse(status));
+  }
+
+  @OpenAPI({ summary: 'Get Promising by promisingId' })
   @ResponseSchema(PromisingTimeStampResponse)
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
-    if (!promisingId) throw new ValidationException('');
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
     const members = await eventService.findPromisingMembers(promising.id);

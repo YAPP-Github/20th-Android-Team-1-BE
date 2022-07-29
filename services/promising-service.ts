@@ -22,13 +22,13 @@ import { UserResponse } from '../dtos/user/response';
 import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
-import { ColorType, TimeTableIndexType } from '../utils/type';
-import {UNKNOWN_USER_ID} from '../constants/nums';
+import { ColorType, PromisingStatus, TimeTableIndexType } from '../utils/type';
+import { UNKNOWN_USER_ID } from '../constants/nums';
 import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
-import { REDIS_EXPIRE_SECONDS } from '../constants/number';
+import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
@@ -84,6 +84,29 @@ class PromisingService {
     await promisingDateService.create(promising, session.availableDates);
 
     return promising;
+  }
+
+  async getStatus(promisingId: number, user: User) {
+    let promising;
+    try {
+      promising = await this.getPromisingInfo(promisingId);
+    } catch (err: any) {
+      if (err instanceof NotFoundException) {
+        return PromisingStatus.Confirmed;
+      } else throw err;
+    }
+
+    if (promising.owner.id == user.id) {
+      return PromisingStatus.Owner;
+    }
+    const responseAlready = await eventService.isResponsedBefore(promising, user);
+    if (responseAlready) {
+      return PromisingStatus.ResponseAlready;
+    }
+    if (promising.ownEvents.length >= PROMISING_USER_MAX) {
+      return PromisingStatus.ResponseMaximum;
+    }
+    return PromisingStatus.ResponsePossible;
   }
 
   async getPromisingDateInfo(promisingId: number) {
@@ -301,13 +324,14 @@ class PromisingService {
     await PromisingModel.destroy({ where: { id } });
   }
 
-  async resignOwner(userId: number){
+  async resignOwner(userId: number) {
     const promising = await PromisingModel.findAll({
       where: {
         ownerId: userId
-      }});
-    if(!promising) return;
-    PromisingModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
+      }
+    });
+    if (!promising) return;
+    PromisingModel.update({ ownerId: UNKNOWN_USER_ID }, { where: { ownerId: userId } });
   }
 }
 

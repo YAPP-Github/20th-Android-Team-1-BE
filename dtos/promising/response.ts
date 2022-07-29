@@ -5,6 +5,7 @@ import timeUtil from '../../utils/time';
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
@@ -18,6 +19,16 @@ import { Type } from 'class-transformer';
 import { JSONSchema } from 'class-validator-jsonschema';
 import { CategoryResponse } from '../category/response';
 import User from '../../models/user';
+import { PromisingStatus } from '../../utils/type';
+
+export class PromisingStatusResponse {
+  @IsEnum(PromisingStatus)
+  status: string;
+
+  constructor(status: string) {
+    this.status = status;
+  }
+}
 
 export class PromisingResponse {
   @IsInt()
@@ -199,37 +210,6 @@ export class TimeTableUnit {
     this.count = count;
     this.users = users;
     this.color = color;
-  }
-}
-
-export class PromisingUserResponse {
-  @IsInt()
-  id: number;
-  @IsString()
-  promisingName: string;
-  @IsInt()
-  ownerId: number;
-  @IsString()
-  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
-  minTime: string;
-  @IsString()
-  @Matches(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})$/)
-  maxTime: string;
-  @IsString()
-  placeName: string;
-  @IsInt()
-  memberCount: number;
-  @IsBoolean()
-  isOwn: boolean;
-
-  constructor(promising: any) {
-    this.id = promising.id;
-    this.promisingName = promising.promisingName;
-    this.ownerId = promising.ownerId;
-    this.minTime = timeUtil.formatDate2String(promising.minTime);
-    this.maxTime = timeUtil.formatDate2String(promising.maxTime);
-    this.memberCount = promising.memberCount;
-    this.isOwn = promising.isOwn;
   }
 }
 
