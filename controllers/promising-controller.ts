@@ -7,11 +7,11 @@ import { TimeRequest } from '../dtos/time/request';
 import {
   CreatedPromisingResponse,
   PromisingSessionResponse,
+  PromisingStatusResponse,
   PromisingTimeStampResponse,
   PromisingTimeTableResponse,
   SessionResponse
 } from '../dtos/promising/response';
-import { ValidationException } from '../utils/error';
 import categoryService from '../services/category-service';
 import { CategoryResponse, RandomNameResponse } from '../dtos/category/response';
 import { BadRequestException } from '../utils/error';
@@ -24,6 +24,7 @@ import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
 import stringUtill from '../utils/string';
 import { PROMISING_AVAILABLE_DATES_MAX, PROMISING_USER_MAX } from '../constants/number';
+import { PromisingStatus } from '../utils/type';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -174,12 +175,20 @@ class PromisingController {
     return res.status(200).send(promise);
   }
 
-  @OpenAPI({ summary: 'Get promising by promisingId' })
+  @OpenAPI({ summary: 'Check Promising and User status by promisingId' })
+  @ResponseSchema(PromisingStatusResponse)
+  @Get('/:promisingId/check')
+  @UseBefore(UserAuthMiddleware)
+  async checkPromisingById(@Param('promisingId') promisingId: number, @Res() res: Response) {
+    const status = await promisingService.checkStatus(promisingId, res.locals.user);
+    return res.status(200).send(status);
+  }
+
+  @OpenAPI({ summary: 'Get Promising by promisingId' })
   @ResponseSchema(PromisingTimeStampResponse)
   @Get('/id/:promisingsId')
   @UseBefore(UserAuthMiddleware)
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
-    if (!promisingId) throw new ValidationException('');
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
     const members = await eventService.findPromisingMembers(promising.id);
