@@ -128,9 +128,11 @@ class PromiseService {
   }
 
   async resignOwner(userId:number){
+    await promiseUserService.updateResignMember(userId);
+    
     const promises = await PromiseModel.findAll({where:{ownerId:userId}});
     if(!promises)return;
-    const result = await PromiseModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
+    await PromiseModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
 
     const promiseListMemberJoined= await PromiseUser.findAll({
       where: {userId:userId},
