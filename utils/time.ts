@@ -185,6 +185,15 @@ const timeUtil = {
         else return date.getSeconds() < other.getSeconds() ? -1 : 1;
       } else return date.getMinutes() < other.getMinutes() ? -1 : 1;
     } else return date.getHours() < other.getHours() ? -1 : 1;
+  },
+
+  getNowTime(){
+    const today = new Date();
+    const utc_time = today.getTime() + (today.getTimezoneOffset() * 60 * 1000);
+    const time_diff = 9 * 60 * 60 * 1000; 
+    const kst_time = new Date(utc_time + (time_diff));
+    
+    return kst_time    
   }
 };
 
