@@ -23,12 +23,11 @@ import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, PromisingStatus, TimeTableIndexType } from '../utils/type';
-import { UNKNOWN_USER_ID } from '../constants/nums';
 import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
-import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS } from '../constants/number';
+import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS, UNKNOWN_USER_ID } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
