@@ -7,7 +7,8 @@ import { NotFoundException } from '../utils/error';
 import { Op } from 'sequelize';
 import PromiseUser from '../models/promise-user';
 import { InternalServerException } from '../utils/error';
-import {UNKNOWN_USER_ID} from '../constants/nums';
+import { UNKNOWN_USER_ID } from '../constants/nums';
+import timeUtil from '../utils/time';
 
 class PromiseService {
   async create(
@@ -40,13 +41,13 @@ class PromiseService {
     ];
     const promisesFuture = await PromiseModel.findAll({
       include: includeConds,
-      where: { promiseDate: { [Op.gte]: new Date() } },
+      where: { promiseDate: { [Op.gte]: timeUtil.getNowTime() } },
       order: [['promiseDate', 'ASC']]
     });
 
     const promisesPast = await PromiseModel.findAll({
       include: includeConds,
-      where: { promiseDate: { [Op.lt]: new Date() } },
+      where: { promiseDate: { [Op.lt]: timeUtil.getNowTime() } },
       order: [['promiseDate', 'ASC']]
     });
     return await promiseUserService.findPromiseMembers([...promisesFuture, ...promisesPast]);
@@ -127,26 +128,26 @@ class PromiseService {
     return promisesWithMembers[0];
   }
 
-  async resignOwner(userId:number){
+  async resignOwner(userId: number) {
     await promiseUserService.updateResignMember(userId);
-    
-    const promises = await PromiseModel.findAll({where:{ownerId:userId}});
-    if(!promises)return;
-    await PromiseModel.update({ownerId:UNKNOWN_USER_ID},{where:{ownerId: userId}});
 
-    const promiseListMemberJoined= await PromiseUser.findAll({
-      where: {userId:userId},
-      attributes:['promiseId'], 
-      raw:true 
+    const promises = await PromiseModel.findAll({ where: { ownerId: userId } });
+    if (!promises) return;
+    await PromiseModel.update({ ownerId: UNKNOWN_USER_ID }, { where: { ownerId: userId } });
+
+    const promiseListMemberJoined = await PromiseUser.findAll({
+      where: { userId: userId },
+      attributes: ['promiseId'],
+      raw: true
     });
-    const promiseIdList =promiseListMemberJoined.map( promise=> promise.promiseId);
+    const promiseIdList = promiseListMemberJoined.map((promise) => promise.promiseId);
 
-    for (let i=0; i<promiseIdList.length; i++){    
-      const promise = await this.getPromiseById(promiseIdList[i])
-      const promiseMembers:any =await promiseUserService.findPromiseMembers([promise]);
+    for (let i = 0; i < promiseIdList.length; i++) {
+      const promise = await this.getPromiseById(promiseIdList[i]);
+      const promiseMembers: any = await promiseUserService.findPromiseMembers([promise]);
       const members = promiseMembers[0].members;
-      await promise.$set('members',members);
-    }   
+      await promise.$set('members', members);
+    }
   }
 }
 
