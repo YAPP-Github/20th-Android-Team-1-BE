@@ -244,16 +244,14 @@ class PromisingService {
     if (!promising) throw new NotFoundException('Promising', id);
 
     const map = this.transformEvents2MapAndUsers(promising, unit);
-    const { minTime, maxTime, ownEvents } = promising;
+    const { minTime, maxTime } = promising;
 
     const timeTable = Array.from(map, ([date, usersByDate]) => {
       const units = Object.keys(usersByDate)
         .sort((a, b) => a.localeCompare(b))
         .map((key) => {
           const blockIdx = parseInt(key) as keyof TimeTableIndexType;
-          const colorStr = index[ownEvents.length][
-            usersByDate[blockIdx]!.length - 1
-          ] as keyof ColorType;
+          const colorStr = index[memberCount][usersByDate[blockIdx]!.length - 1] as keyof ColorType;
 
           return new TimeTableUnit(
             blockIdx,
