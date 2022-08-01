@@ -24,6 +24,7 @@ import { ConfirmPromisingRequest } from '../dtos/promising/request';
 import eventService from '../services/event-service';
 import stringUtill from '../utils/string';
 import { PROMISING_AVAILABLE_DATES_MAX, PROMISING_USER_MAX } from '../constants/number';
+import arrayUtil from '../utils/array';
 
 @OpenAPI({ security: [{ bearerAuth: [] }] })
 @JsonController('/promisings')
@@ -190,7 +191,9 @@ class PromisingController {
   async getPromisingById(@Param('promisingsId') promisingId: number, @Res() res: Response) {
     const promising = await promisingService.getPromisingInfo(promisingId);
     const availDates = await promisingDateService.findDatesById(promisingId);
-    const members = await eventService.findPromisingMembers(promising.id);
+    let members = await eventService.findPromisingMembers(promising.id);
+    members = await arrayUtil.sortingNameList(members);
+
     const response = new PromisingTimeStampResponse(
       promising,
       promising.ownCategory,

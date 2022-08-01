@@ -29,6 +29,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
 import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS } from '../constants/number';
+import arrayUtil from '../utils/array';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
@@ -173,7 +174,9 @@ class PromisingService {
     const res = [];
     for (let i = 0; i < promisings.length; i++) {
       const promising = promisings[i];
-      const members = await eventService.findPromisingMembers(promising.id);
+      let members = await eventService.findPromisingMembers(promising.id);
+      members = await arrayUtil.sortingNameList(members);  
+
       res.push(
         new PromisingTimeStampResponse(
           promising,

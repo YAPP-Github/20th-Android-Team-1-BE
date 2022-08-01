@@ -1,3 +1,4 @@
+import User from "../models/user";
 
 const arrayUtil = {
     async deleteJsonKey(jsonArray: any, target: string) {
@@ -11,6 +12,12 @@ const arrayUtil = {
             }
         }
         return true;
+    },
+    async sortingNameList(nameList: Array<User>){
+        nameList.sort(function(a, b) {
+            return a.userName < b.userName ? -1 : a.userName > b.userName ? 1 : 0;
+        });
+        return nameList;
     }
 };
 

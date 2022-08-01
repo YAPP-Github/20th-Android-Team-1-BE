@@ -3,6 +3,7 @@ import PromiseModel from '../models/promise';
 import PromiseUser from '../models/promise-user';
 import User from '../models/user';
 import {UNKNOWN_USER_ID} from '../constants/nums';
+import arrayUtil from '../utils/array';
 
 class PromiseUserService {
   async findPromiseMembers(promises: PromiseModel[]) {
@@ -12,10 +13,11 @@ class PromiseUserService {
         raw: true
       });
 
-      const memberList: User[] = await User.findAll({
+      let memberList: User[] = await User.findAll({
         where: { id: { [Op.in]: members.map((members) => members.userId) } },
         raw: true
       });
+      memberList = await arrayUtil.sortingNameList(memberList);
       promises[i].members = memberList;
     }
     return promises;
