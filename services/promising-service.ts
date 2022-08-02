@@ -267,9 +267,10 @@ class PromisingService {
     const colors = index[memberCount].map((colorStr) =>
       parseInt(color[colorStr as keyof ColorType], 16)
     );
+    const colorSet = [...new Set(colors)];
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
     return {
-      colors,
+      colors: colorSet,
       totalCount,
       unit,
       timeTable
