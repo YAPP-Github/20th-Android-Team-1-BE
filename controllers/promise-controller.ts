@@ -86,6 +86,31 @@ class PromiseController {
     return res.status(200).send(response);
   }
 
+  @OpenAPI({
+    summary: "Get User's today Promise List",
+    description: 'get users today promiseList'
+  })
+  @ResponseSchema(PromiseResponse, { isArray: true })
+  @Get('/today')
+  @UseBefore(UserAuthMiddleware)
+  async getTodayPromises(@Res() res: Response) {
+    const userId = res.locals.user.id;
+    const dateTime = timeUtil.getNowTime();
+
+    const promises = await promiseService.getPromisesByDate(userId, dateTime);
+    const response = promises.map(
+      (promise: PromiseModel) =>
+        new PromiseResponse(
+          promise,
+          promise.owner,
+          promise.category,
+          promise.members,
+          userId == promise.owner.id
+        )
+    );
+    return res.status(200).send(response);
+  }
+
   @OpenAPI({ summary: 'Get Promise information By promiseId' })
   @ResponseSchema(PromiseResponse)
   @Get('/:promiseId')

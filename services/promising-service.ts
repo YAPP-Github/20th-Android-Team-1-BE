@@ -23,13 +23,12 @@ import timeService from './time-service';
 import PromisingDateModel from '../models/promising-date';
 import promisingDateService from './promising-date-service';
 import { ColorType, PromisingStatus, TimeTableIndexType } from '../utils/type';
-import { UNKNOWN_USER_ID } from '../constants/nums';
 import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
-import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS } from '../constants/number';
 import arrayUtil from '../utils/array';
+import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS, UNKNOWN_USER_ID } from '../constants/number';
 
 class PromisingService {
   async saveSession(session: PromisingSession) {
@@ -248,16 +247,14 @@ class PromisingService {
     if (!promising) throw new NotFoundException('Promising', id);
 
     const map = this.transformEvents2MapAndUsers(promising, unit);
-    const { minTime, maxTime, ownEvents } = promising;
+    const { minTime, maxTime } = promising;
 
     const timeTable = Array.from(map, ([date, usersByDate]) => {
       const units = Object.keys(usersByDate)
         .sort((a, b) => a.localeCompare(b))
         .map((key) => {
           const blockIdx = parseInt(key) as keyof TimeTableIndexType;
-          const colorStr = index[ownEvents.length][
-            usersByDate[blockIdx]!.length - 1
-          ] as keyof ColorType;
+          const colorStr = index[memberCount][usersByDate[blockIdx]!.length - 1] as keyof ColorType;
 
           return new TimeTableUnit(
             blockIdx,
@@ -273,9 +270,10 @@ class PromisingService {
     const colors = index[memberCount].map((colorStr) =>
       parseInt(color[colorStr as keyof ColorType], 16)
     );
+    const colorSet = [...new Set(colors)];
     const totalCount = timeUtil.getIndexFromMinTime(minTime, maxTime, unit) / 2;
     return {
-      colors,
+      colors: colorSet,
       totalCount,
       unit,
       timeTable

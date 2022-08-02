@@ -19,7 +19,6 @@ const sequelize = new Sequelize(
     host: config.development.host,
     dialect: 'mysql',
     define: { timestamps: false },
-    timezone: '+09:00',
     dialectOptions: { connectTimeout: 150000 },
     pool: {
       max: 30000,
