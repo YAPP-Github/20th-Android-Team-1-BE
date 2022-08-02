@@ -6,9 +6,8 @@ import promiseUserService from './promise-user-service';
 import { NotFoundException } from '../utils/error';
 import { Op } from 'sequelize';
 import PromiseUser from '../models/promise-user';
-import { InternalServerException } from '../utils/error';
-import { UNKNOWN_USER_ID } from '../constants/nums';
 import timeUtil from '../utils/time';
+import { UNKNOWN_USER_ID } from '../constants/number';
 
 class PromiseService {
   async create(
