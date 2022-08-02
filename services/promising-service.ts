@@ -27,6 +27,7 @@ import categoryService from './category-service';
 import { v4 as uuidv4 } from 'uuid';
 import { redisClient } from '../app';
 import sequelize from 'sequelize';
+import arrayUtil from '../utils/array';
 import { PROMISING_USER_MAX, REDIS_EXPIRE_SECONDS, UNKNOWN_USER_ID } from '../constants/number';
 
 class PromisingService {
@@ -172,7 +173,9 @@ class PromisingService {
     const res = [];
     for (let i = 0; i < promisings.length; i++) {
       const promising = promisings[i];
-      const members = await eventService.findPromisingMembers(promising.id);
+      let members = await eventService.findPromisingMembers(promising.id);
+      members = await arrayUtil.sortingNameList(members);  
+
       res.push(
         new PromisingTimeStampResponse(
           promising,
