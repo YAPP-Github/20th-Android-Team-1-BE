@@ -6,13 +6,10 @@ export class CategoryResponse {
   id: number;
   @IsString()
   keyword: string;
-  @IsString()
-  type: string;
 
   constructor(category: CategoryKeyword) {
     this.id = category.id;
     this.keyword = category.keyword;
-    this.type = this.keyword.substring(0, 2);
   }
 }
 
